@@ -135,34 +135,23 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-8 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
-              Find the best refurbished deals
-            </h1>
-            <p className="text-base md:text-lg text-slate-500 mb-6">
-              Compare prices across eBay, Amazon, Best Buy & more
-            </p>
-          </motion.div>
+      <section className="pt-16 pb-4 px-4">
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-xl md:text-2xl font-semibold text-slate-800 mb-1">
+            Find the best refurbished deals
+          </h1>
+          <p className="text-sm text-slate-400 mb-4">
+            Compare prices across eBay, Amazon, Best Buy & more
+          </p>
 
-          {/* Notion-style Search Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="relative max-w-2xl mx-auto group"
-          >
+          {/* Search Bar */}
+          <div className="relative max-w-xl mx-auto">
             <div className={cn(
-              "relative flex items-center bg-white border rounded-2xl transition-all duration-300 shadow-sm overflow-hidden",
-              isFocused ? "border-black shadow-2xl scale-[1.02]" : "border-black/[0.08] group-hover:border-black/[0.15]"
+              "relative flex items-center bg-white border rounded-lg transition-all shadow-sm",
+              isFocused ? "border-slate-300 shadow-md" : "border-slate-200"
             )}>
-              <div className="pl-5 text-black/30">
-                <Search className="w-5 h-5" />
+              <div className="pl-3 text-slate-400">
+                <Search className="w-4 h-4" />
               </div>
               <input
                 ref={inputRef}
@@ -177,14 +166,12 @@ export default function Home() {
                     inputRef.current?.blur();
                   }
                 }}
-                placeholder="Search iPhone, MacBook, or 'deals under $500'..."
-                className="flex-1 h-16 px-4 bg-transparent outline-none text-lg font-medium placeholder:text-black/20"
+                placeholder="Search products..."
+                className="flex-1 h-10 px-3 bg-transparent outline-none text-sm placeholder:text-slate-400"
               />
-              <div className="pr-5 flex items-center gap-1.5 text-black/20 font-bold text-xs">
-                <div className="px-1.5 py-0.5 rounded border border-black/10 bg-black/[0.02]">
-                  <Command className="w-3 h-3" />
-                </div>
-                <div className="px-1.5 py-0.5 rounded border border-black/10 bg-black/[0.02]">K</div>
+              <div className="pr-3 flex items-center gap-1 text-slate-300 text-[10px] font-medium">
+                <kbd className="px-1 py-0.5 rounded bg-slate-100 border border-slate-200">⌘</kbd>
+                <kbd className="px-1 py-0.5 rounded bg-slate-100 border border-slate-200">K</kbd>
               </div>
             </div>
 
@@ -216,100 +203,107 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Price Comparison - Notion style */}
+      {/* Price Comparison - Notion database style */}
       {(comparingPrices || priceComparison) && query.trim() && (
         <section className="px-4 pb-6 max-w-3xl mx-auto">
-          {comparingPrices && (
-            <div className="text-[13px] text-slate-400 mb-2">Finding prices...</div>
-          )}
-          {priceComparison?.analysis && priceComparison.analysis.map((item) => (
-            <div key={item.index} className="mb-6">
-              <div className="flex items-baseline gap-3 mb-3">
-                <span className="text-[15px] font-semibold text-slate-800">{item.productName}</span>
-                <span className="text-[15px] font-bold text-emerald-600">${item.refurbPrice}</span>
-                {item.savingsPercent && (
-                  <span className="text-[13px] text-emerald-600">({Math.round(item.savingsPercent)}% less)</span>
-                )}
+          {comparingPrices ? (
+            <div className="bg-slate-50 rounded-lg p-4 text-center text-sm text-slate-500">
+              <div className="inline-block w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin mr-2" />
+              Comparing prices...
+            </div>
+          ) : priceComparison?.analysis && (
+            <div className="bg-white rounded-lg overflow-hidden" style={{boxShadow: '0 0 0 1px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.05)'}}>
+              {/* Header */}
+              <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-slate-50 text-[11px] font-medium text-slate-500 uppercase tracking-wide">
+                <div className="col-span-5">Store</div>
+                <div className="col-span-3">New Price</div>
+                <div className="col-span-4">You Save</div>
               </div>
-              <div className="space-y-1">
-                {item.retailerPrices?.map((rp, i) => (
-                  <a
-                    key={i}
-                    href={rp.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 py-1.5 px-2 -mx-2 rounded hover:bg-slate-50 transition-colors group"
-                  >
-                    <span className="w-20 text-[13px] text-slate-500">{rp.retailer}</span>
-                    <span className="text-[13px] font-medium text-slate-700">${rp.price}</span>
-                    <span className="text-[11px] text-slate-300 group-hover:text-slate-400 ml-auto">↗</span>
-                  </a>
-                ))}
+              {/* Rows */}
+              {priceComparison.analysis.map((item) => (
+                <div key={item.index}>
+                  {item.retailerPrices?.map((rp, i) => {
+                    const savings = rp.price - Number(item.refurbPrice);
+                    const savingsPct = Math.round((savings / rp.price) * 100);
+                    return (
+                      <a
+                        key={i}
+                        href={rp.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="grid grid-cols-12 gap-2 px-3 py-2.5 hover:bg-blue-50 transition-colors border-t border-slate-100 items-center"
+                      >
+                        <div className="col-span-5 text-[13px] font-medium text-slate-800">{rp.retailer}</div>
+                        <div className="col-span-3 text-[13px] text-slate-600">${rp.price}</div>
+                        <div className="col-span-4 flex items-center gap-2">
+                          <span className="text-[13px] font-semibold text-emerald-600">${savings.toFixed(0)}</span>
+                          <span className="text-[11px] px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded font-medium">{savingsPct}%</span>
+                        </div>
+                      </a>
+                    );
+                  })}
+                </div>
+              ))}
+              {/* Footer */}
+              <div className="px-3 py-2 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-400">
+                Refurbished price: <span className="font-semibold text-emerald-600">${priceComparison.analysis[0]?.refurbPrice}</span>
               </div>
             </div>
-          ))}
+          )}
         </section>
       )}
 
       {/* Product Grid */}
-      <section className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-            <div>
-              <div className="text-[10px] font-bold text-black/40 uppercase tracking-[0.2em] mb-2">Live Inventory</div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{query.trim() ? `Results for "${query}"` : "Today's Best Deals"}</h2>
-            </div>
-            <button className="flex items-center gap-2 text-sm font-bold hover:gap-3 transition-all text-black/60 hover:text-black">
-              See all deals <ArrowRight className="w-4 h-4" />
+      <section className="py-6 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-slate-800">{query.trim() ? `Results for "${query}"` : "Today's Best Deals"}</h2>
+            <button className="text-sm text-slate-500 hover:text-slate-700 flex items-center gap-1">
+              See all <ArrowRight className="w-3 h-3" />
             </button>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {loading ? (
-              [...Array(4)].map((_, i) => (
-                <div key={i} className="h-96 rounded-3xl bg-black/[0.02] animate-pulse" />
+              [...Array(5)].map((_, i) => (
+                <div key={i} className="aspect-[3/4] rounded-lg bg-slate-100 animate-pulse" />
               ))
             ) : deals.length > 0 ? (
               deals.map((deal) => (
-                <motion.div 
+                <a
                   key={deal.id}
-                  whileHover={{ y: -5 }}
-                  className="group relative flex flex-col bg-white border border-black/[0.05] rounded-[2.5rem] p-6 transition-all hover:shadow-2xl hover:border-black/[0.1] cursor-pointer"
+                  href={deal.itemUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow border border-slate-100"
                 >
-                  <div className="aspect-square relative mb-8 overflow-hidden rounded-[2rem] bg-[#f9f9f9]">
-                    <img 
-                      src={deal.imageUrl} 
-                      alt={deal.title} 
-                      className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700"
+                  <div className="aspect-square relative bg-slate-50">
+                    <img
+                      src={deal.imageUrl}
+                      alt={deal.title}
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform"
                     />
                     {deal.savings && (
-                      <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md shadow-sm text-[10px] font-bold text-black">
-                        SAVE ${Math.round(deal.savings)}
+                      <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[10px] font-bold">
+                        -{Math.round((deal.savings / (deal.originalPrice || deal.price)) * 100)}%
                       </div>
                     )}
                   </div>
-                  
-                  <div className="flex-1">
-                    <div className="text-[10px] font-bold text-black/30 uppercase tracking-widest mb-1">{deal.condition}</div>
-                    <h3 className="font-bold text-lg leading-tight mb-2 group-hover:text-black transition-colors">{deal.title}</h3>
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold">${deal.price}</span>
+                  <div className="p-2">
+                    <div className="text-[10px] text-slate-400 mb-0.5">{deal.condition}</div>
+                    <h3 className="text-xs font-medium text-slate-700 line-clamp-2 mb-1">{deal.title}</h3>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-bold text-slate-800">${deal.price}</span>
                       {deal.originalPrice && (
-                        <span className="text-xs font-medium text-black/20 line-through">${deal.originalPrice}</span>
+                        <span className="text-[10px] text-slate-400 line-through">${deal.originalPrice}</span>
                       )}
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-black/[0.03] flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
-                      <ArrowRight className="w-4 h-4 -rotate-45 group-hover:rotate-0 transition-transform" />
-                    </div>
                   </div>
-                </motion.div>
+                </a>
               ))
             ) : (
-              <div className="col-span-full py-20 text-center text-black/40 font-medium">
-                {error ? error : query ? `No deals found for \"${query}\"` : "No deals found."}
+              <div className="col-span-full py-8 text-center text-slate-400 text-sm">
+                {error ? error : query ? `No deals found for "${query}"` : "No deals found."}
               </div>
             )}
           </div>
