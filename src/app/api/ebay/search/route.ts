@@ -213,10 +213,12 @@ export async function GET(request: Request) {
     params.set("filter", filters);
   }
 
-  if (deals) {
+  if (deals || !q) {
+    // Homepage: show trending refurbished deals
     params.set("category_ids", categoryId || "293");
     params.set("sort", "newlyListed");
-  } else if (q) {
+  } else {
+    // Search: use user's query
     params.set("q", q);
   }
 
