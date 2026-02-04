@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Command, ArrowRight, ShieldCheck, Zap, Sparkles, Star } from "lucide-react";
+import { Search, Command, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { fetcheBayDeals, eBayItem } from "@/lib/ebay";
@@ -109,52 +109,44 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#FBFBFB] selection:bg-black selection:text-white">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full h-16 border-b border-black/[0.04] bg-white/70 backdrop-blur-xl z-50">
-        <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
+      <nav className="fixed top-0 w-full h-14 border-b border-gray-100 bg-white z-50">
+        <div className="max-w-7xl mx-auto h-full px-4 flex items-center justify-between">
           <a
             href="/"
             onClick={(e) => { e.preventDefault(); setQuery(""); setPriceComparison(null); window.scrollTo(0, 0); }}
-            className="flex items-center gap-2 group cursor-pointer"
+            className="flex items-center gap-2"
           >
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center group-hover:rotate-6 transition-transform">
-              <Sparkles className="w-4 h-4 text-white" />
+            <div className="flex items-baseline leading-none">
+              <span className="font-black text-xl text-slate-900 tracking-tighter">Epic</span>
+              <span className="font-black text-xl text-emerald-500 tracking-tighter">.</span>
+              <span className="font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent tracking-tighter">Deals</span>
             </div>
-            <span className="text-xl font-bold tracking-tight">EpicDeals</span>
           </a>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-black/50">
-            <a href="#" className="hover:text-black transition-colors">iPhone</a>
-            <a href="#" className="hover:text-black transition-colors">Mac</a>
-            <a href="#" className="hover:text-black transition-colors">iPad</a>
-            <a href="#" className="hover:text-black transition-colors">Watch</a>
-          </div>
-          <div className="flex items-center gap-4">
-             <button className="hidden sm:block text-sm font-medium text-black/50 hover:text-black">Sign In</button>
-             <button className="px-5 py-2 rounded-full bg-black text-white text-sm font-semibold hover:bg-black/80 transition-all shadow-lg shadow-black/5 active:scale-95">
-               Start Saving
-             </button>
+          <div className="flex items-center gap-2">
+            <button className="px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 text-xs font-semibold border border-gray-200">
+              <span>🔥</span>
+              <span className="hidden sm:inline">Deals</span>
+            </button>
+            <button className="p-2 rounded-full hover:bg-gray-50 transition-colors">
+              <span className="text-xl">🇺🇸</span>
+            </button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-16 px-6">
+      <section className="pt-20 pb-8 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/[0.03] border border-black/[0.03] text-[11px] font-bold uppercase tracking-wider mb-8 text-black/60">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-              Live Pricing active
-            </div>
-            <h1 className="text-5xl md:text-8xl font-bold tracking-tight mb-8 leading-[0.9]">
-              Premium tech. <br />
-              <span className="text-black/30">Better than new.</span>
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
+              Find the best refurbished deals
             </h1>
-            <p className="text-lg md:text-2xl text-black/40 font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
-              Award-winning refurbished devices. <br className="hidden md:block" />
-              Expertly verified. Perfectly priced.
+            <p className="text-base md:text-lg text-slate-500 mb-6">
+              Compare prices across eBay, Amazon, Best Buy & more
             </p>
           </motion.div>
 
@@ -221,25 +213,6 @@ export default function Home() {
             </AnimatePresence>
           </motion.div>
 
-          {/* Trust Grid */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 1 }}
-            className="mt-20 grid grid-cols-1 sm:grid-cols-3 gap-8 border-t border-black/[0.05] pt-12"
-          >
-            {[
-              { icon: ShieldCheck, title: "1-Year Warranty", sub: "Standard on all tech" },
-              { icon: Zap, title: "Swift Delivery", sub: "Free shipping nationwide" },
-              { icon: Star, title: "10k+ Reviews", sub: "4.9/5 average rating" },
-            ].map((feature, i) => (
-              <div key={i} className="flex flex-col items-center gap-1">
-                <feature.icon className="w-5 h-5 text-black/40 mb-2" />
-                <span className="text-xs font-bold uppercase tracking-[0.15em] text-black">{feature.title}</span>
-                <span className="text-xs font-medium text-black/30">{feature.sub}</span>
-              </div>
-            ))}
-          </motion.div>
         </div>
       </section>
 
@@ -421,13 +394,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer Branding */}
-      <footer className="py-20 border-t border-black/[0.05] text-center">
-        <div className="flex items-center justify-center gap-2 opacity-20 hover:opacity-100 transition-opacity cursor-default mb-4">
-          <Sparkles className="w-4 h-4" />
-          <span className="text-sm font-bold tracking-tighter uppercase">EpicDeals 2026</span>
-        </div>
-        <p className="text-[10px] font-bold text-black/20 uppercase tracking-[0.2em]">Designed for trust. Built for value.</p>
+      {/* Footer */}
+      <footer className="py-8 border-t border-gray-100 text-center">
+        <p className="text-xs text-slate-400">Epic.Deals - Compare refurbished prices</p>
       </footer>
     </main>
   );
