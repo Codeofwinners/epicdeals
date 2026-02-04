@@ -57,7 +57,7 @@ function cleanForSearch(title: string) {
 async function searchBrave(query: string, apiKey: string) {
   const url = new URL("https://api.search.brave.com/res/v1/web/search");
   url.searchParams.set("q", `${query} buy new price`);
-  url.searchParams.set("count", "8");
+  url.searchParams.set("count", "15");
   url.searchParams.set("search_lang", "en");
   url.searchParams.set("country", "us");
   url.searchParams.set("result_filter", "web");
@@ -237,7 +237,7 @@ Return ONLY valid JSON:
   }
 }
 
-IMPORTANT: Include ALL retailers with prices found in search results, not just one!
+IMPORTANT: Return AT LEAST 5 retailer prices per product! Search harder if needed. Include Amazon, Best Buy, Walmart, Target, Newegg, B&H, Adorama, etc.
 
 VERDICT RULES:
 - Great deal = 20%+ savings
