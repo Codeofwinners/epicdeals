@@ -193,7 +193,7 @@ export default function Home() {
             </button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {loading ? (
               [...Array(4)].map((_, i) => (
                 <div key={i} className="h-96 rounded-3xl bg-black/[0.02] animate-pulse" />
