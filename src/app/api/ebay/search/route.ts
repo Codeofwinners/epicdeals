@@ -1,5 +1,14 @@
 import { NextResponse } from "next/server";
 
+const AFFILIATE_CAMPID = "5339117469";
+const AFFILIATE_MKRID = "711-53200-19255-0";
+
+function addAffiliateParams(url: string): string {
+  if (!url || !url.includes("ebay.com")) return url;
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}mkcid=1&mkrid=${AFFILIATE_MKRID}&siteid=0&campid=${AFFILIATE_CAMPID}&toolid=10001`;
+}
+
 type TokenCache = {
   token: string | null;
   expiresAt: number;
@@ -171,7 +180,7 @@ export async function GET(request: Request) {
   const min = searchParams.get("min");
   const max = searchParams.get("max");
   const offset = Number(searchParams.get("offset") || 0);
-  const limit = Math.min(Number(searchParams.get("limit") || 40), 200);
+  const limit = Math.min(Number(searchParams.get("limit") || 200), 200);
   const conditions = searchParams.get("conditions") || "refurbished";
   const brands = searchParams.get("brands") || "";
   const categoryId = searchParams.get("categoryId") || "";
@@ -258,24 +267,7 @@ export async function GET(request: Request) {
 
     const data = await response.json();
 
-    // Filter results: keywords must appear in sequence in title
-    const queryWords = q.toLowerCase().trim().split(/\s+/).filter(Boolean);
-
-    const filteredSummaries = (data.itemSummaries || []).filter((item: any) => {
-      if (!q || queryWords.length === 0) return true;
-      const title = (item.title || "").toLowerCase();
-
-      // Check if all query words appear in sequence
-      let lastIndex = -1;
-      for (const word of queryWords) {
-        const idx = title.indexOf(word, lastIndex + 1);
-        if (idx === -1 || idx <= lastIndex) return false;
-        lastIndex = idx;
-      }
-      return true;
-    });
-
-    const items = filteredSummaries.map((item: any) => {
+    const items = (data.itemSummaries || []).map((item: any) => {
       const priceValue = Number(item.price?.value || 0);
       const originalValue = Number(item.marketingPrice?.originalPrice?.value || 0);
       const savings = originalValue && priceValue ? Math.max(originalValue - priceValue, 0) : undefined;
@@ -289,7 +281,7 @@ export async function GET(request: Request) {
           item.image?.imageUrl ||
           item.thumbnailImages?.[0]?.imageUrl ||
           "https://picsum.photos/400/400",
-        itemUrl: item.itemWebUrl || item.itemAffiliateWebUrl || "",
+        itemUrl: addAffiliateParams(item.itemWebUrl || item.itemAffiliateWebUrl || ""),
         condition: item.condition || "",
         savings: savings && savings > 0 ? savings : undefined,
       };
