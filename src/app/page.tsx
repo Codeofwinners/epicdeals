@@ -6,12 +6,34 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { fetcheBayDeals, eBayItem } from "@/lib/ebay";
 
+type PriceAnalysis = {
+  index: number;
+  productName: string;
+  newRetailPrice?: number;
+  retailer?: string;
+  retailerUrl?: string;
+  refurbPrice: number | string;
+  savings?: number;
+  savingsPercent?: number;
+  verdict: string;
+  priceNote?: string;
+  webResults?: { title: string; url: string; site: string }[];
+};
+
+type PriceComparison = {
+  success: boolean;
+  analysis: PriceAnalysis[];
+  topPick?: { index: number; reason: string };
+};
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const [deals, setDeals] = useState<eBayItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFocused, setIsFocused] = useState(false);
+  const [priceComparison, setPriceComparison] = useState<PriceComparison | null>(null);
+  const [comparingPrices, setComparingPrices] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -31,9 +53,35 @@ export default function Home() {
       try {
         setLoading(true);
         setError(null);
+        setPriceComparison(null);
         const data = await fetcheBayDeals(query.trim());
         if (isActive) {
           setDeals(data);
+          // Run price comparison for searches
+          if (query.trim() && data.length > 0) {
+            setComparingPrices(true);
+            try {
+              const products = data.slice(0, 5).map((item, i) => ({
+                index: i + 1,
+                title: item.title,
+                price: item.price,
+                condition: item.condition,
+              }));
+              const res = await fetch("/api/compare", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ products, query: query.trim() }),
+              });
+              const result = await res.json();
+              if (isActive && result.success) {
+                setPriceComparison(result);
+              }
+            } catch {
+              // Ignore price comparison errors
+            } finally {
+              if (isActive) setComparingPrices(false);
+            }
+          }
         }
       } catch (err) {
         if (isActive) {
@@ -184,13 +232,95 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Price Comparison Panel */}
+      {(comparingPrices || priceComparison) && query.trim() && (
+        <section className="px-6 pb-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white border border-black/[0.08] rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-lg">💰</span>
+                <h3 className="font-bold text-lg">Price Comparison</h3>
+                {comparingPrices && <span className="text-xs text-black/40 animate-pulse">Searching web prices...</span>}
+              </div>
+              {priceComparison?.analysis && (
+                <div className="divide-y divide-gray-100">
+                  {priceComparison.analysis.map((item) => {
+                    const verdictEmoji: Record<string, string> = {
+                      "Great deal": "🔥",
+                      "Good deal": "✅",
+                      "Fair deal": "➖",
+                      "Not worth it": "❌",
+                      "Check links": "🔍",
+                    };
+                    const emoji = verdictEmoji[item.verdict] || "•";
+                    return (
+                      <div key={item.index} className="flex flex-col gap-1.5 py-3 text-xs hover:bg-gray-50 px-2 -mx-2 rounded">
+                        <div className="flex items-start gap-2">
+                          <span className="w-4 text-center mt-0.5">{emoji}</span>
+                          <span className="flex-1 font-medium text-slate-700 leading-snug">{item.productName}</span>
+                        </div>
+                        <div className="flex items-center gap-2 ml-6 flex-wrap">
+                          <span className="text-emerald-600 font-bold">${item.refurbPrice}</span>
+                          <span className="text-slate-400">vs</span>
+                          <span className="text-slate-500 font-medium">${item.newRetailPrice || "?"} new</span>
+                          {item.savingsPercent && (
+                            <span className="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-1.5 py-0.5 rounded">
+                              {item.savingsPercent}% off
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 ml-6 flex-wrap">
+                          {item.retailerUrl && (
+                            <a
+                              href={item.retailerUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] px-2 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 font-bold"
+                            >
+                              💰 {item.retailer || "Buy New"}
+                            </a>
+                          )}
+                          {item.webResults?.slice(0, 3).map((r, i) => {
+                            const site = (r.site || "").replace("www.", "").split(".")[0];
+                            const siteName = site.charAt(0).toUpperCase() + site.slice(1);
+                            return (
+                              <a
+                                key={i}
+                                href={r.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[9px] px-1.5 py-0.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded font-medium"
+                              >
+                                {siteName}
+                              </a>
+                            );
+                          })}
+                        </div>
+                        {item.priceNote && (
+                          <div className="ml-6 text-[10px] text-slate-400 italic">{item.priceNote}</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {priceComparison?.topPick && (
+                <div className="mt-2 pt-2 border-t border-gray-100 text-xs text-slate-500">
+                  🏆 <span className="font-medium">{priceComparison.topPick.reason}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Product Grid */}
       <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
             <div>
               <div className="text-[10px] font-bold text-black/40 uppercase tracking-[0.2em] mb-2">Live Inventory</div>
-              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Today's Best Deals</h2>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight">{query.trim() ? `Results for "${query}"` : "Today's Best Deals"}</h2>
             </div>
             <button className="flex items-center gap-2 text-sm font-bold hover:gap-3 transition-all text-black/60 hover:text-black">
               See all deals <ArrowRight className="w-4 h-4" />
