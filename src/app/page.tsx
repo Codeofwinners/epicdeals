@@ -216,53 +216,61 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Price Comparison - Seamless Apple-style */}
+      {/* Price Comparison */}
       {(comparingPrices || priceComparison) && query.trim() && (
-        <section className="px-4 pb-2 max-w-4xl mx-auto">
+        <section className="px-4 pb-6 max-w-4xl mx-auto">
           {comparingPrices && (
-            <div className="flex items-center gap-2 text-[11px] text-slate-400 mb-2">
-              <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-              Checking prices across retailers...
+            <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Finding best prices...
             </div>
           )}
-          {priceComparison?.analysis && (
-            <div className="space-y-1">
-              {priceComparison.analysis.map((item) => (
-                <div key={item.index} className="group py-2">
-                  <div className="flex items-baseline gap-3 flex-wrap">
-                    <span className="text-[13px] text-slate-600 truncate max-w-[200px] sm:max-w-none">{item.productName}</span>
-                    <span className="text-[13px] font-semibold text-emerald-600">${item.refurbPrice}</span>
-                    <span className="text-[11px] text-slate-300">→</span>
-                    {item.retailerPrices && item.retailerPrices.length > 0 ? (
-                      item.retailerPrices.map((rp, i) => (
-                        <a
-                          key={i}
-                          href={rp.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={`text-[11px] transition-colors ${rp.price === item.lowestNewPrice ? "text-slate-800 font-semibold" : "text-slate-400 hover:text-slate-600"}`}
-                        >
-                          {rp.retailer} <span className="tabular-nums">${rp.price}</span>
-                        </a>
-                      ))
-                    ) : (
-                      item.webResults?.slice(0, 3).map((r, i) => {
-                        const site = (r.site || "").replace("www.", "").split(".")[0];
-                        return (
-                          <a key={i} href={r.url} target="_blank" rel="noopener noreferrer" className="text-[11px] text-slate-400 hover:text-slate-600 transition-colors">
-                            {site.charAt(0).toUpperCase() + site.slice(1)}
-                          </a>
-                        );
-                      })
-                    )}
-                    {item.savingsPercent && (
-                      <span className="text-[11px] font-medium text-emerald-600">−{Math.round(item.savingsPercent)}%</span>
-                    )}
-                  </div>
+          {priceComparison?.analysis && priceComparison.analysis.map((item) => (
+            <div key={item.index} className="mb-4">
+              <div className="text-sm font-medium text-slate-800 mb-2">{item.productName}</div>
+              <div className="flex items-center gap-4 mb-2">
+                <div>
+                  <div className="text-xs text-slate-400">Refurbished</div>
+                  <div className="text-xl font-bold text-emerald-600">${item.refurbPrice}</div>
                 </div>
-              ))}
+                {item.savingsPercent && (
+                  <div className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded">
+                    Save {Math.round(item.savingsPercent)}%
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {item.retailerPrices && item.retailerPrices.length > 0 ? (
+                  item.retailerPrices.map((rp, i) => (
+                    <a
+                      key={i}
+                      href={rp.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-slate-600 hover:text-emerald-600 underline underline-offset-2"
+                    >
+                      {rp.retailer} ${rp.price}
+                    </a>
+                  ))
+                ) : (
+                  item.webResults?.slice(0, 5).map((r, i) => {
+                    const site = (r.site || "").replace("www.", "").split(".")[0];
+                    return (
+                      <a
+                        key={i}
+                        href={r.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-slate-600 hover:text-emerald-600 underline underline-offset-2"
+                      >
+                        {site.charAt(0).toUpperCase() + site.slice(1)}
+                      </a>
+                    );
+                  })
+                )}
+              </div>
             </div>
-          )}
+          ))}
         </section>
       )}
 
