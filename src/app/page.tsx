@@ -108,7 +108,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
           <a
             href="/"
-            onClick={(e) => { e.preventDefault(); setQuery(""); window.scrollTo(0, 0); }}
+            onClick={(e) => { e.preventDefault(); setQuery(""); setPriceComparison(null); window.scrollTo(0, 0); }}
             className="flex items-center gap-2 group cursor-pointer"
           >
             <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center group-hover:rotate-6 transition-transform">
