@@ -202,53 +202,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Price Comparison - Notion database style */}
+      {/* Price Comparison - Seamless */}
       {(comparingPrices || priceComparison) && query.trim() && (
-        <section className="px-4 pb-6 max-w-3xl mx-auto">
+        <section className="px-4 pb-4 max-w-2xl mx-auto">
           {comparingPrices ? (
-            <div className="bg-slate-50 rounded-lg p-4 text-center text-sm text-slate-500">
-              <div className="inline-block w-4 h-4 border-2 border-slate-300 border-t-slate-600 rounded-full animate-spin mr-2" />
-              Comparing prices...
-            </div>
-          ) : priceComparison?.analysis && (
-            <div className="bg-white rounded-lg overflow-hidden" style={{boxShadow: '0 0 0 1px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.05)'}}>
-              {/* Header */}
-              <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-slate-50 text-[11px] font-medium text-slate-500 uppercase tracking-wide">
-                <div className="col-span-5">Store</div>
-                <div className="col-span-3">New Price</div>
-                <div className="col-span-4">You Save</div>
-              </div>
-              {/* Rows */}
-              {priceComparison.analysis.map((item) => (
-                <div key={item.index}>
-                  {item.retailerPrices?.map((rp, i) => {
-                    const savings = rp.price - Number(item.refurbPrice);
-                    const savingsPct = Math.round((savings / rp.price) * 100);
-                    return (
-                      <a
-                        key={i}
-                        href={rp.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="grid grid-cols-12 gap-2 px-3 py-2.5 hover:bg-blue-50 transition-colors border-t border-slate-100 items-center"
-                      >
-                        <div className="col-span-5 text-[13px] font-medium text-slate-800">{rp.retailer}</div>
-                        <div className="col-span-3 text-[13px] text-slate-600">${rp.price}</div>
-                        <div className="col-span-4 flex items-center gap-2">
-                          <span className="text-[13px] font-semibold text-emerald-600">${savings.toFixed(0)}</span>
-                          <span className="text-[11px] px-1.5 py-0.5 bg-emerald-100 text-emerald-700 rounded font-medium">{savingsPct}%</span>
-                        </div>
-                      </a>
-                    );
-                  })}
+            <div className="text-sm text-slate-400">Finding prices...</div>
+          ) : priceComparison?.analysis && priceComparison.analysis.map((item) => {
+            const validPrices = item.retailerPrices?.filter(rp => rp.price >= 20 && rp.price <= 5000) || [];
+            if (validPrices.length === 0) return null;
+            return (
+              <div key={item.index} className="mb-3">
+                <div className="text-sm text-slate-800 mb-2">
+                  <span className="font-medium">{item.productName}</span>
+                  <span className="mx-2 text-slate-300">·</span>
+                  <span className="text-emerald-600 font-semibold">${item.refurbPrice}</span>
+                  {item.savingsPercent && item.savingsPercent > 0 && item.savingsPercent < 90 && (
+                    <span className="text-emerald-600 text-xs ml-1">({Math.round(item.savingsPercent)}% off)</span>
+                  )}
                 </div>
-              ))}
-              {/* Footer */}
-              <div className="px-3 py-2 bg-slate-50 border-t border-slate-100 text-[11px] text-slate-400">
-                Refurbished price: <span className="font-semibold text-emerald-600">${priceComparison.analysis[0]?.refurbPrice}</span>
+                <div className="text-[13px] text-slate-500">
+                  {validPrices.map((rp, i) => (
+                    <span key={i}>
+                      <a href={rp.url} target="_blank" rel="noopener noreferrer" className="hover:text-emerald-600 hover:underline">
+                        {rp.retailer} ${rp.price}
+                      </a>
+                      {i < validPrices.length - 1 && <span className="mx-2 text-slate-300">·</span>}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })}
         </section>
       )}
 
