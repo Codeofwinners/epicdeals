@@ -174,6 +174,12 @@ export default function Home() {
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setIsFocused(false);
+                    inputRef.current?.blur();
+                  }
+                }}
                 placeholder="Search iPhone, MacBook, or 'deals under $500'..."
                 className="flex-1 h-16 px-4 bg-transparent outline-none text-lg font-medium placeholder:text-black/20"
               />
@@ -239,8 +245,8 @@ export default function Home() {
             <div className="bg-white border border-black/[0.08] rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-lg">💰</span>
-                <h3 className="font-bold text-lg">Price Comparison</h3>
-                {comparingPrices && <span className="text-xs text-black/40 animate-pulse">Searching web prices...</span>}
+                <h3 className="font-bold text-lg">Price Comparison - Refurbished vs New</h3>
+                {comparingPrices && <span className="text-xs text-black/40 animate-pulse">Searching Amazon, Best Buy, Walmart...</span>}
               </div>
               {priceComparison?.analysis && (
                 <div className="divide-y divide-gray-100">
@@ -254,61 +260,80 @@ export default function Home() {
                     };
                     const emoji = verdictEmoji[item.verdict] || "•";
                     return (
-                      <div key={item.index} className="flex flex-col gap-1.5 py-3 text-xs hover:bg-gray-50 px-2 -mx-2 rounded">
+                      <div key={item.index} className="flex flex-col gap-2 py-4 hover:bg-gray-50 px-3 -mx-3 rounded-lg">
                         <div className="flex items-start gap-2">
-                          <span className="w-4 text-center mt-0.5">{emoji}</span>
-                          <span className="flex-1 font-medium text-slate-700 leading-snug">{item.productName}</span>
+                          <span className="text-lg">{emoji}</span>
+                          <span className="flex-1 font-semibold text-slate-800">{item.productName}</span>
                         </div>
-                        <div className="flex items-center gap-2 ml-6 flex-wrap">
-                          <span className="text-emerald-600 font-bold">${item.refurbPrice}</span>
-                          <span className="text-slate-400">vs</span>
-                          <span className="text-slate-500 font-medium">${item.newRetailPrice || "?"} new</span>
+                        <div className="flex items-center gap-3 ml-7">
+                          <div className="bg-emerald-50 px-3 py-1.5 rounded-lg">
+                            <span className="text-[10px] text-emerald-600 font-medium block">REFURBISHED</span>
+                            <span className="text-emerald-700 font-bold text-lg">${item.refurbPrice}</span>
+                          </div>
+                          <span className="text-slate-300 font-bold">vs</span>
+                          <div className="bg-slate-50 px-3 py-1.5 rounded-lg">
+                            <span className="text-[10px] text-slate-500 font-medium block">NEW RETAIL</span>
+                            <span className="text-slate-700 font-bold text-lg">${item.newRetailPrice || "?"}</span>
+                          </div>
                           {item.savingsPercent && (
-                            <span className="text-emerald-600 font-bold text-[10px] bg-emerald-50 px-1.5 py-0.5 rounded">
-                              {item.savingsPercent}% off
-                            </span>
+                            <div className="bg-orange-50 px-3 py-1.5 rounded-lg">
+                              <span className="text-[10px] text-orange-600 font-medium block">YOU SAVE</span>
+                              <span className="text-orange-600 font-bold text-lg">{item.savingsPercent}%</span>
+                            </div>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 ml-6 flex-wrap">
+                        {item.priceNote && (
+                          <div className="ml-7 text-sm text-slate-600 bg-blue-50 px-3 py-2 rounded-lg">
+                            📊 {item.priceNote}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2 ml-7 flex-wrap">
+                          <span className="text-xs text-slate-400 font-medium">Compare prices:</span>
                           {item.retailerUrl && (
                             <a
                               href={item.retailerUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[10px] px-2 py-1 bg-emerald-500 text-white rounded hover:bg-emerald-600 font-bold"
+                              className="text-xs px-3 py-1.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 font-bold"
                             >
-                              💰 {item.retailer || "Buy New"}
+                              {item.retailer || "Best Price"} →
                             </a>
                           )}
-                          {item.webResults?.slice(0, 3).map((r, i) => {
+                          {item.webResults?.map((r, i) => {
+                            if (r.url === item.retailerUrl) return null;
                             const site = (r.site || "").replace("www.", "").split(".")[0];
                             const siteName = site.charAt(0).toUpperCase() + site.slice(1);
+                            const bgColor = site.includes("amazon") ? "bg-orange-100 text-orange-700 hover:bg-orange-200" :
+                                           site.includes("bestbuy") ? "bg-blue-100 text-blue-700 hover:bg-blue-200" :
+                                           site.includes("walmart") ? "bg-blue-100 text-blue-800 hover:bg-blue-200" :
+                                           site.includes("target") ? "bg-red-100 text-red-700 hover:bg-red-200" :
+                                           "bg-gray-100 text-gray-700 hover:bg-gray-200";
                             return (
                               <a
                                 key={i}
                                 href={r.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[9px] px-1.5 py-0.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded font-medium"
+                                className={`text-xs px-3 py-1.5 rounded-lg font-medium ${bgColor}`}
                               >
                                 {siteName}
                               </a>
                             );
                           })}
                         </div>
-                        {item.priceNote && (
-                          <div className="ml-6 text-[10px] text-slate-400 italic">{item.priceNote}</div>
-                        )}
                       </div>
                     );
                   })}
                 </div>
               )}
               {priceComparison?.topPick && (
-                <div className="mt-2 pt-2 border-t border-gray-100 text-xs text-slate-500">
-                  🏆 <span className="font-medium">{priceComparison.topPick.reason}</span>
+                <div className="mt-4 pt-4 border-t border-gray-200 text-sm text-slate-600 bg-yellow-50 px-4 py-3 rounded-lg">
+                  🏆 <span className="font-bold">Best Deal:</span> {priceComparison.topPick.reason}
                 </div>
               )}
+              <div className="mt-3 text-[10px] text-slate-400 text-center">
+                Prices from web search. Click retailer links to verify current prices.
+              </div>
             </div>
           </div>
         </section>
