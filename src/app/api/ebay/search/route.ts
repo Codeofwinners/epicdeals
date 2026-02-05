@@ -118,11 +118,8 @@ function buildFilters(options: {
   const { conditions, supportsRefurbished, min, max, buyingOptions, freeShipping, currency } = options;
 
   if (conditions === "refurbished" || conditions === "deals") {
-    if (supportsRefurbished) {
-      filters.push("conditionIds:{2000|2010|2020|2030|2500}");
-    } else {
-      filters.push("conditionIds:{2500}");
-    }
+    // Open Box + All Refurbished (no new)
+    filters.push("conditionIds:{1500|2000|2010|2020|2030|2500}");
   } else if (conditions === "certified_refurbished") {
     filters.push(supportsRefurbished ? "conditionIds:{2000}" : "conditionIds:{2500}");
   } else if (conditions === "excellent_refurbished") {
@@ -176,7 +173,9 @@ async function fetchWithToken(url: string, marketplace: string) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
 
-  const q = searchParams.get("q") || "";
+  // Try original query and also try removing spaces (for compound words like "linkbuds")
+  const rawQ = searchParams.get("q") || "";
+  const q = rawQ;
   const min = searchParams.get("min");
   const max = searchParams.get("max");
   const offset = Number(searchParams.get("offset") || 0);
@@ -185,7 +184,7 @@ export async function GET(request: Request) {
   const brands = searchParams.get("brands") || "";
   const categoryId = searchParams.get("categoryId") || "";
   const freeShipping = searchParams.get("freeShipping") === "true";
-  const buyingOptions = searchParams.get("buyingOptions") || "FIXED_PRICE";
+  const buyingOptions = searchParams.get("buyingOptions") || "";
   const sortOrder = searchParams.get("sort") || "";
   const marketplace = searchParams.get("marketplace") || "EBAY_US";
   const deals = searchParams.get("deals") === "true";
@@ -265,16 +264,46 @@ export async function GET(request: Request) {
       );
     }
 
-    const data = await response.json();
+    let data = await response.json();
+    let filteredSummaries = data.itemSummaries || [];
 
-    // Filter results to only include items where search terms appear in sequence
-    const searchTerms = q.toLowerCase().trim();
-    const filteredSummaries = searchTerms
-      ? (data.itemSummaries || []).filter((item: any) => {
-          const title = (item.title || "").toLowerCase();
-          return title.includes(searchTerms);
-        })
-      : data.itemSummaries || [];
+    // Filter: ALL search words must appear in title
+    if (q.trim()) {
+      const searchWords = q.toLowerCase().trim().split(/\s+/).filter(w => w.length > 1);
+      filteredSummaries = filteredSummaries.filter((item: any) => {
+        const title = (item.title || "").toLowerCase();
+        // Check if all search words are in the title (handles compound words like "linkbuds" matching "link" + "buds")
+        return searchWords.every(word => {
+          // Direct match or part of compound word
+          return title.includes(word) ||
+            // Check if word could be part of a compound (e.g., "link" in "linkbuds")
+            title.split(/\s+/).some((titleWord: string) => titleWord.includes(word));
+        });
+      });
+    }
+
+    // Filter out any "New" items (New, New other, New without tags, etc.)
+    filteredSummaries = filteredSummaries.filter((item: any) => {
+      const condition = (item.condition || "").toLowerCase();
+      return !condition.startsWith("new");
+    });
+
+    // If no results after filtering, try alternate queries (compound words like "link buds" -> "linkbuds")
+    if (filteredSummaries.length === 0 && q.includes(" ")) {
+      const words = q.split(/\s+/);
+      // Try collapsing first two words (e.g., "link buds fit" -> "linkbuds fit")
+      if (words.length >= 2) {
+        const altQ = [words[0] + words[1], ...words.slice(2)].join(" ");
+        const retryParams = new URLSearchParams(params);
+        retryParams.set("q", altQ);
+        const retryEndpoint = `https://api.ebay.com/buy/browse/v1/item_summary/search?${retryParams.toString()}`;
+        const retryResponse = await fetchWithToken(retryEndpoint, marketplace);
+        if (retryResponse.ok) {
+          const retryData = await retryResponse.json();
+          filteredSummaries = retryData.itemSummaries || [];
+        }
+      }
+    }
 
     const items = filteredSummaries.map((item: any) => {
       const priceValue = Number(item.price?.value || 0);
