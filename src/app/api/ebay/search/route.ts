@@ -223,7 +223,7 @@ export async function GET(request: Request) {
 
   if (deals || !q) {
     // Homepage: show trending refurbished deals
-    params.set("category_ids", categoryId || "293");
+    params.set("category_ids", categoryId || "9355");
     params.set("sort", "newlyListed");
   } else {
     // Search: use user's query
