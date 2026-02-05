@@ -38,10 +38,11 @@ function mapDealApiItem(item: DealApiItem): eBayItem {
 }
 
 export async function fetcheBayDeals(query: string = ""): Promise<eBayItem[]> {
-  // Use the search API for all requests; deals flag pulls from the scraper on the backend
+  // Use absolute URLs for production to ensure they hit the PHP backend
+  const baseUrl = "https://refurbished.deals";
   const endpoint = query.trim()
-    ? `/api/ebay/search?q=${encodeURIComponent(query.trim())}&limit=50`
-    : `/api/ebay/search?deals=true&limit=200`;
+    ? `${baseUrl}/api/search.php?q=${encodeURIComponent(query.trim())}&limit=50`
+    : `${baseUrl}/api/deals.php?limit=200`;
 
   const response = await fetch(endpoint, {
     method: "GET",
@@ -52,5 +53,20 @@ export async function fetcheBayDeals(query: string = ""): Promise<eBayItem[]> {
   }
 
   const data = await response.json();
-  return data.items || (data.itemSummaries || []).map(mapDealApiItem);
+  
+  // The PHP deals.php returns { items: [...] }
+  if (data.items) {
+    return data.items.map((item: any) => ({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        originalPrice: item.originalPrice,
+        imageUrl: item.imageUrl,
+        itemUrl: item.itemUrl,
+        condition: item.condition,
+        savings: item.savings
+    }));
+  }
+
+  return (data.itemSummaries || []).map(mapDealApiItem);
 }
