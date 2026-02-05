@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EpicDeals | Premium Refurbished Tech",
+  title: "Legit.Discount | Premium Refurbished Tech",
   description: "High-trust, premium refurbished tech with an Apple-like experience.",
 };
 

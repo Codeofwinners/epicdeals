@@ -117,9 +117,9 @@ export default function Home() {
             className="flex items-center gap-2"
           >
             <div className="flex items-baseline leading-none">
-              <span className="font-black text-xl text-slate-900 tracking-tighter">Epic</span>
+              <span className="font-black text-xl text-slate-900 tracking-tighter">Legit</span>
               <span className="font-black text-xl text-emerald-500 tracking-tighter">.</span>
-              <span className="font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent tracking-tighter">Deals</span>
+              <span className="font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent tracking-tighter">Discount</span>
             </div>
           </a>
           <div className="flex items-center gap-2">
@@ -295,7 +295,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="py-8 border-t border-gray-100 text-center">
-        <p className="text-xs text-slate-400">Epic.Deals - Compare refurbished prices</p>
+        <p className="text-xs text-slate-400">Legit.Discount - Compare refurbished prices</p>
       </footer>
     </main>
   );
