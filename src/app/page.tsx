@@ -98,7 +98,7 @@ export default function Home() {
           setLoading(false);
         }
       }
-    }, 350);
+    }, 100);
 
     return () => {
       isActive = false;

@@ -173,7 +173,6 @@ async function fetchWithToken(url: string, marketplace: string) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
 
-  // Try original query and also try removing spaces (for compound words like "linkbuds")
   const rawQ = searchParams.get("q") || "";
   const q = rawQ;
   const min = searchParams.get("min");
@@ -188,6 +187,29 @@ export async function GET(request: Request) {
   const sortOrder = searchParams.get("sort") || "";
   const marketplace = searchParams.get("marketplace") || "EBAY_US";
   const deals = searchParams.get("deals") === "true";
+
+  const searchWords = q
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .map((word) => word.replace(/[^a-z0-9]/g, ""))
+    .filter(Boolean);
+
+  const applyTitleAndConditionFilters = (items: any[]) => {
+    let filtered = items;
+
+    if (searchWords.length) {
+      filtered = filtered.filter((item) => {
+        const titleCompact = (item.title || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+        return searchWords.every((word) => titleCompact.includes(word));
+      });
+    }
+
+    return filtered.filter((item) => {
+      const condition = (item.condition || "").toLowerCase();
+      return !condition.startsWith("new");
+    });
+  };
 
   const supportsRefurbished = getSupportsRefurbishedProgram(marketplace);
   const currency = MARKETPLACE_CURRENCY[marketplace] || "USD";
@@ -221,9 +243,11 @@ export async function GET(request: Request) {
     params.set("filter", filters);
   }
 
+  const homepageCategoryId = categoryId || "9355";
+
   if (deals || !q) {
     // Homepage: show trending refurbished deals
-    params.set("category_ids", categoryId || "9355");
+    params.set("category_ids", homepageCategoryId);
     params.set("sort", "newlyListed");
   } else {
     // Search: use user's query
@@ -265,28 +289,7 @@ export async function GET(request: Request) {
     }
 
     let data = await response.json();
-    let filteredSummaries = data.itemSummaries || [];
-
-    // Filter: ALL search words must appear in title
-    if (q.trim()) {
-      const searchWords = q.toLowerCase().trim().split(/\s+/).filter(w => w.length > 1);
-      filteredSummaries = filteredSummaries.filter((item: any) => {
-        const title = (item.title || "").toLowerCase();
-        // Check if all search words are in the title (handles compound words like "linkbuds" matching "link" + "buds")
-        return searchWords.every(word => {
-          // Direct match or part of compound word
-          return title.includes(word) ||
-            // Check if word could be part of a compound (e.g., "link" in "linkbuds")
-            title.split(/\s+/).some((titleWord: string) => titleWord.includes(word));
-        });
-      });
-    }
-
-    // Filter out any "New" items (New, New other, New without tags, etc.)
-    filteredSummaries = filteredSummaries.filter((item: any) => {
-      const condition = (item.condition || "").toLowerCase();
-      return !condition.startsWith("new");
-    });
+    let filteredSummaries = applyTitleAndConditionFilters(data.itemSummaries || []);
 
     // If no results after filtering, try alternate queries (compound words like "link buds" -> "linkbuds")
     if (filteredSummaries.length === 0 && q.includes(" ")) {
@@ -300,7 +303,7 @@ export async function GET(request: Request) {
         const retryResponse = await fetchWithToken(retryEndpoint, marketplace);
         if (retryResponse.ok) {
           const retryData = await retryResponse.json();
-          filteredSummaries = retryData.itemSummaries || [];
+          filteredSummaries = applyTitleAndConditionFilters(retryData.itemSummaries || []);
         }
       }
     }
@@ -334,7 +337,7 @@ export async function GET(request: Request) {
       appliedFilters: {
         conditions,
         brands: brands ? brands.split(",") : [],
-        categoryId,
+        categoryId: deals || !q ? homepageCategoryId : categoryId,
         freeShipping,
         buyingOptions,
         priceRange: { min, max },
