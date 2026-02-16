@@ -89,46 +89,20 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = f
   const borderColor = darkBg ? "rgba(255,255,255,0.1)" : "border-[#EBEBEB]/60";
 
   return (
-    <div className={`flex flex-col gap-2 ${whiteText ? "text-white" : ""}`} style={whiteText ? { color: "#fff" } : {}}>
-      {error && <div style={{color: "red", fontSize: "12px"}}>{error}</div>}
-      <div className="flex items-center justify-between pt-2" style={{borderTop: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#EBEBEB"}`}}>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleVote("up")}
-            disabled={voting}
-            className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer"
-            style={{
-              color: voteStatus?.voteType === "upvote" ? activeUpColor : inactiveColor,
-              opacity: voting ? 0.5 : 1,
-              display: "flex",
-              alignItems: "center",
-              gap: "4px"
-            }}
-          >
-            <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> {(displayUpvotes/1000).toFixed(1)}k
-          </button>
-          <button
-            onClick={() => handleVote("down")}
-            disabled={voting}
-            className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer"
-            style={{
-              color: voteStatus?.voteType === "downvote" ? activeDownColor : inactiveColor,
-              opacity: voting ? 0.5 : 1,
-              display: "flex",
-              alignItems: "center",
-              gap: "4px"
-            }}
-          >
-            <span className="material-symbols-outlined text-[16px]">arrow_downward</span> {(displayDownvotes/1000).toFixed(1)}k
-          </button>
-          <button onClick={() => onCommentClick?.()} style={{color: inactiveColor}} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
-            <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
-          </button>
+    <div className={`flex items-center justify-between pt-2 ${whiteText ? "text-white" : ""}`} style={{borderTop: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#EBEBEB"}`, ...( whiteText ? { color: "#fff" } : {})}}>
+      {error && <div style={{color: "red", fontSize: "11px"}}>{error}</div>}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 font-bold text-xs" style={{color: activeUpColor}}>
+          <span className="material-symbols-outlined text-[14px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span>
+          {(displayUpvotes/1000).toFixed(1)}k
         </div>
-        <button style={{color: inactiveColor}} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer hover:opacity-80" title="Save deal">
-          <span className="material-symbols-outlined text-[20px]">bookmark</span>
+        <button onClick={() => onCommentClick?.()} style={{color: inactiveColor}} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
+          <span className="material-symbols-outlined text-[14px]">chat_bubble</span>
         </button>
       </div>
+      <button style={{color: inactiveColor}} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer hover:opacity-80" title="Save deal">
+        <span className="material-symbols-outlined text-[18px]">bookmark</span>
+      </button>
     </div>
   );
 }
