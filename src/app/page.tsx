@@ -1,6 +1,65 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { AuthButton } from "@/components/auth/AuthButton";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { upvoteDeal, downvoteDeal, getVoteStatus } from "@/lib/firestore";
+
+function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: number; downvotes: number }) {
+  const { user } = useAuth();
+  const [voteStatus, setVoteStatus] = useState<any>(null);
+  const [voting, setVoting] = useState(false);
+
+  useEffect(() => {
+    if (user?.uid) {
+      getVoteStatus(user.uid, dealId).then(setVoteStatus);
+    }
+  }, [user?.uid, dealId]);
+
+  const handleVote = async (type: "up" | "down") => {
+    if (!user) return alert("Sign in to vote");
+    setVoting(true);
+    try {
+      if (type === "up") await upvoteDeal(user.uid, dealId);
+      else await downvoteDeal(user.uid, dealId);
+      const newStatus = await getVoteStatus(user.uid, dealId);
+      setVoteStatus(newStatus);
+    } catch (error) {
+      console.error("Vote error:", error);
+    } finally {
+      setVoting(false);
+    }
+  };
+
+  const displayUpvotes = upvotes + (voteStatus?.voteType === "upvote" ? 1 : 0);
+  const displayDownvotes = downvotes + (voteStatus?.voteType === "downvote" ? 1 : 0);
+
+  return (
+    <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => handleVote("up")}
+          disabled={voting}
+          className="flex items-center gap-1 text-xs font-bold hover:text-[#FF4500] transition-colors"
+          style={{color: voteStatus?.voteType === "upvote" ? "#FF4500" : "#666"}}
+        >
+          <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> {(displayUpvotes/1000).toFixed(1)}k
+        </button>
+        <button
+          onClick={() => handleVote("down")}
+          disabled={voting}
+          className="flex items-center gap-1 text-xs font-bold hover:text-red-500 transition-colors"
+          style={{color: voteStatus?.voteType === "downvote" ? "#ef4444" : "#666"}}
+        >
+          <span className="material-symbols-outlined text-[16px]">arrow_downward</span> {(displayDownvotes/1000).toFixed(1)}k
+        </button>
+      </div>
+      <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
+        <span className="material-symbols-outlined text-[20px]">bookmark</span>
+      </button>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
@@ -146,19 +205,7 @@ export default function Home() {
                     <p className="text-[11px] leading-snug text-[#666666] line-clamp-2">Best entry level automatic. The jubilee bracelet is surprisingly comfy for this price point.</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1 text-[#FF4500] font-bold text-xs">
-                      <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> 1.2k
-                    </div>
-                    <div className="flex items-center gap-1 text-[#666666] font-bold text-xs hover:text-[#1A1A1A] transition-colors cursor-pointer">
-                      <span className="material-symbols-outlined text-[16px]">chat_bubble</span> 45
-                    </div>
-                  </div>
-                  <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
-                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
-                  </button>
-                </div>
+                <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={45} />
               </div>
             </div>
 
