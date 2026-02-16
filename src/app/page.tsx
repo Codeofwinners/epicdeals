@@ -867,11 +867,12 @@ export default function Home() {
                 </button>
               </div>
               <div className="my-3">
-                <div className="text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Spotify Premium</div>
-                <div className="text-3xl font-black leading-tight tracking-tight mb-2">3 Months<br/>Free Trial</div>
+                <div style={{fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.9, color: "#fff"}}>Spotify Premium</div>
+                <div style={{fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff"}}>3 Months<br/>Free Trial</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} />
+                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} darkBg={true} />
+                <CommentsSection dealId="spotify-premium" darkBg={true} />
               </div>
             </div>
 
@@ -908,12 +909,13 @@ export default function Home() {
                 </button>
               </div>
               <div className="my-4 text-center">
-                <div className="text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Uber Eats</div>
-                <div className="text-5xl font-black leading-none tracking-tighter">$20</div>
-                <div className="text-xl font-bold tracking-tight">OFF FIRST ORDER</div>
+                <div style={{fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.8, color: "#fff"}}>Uber Eats</div>
+                <div style={{fontSize: "40px", fontWeight: "900", lineHeight: 1, letterSpacing: "-0.02em", color: "#fff"}}>$20</div>
+                <div style={{fontSize: "16px", fontWeight: "700", letterSpacing: "-0.01em", color: "#fff"}}>OFF FIRST ORDER</div>
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} />
+                <CommentsSection dealId="uber-eats-15off" darkBg={true} />
               </div>
             </div>
 
@@ -970,12 +972,13 @@ export default function Home() {
                 </button>
               </div>
               <div className="my-3">
-                <div className="text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Gap & Old Navy</div>
-                <div className="text-3xl font-black leading-tight tracking-tight mb-1">EXTRA<br/>50%<br/>OFF</div>
-                <div className="text-sm font-medium opacity-90">Flash Sale - 2h left</div>
+                <div style={{fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.8, color: "#fff"}}>Gap & Old Navy</div>
+                <div style={{fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff"}}>EXTRA<br/>50%<br/>OFF</div>
+                <div style={{fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff"}}>Flash Sale - 2h left</div>
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} />
+                <CommentsSection dealId="gap-50off" darkBg={true} />
               </div>
             </div>
 
@@ -1012,12 +1015,13 @@ export default function Home() {
                 </button>
               </div>
               <div className="my-3">
-                <div className="text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Sephora Beauty</div>
-                <div className="text-3xl font-black leading-tight tracking-tight mb-1">50%<br/>OFF</div>
-                <div className="text-sm font-medium opacity-90">Select brands</div>
+                <div style={{fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.8, color: "#fff"}}>Sephora Beauty</div>
+                <div style={{fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff"}}>50%<br/>OFF</div>
+                <div style={{fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff"}}>Select brands</div>
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} />
+                <CommentsSection dealId="sephora-beauty" darkBg={true} />
               </div>
             </div>
 
