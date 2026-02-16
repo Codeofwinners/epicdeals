@@ -130,21 +130,13 @@ export function Header() {
             </div>
           </div>
 
-          {/* Bottom row: Tabs + Sort */}
-          <div className="flex items-center justify-between gap-8">
+          {/* Bottom row: Tabs */}
+          <div className="flex items-center gap-8">
             {/* Tabs Navigation */}
             <div className="flex gap-8">
               <Link href="/" className="nav-tab active text-sm text-gray-700">Daily Hits</Link>
               <Link href="/" className="nav-tab text-sm text-gray-500 hover:text-gray-700">Weekly Legends</Link>
               <Link href="/" className="nav-tab text-sm text-gray-500 hover:text-gray-700">All-Time Best</Link>
-            </div>
-
-            {/* Sort & Filter */}
-            <div className="flex items-center gap-3">
-              <button className="sort-btn px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
-                <span className="material-symbols-outlined text-[16px] inline-block mr-1">tune</span>
-                Filter
-              </button>
             </div>
           </div>
         </div>
@@ -153,6 +145,7 @@ export function Header() {
       {/* MOBILE HEADER */}
       <header className="md:hidden sticky top-0 z-50 bg-white border-b border-gray-200/40 backdrop-blur-md">
         <div className="px-4 py-3">
+          {/* Top row: Brand + Auth */}
           <div className="flex items-center justify-between gap-3 mb-3">
             {/* Mobile Brand */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
@@ -169,7 +162,7 @@ export function Header() {
           </div>
 
           {/* Mobile Search */}
-          <div className="search-container">
+          <div className="search-container mb-3">
             <input
               type="text"
               placeholder="Search deals..."
@@ -180,6 +173,48 @@ export function Header() {
             <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
               <span className="material-symbols-outlined text-[16px]">search</span>
             </button>
+          </div>
+
+          {/* Mobile Tabs */}
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-2 border-b border-gray-200/50">
+            {[
+              { label: 'Daily Hits', id: 'daily' },
+              { label: 'Weekly Legends', id: 'weekly' },
+              { label: 'All-Time Best', id: 'alltime' }
+            ].map((tab, i) => (
+              <Link
+                key={tab.id}
+                href="/"
+                className={`nav-tab flex-shrink-0 px-3 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+                  i === 0 ? 'text-blue-600 active' : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {tab.label}
+              </Link>
+            ))}
+          </div>
+
+          {/* Mobile Sort & Filter */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider flex-shrink-0">Sort:</span>
+            {[
+              { icon: 'local_fire_department', label: 'Hot', accent: true },
+              { icon: 'trending_up', label: 'Rising' },
+              { icon: 'new_releases', label: 'New' },
+              { icon: 'chat', label: 'Discussed' }
+            ].map((item, i) => (
+              <button
+                key={i}
+                className={`sort-btn flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all active:scale-90 ${
+                  item.accent
+                    ? 'bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600 border border-blue-200/50'
+                    : 'bg-white text-gray-700 border border-gray-200/50'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[13px]">{item.icon}</span>
+                <span className="hidden sm:inline">{item.label}</span>
+              </button>
+            ))}
           </div>
         </div>
       </header>
