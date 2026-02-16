@@ -788,19 +788,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$185</span>
                     <span className="text-sm text-white/60 line-through mb-1">$275</span>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                    <div className="flex gap-3 text-xs font-medium text-white/90">
-                      <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">visibility</span> 1.2k
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">chat_bubble</span> 24
-                      </span>
-                    </div>
-                    <button className="text-white hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">bookmark</span>
-                    </button>
-                  </div>
+                  <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={0} />
                 </div>
               </div>
             </div>
@@ -818,11 +806,8 @@ export default function Home() {
                 <div className="text-4xl font-black leading-none tracking-tighter mb-2">EXTRA<br/>25%<br/>OFF</div>
                 <div className="text-sm font-medium opacity-90">Clearance Items</div>
               </div>
-              <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                <div className="flex gap-3 text-xs font-medium text-white/80">
-                  <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">trending_up</span> 2.1k</span>
-                </div>
-                <button style={{backgroundColor: '#a78bfa', color: '#fff'}} className="text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Copy</button>
+              <div className="pt-3 border-t border-white/10">
+                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} />
               </div>
             </div>
 
@@ -843,15 +828,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$599</span>
                     <span className="text-sm text-white/60 line-through mb-1">$750</span>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                    <div className="flex gap-3 text-xs font-medium text-white/90">
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span> 8.5k</span>
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">chat_bubble</span> 112</span>
-                    </div>
-                    <button className="text-white hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">bookmark</span>
-                    </button>
-                  </div>
+                  <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} />
                 </div>
               </div>
             </div>
@@ -868,11 +845,8 @@ export default function Home() {
                 <div className="text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Spotify Premium</div>
                 <div className="text-3xl font-black leading-tight tracking-tight mb-2">3 Months<br/>Free Trial</div>
               </div>
-              <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                <div className="flex gap-3 text-xs font-medium text-white/80">
-                  <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">save</span> 856</span>
-                </div>
-                <button style={{backgroundColor: '#14b8a6', color: '#fff'}} className="text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Get</button>
+              <div className="pt-3 border-t border-white/10">
+                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} />
               </div>
             </div>
 
@@ -895,15 +869,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$89.99</span>
                     <span className="text-sm text-white/60 line-through mb-1">$130</span>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                    <div className="flex gap-3 text-xs font-medium text-white/90">
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span> 12k</span>
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">chat_bubble</span> 156</span>
-                    </div>
-                    <button className="text-white hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">bookmark</span>
-                    </button>
-                  </div>
+                  <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} />
                 </div>
               </div>
             </div>
@@ -921,11 +887,8 @@ export default function Home() {
                 <div className="text-5xl font-black leading-none tracking-tighter">$20</div>
                 <div className="text-xl font-bold tracking-tight">OFF FIRST ORDER</div>
               </div>
-              <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                <div className="flex gap-3 text-xs font-medium text-white/80">
-                  <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">schedule</span> 3h left</span>
-                </div>
-                <button style={{backgroundColor: '#fff', color: '#000'}} className="text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Copy</button>
+              <div className="pt-3 border-t border-white/10">
+                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} />
               </div>
             </div>
 
@@ -946,14 +909,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$34</span>
                     <span className="text-sm text-white/60 line-through mb-1">$45</span>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                    <div className="flex gap-3 text-xs font-medium text-white/90">
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span> 3.2k</span>
-                    </div>
-                    <button className="text-white hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">bookmark</span>
-                    </button>
-                  </div>
+                  <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} />
                 </div>
               </div>
             </div>
@@ -975,14 +931,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$119</span>
                     <span className="text-sm text-white/60 line-through mb-1">$199</span>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                    <div className="flex gap-3 text-xs font-medium text-white/90">
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span> 5.8k</span>
-                    </div>
-                    <button className="text-white hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">bookmark</span>
-                    </button>
-                  </div>
+                  <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} />
                 </div>
               </div>
             </div>
@@ -1000,11 +949,8 @@ export default function Home() {
                 <div className="text-3xl font-black leading-tight tracking-tight mb-1">EXTRA<br/>50%<br/>OFF</div>
                 <div className="text-sm font-medium opacity-90">Flash Sale - 2h left</div>
               </div>
-              <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                <div className="flex gap-3 text-xs font-medium text-white/80">
-                  <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">schedule</span> 2h left</span>
-                </div>
-                <button style={{backgroundColor: '#a78bfa', color: '#fff'}} className="text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Shop</button>
+              <div className="pt-3 border-t border-white/10">
+                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} />
               </div>
             </div>
 
@@ -1027,14 +973,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$49</span>
                     <span className="text-sm text-white/60 line-through mb-1">$79</span>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
-                    <div className="flex gap-3 text-xs font-medium text-white/90">
-                      <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">visibility</span> 6.4k</span>
-                    </div>
-                    <button className="text-white hover:text-primary transition-colors">
-                      <span className="material-symbols-outlined text-[20px]">bookmark</span>
-                    </button>
-                  </div>
+                  <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} />
                 </div>
               </div>
             </div>
@@ -1052,11 +991,8 @@ export default function Home() {
                 <div className="text-3xl font-black leading-tight tracking-tight mb-1">50%<br/>OFF</div>
                 <div className="text-sm font-medium opacity-90">Select brands</div>
               </div>
-              <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                <div className="flex gap-3 text-xs font-medium text-white/80">
-                  <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[14px]">save</span> 2.3k</span>
-                </div>
-                <button style={{backgroundColor: '#14b8a6', color: '#fff'}} className="text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">Browse</button>
+              <div className="pt-3 border-t border-white/10">
+                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} />
               </div>
             </div>
 
