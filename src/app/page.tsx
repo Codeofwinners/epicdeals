@@ -9,23 +9,50 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
   const [voting, setVoting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.uid) {
-      getVoteStatus(user.uid, dealId).then(setVoteStatus);
+      console.log("Loading vote status for user:", user.uid, "deal:", dealId);
+      getVoteStatus(user.uid, dealId)
+        .then(status => {
+          console.log("Vote status:", status);
+          setVoteStatus(status);
+        })
+        .catch(err => {
+          console.error("Error loading vote status:", err);
+          setError("Error loading votes");
+        });
     }
   }, [user?.uid, dealId]);
 
   const handleVote = async (type: "up" | "down") => {
-    if (!user) return alert("Sign in to vote");
+    if (!user) {
+      alert("Sign in to vote");
+      return;
+    }
+
+    setError(null);
     setVoting(true);
+    console.log("Starting vote:", type, "user:", user.uid, "deal:", dealId);
+
     try {
-      if (type === "up") await upvoteDeal(user.uid, dealId);
-      else await downvoteDeal(user.uid, dealId);
+      if (type === "up") {
+        console.log("Calling upvoteDeal...");
+        await upvoteDeal(user.uid, dealId);
+      } else {
+        console.log("Calling downvoteDeal...");
+        await downvoteDeal(user.uid, dealId);
+      }
+
+      console.log("Vote complete, loading new status...");
       const newStatus = await getVoteStatus(user.uid, dealId);
+      console.log("New vote status:", newStatus);
       setVoteStatus(newStatus);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Vote error:", error);
+      setError(error?.message || "Vote failed");
+      alert("Vote failed: " + (error?.message || "Unknown error"));
     } finally {
       setVoting(false);
     }
@@ -35,28 +62,31 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
   const displayDownvotes = downvotes + (voteStatus?.voteType === "downvote" ? 1 : 0);
 
   return (
-    <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={() => handleVote("up")}
-          disabled={voting}
-          className="flex items-center gap-1 text-xs font-bold hover:text-[#FF4500] transition-colors"
-          style={{color: voteStatus?.voteType === "upvote" ? "#FF4500" : "#666"}}
-        >
-          <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> {(displayUpvotes/1000).toFixed(1)}k
-        </button>
-        <button
-          onClick={() => handleVote("down")}
-          disabled={voting}
-          className="flex items-center gap-1 text-xs font-bold hover:text-red-500 transition-colors"
-          style={{color: voteStatus?.voteType === "downvote" ? "#ef4444" : "#666"}}
-        >
-          <span className="material-symbols-outlined text-[16px]">arrow_downward</span> {(displayDownvotes/1000).toFixed(1)}k
+    <div className="flex flex-col gap-2">
+      {error && <div style={{color: "red", fontSize: "12px"}}>{error}</div>}
+      <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => handleVote("up")}
+            disabled={voting}
+            className="flex items-center gap-1 text-xs font-bold hover:text-[#FF4500] transition-colors cursor-pointer"
+            style={{color: voteStatus?.voteType === "upvote" ? "#FF4500" : "#666", opacity: voting ? 0.5 : 1}}
+          >
+            <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> {(displayUpvotes/1000).toFixed(1)}k
+          </button>
+          <button
+            onClick={() => handleVote("down")}
+            disabled={voting}
+            className="flex items-center gap-1 text-xs font-bold hover:text-red-500 transition-colors cursor-pointer"
+            style={{color: voteStatus?.voteType === "downvote" ? "#ef4444" : "#666", opacity: voting ? 0.5 : 1}}
+          >
+            <span className="material-symbols-outlined text-[16px]">arrow_downward</span> {(displayDownvotes/1000).toFixed(1)}k
+          </button>
+        </div>
+        <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors cursor-pointer">
+          <span className="material-symbols-outlined text-[20px]">bookmark</span>
         </button>
       </div>
-      <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
-        <span className="material-symbols-outlined text-[20px]">bookmark</span>
-      </button>
     </div>
   );
 }
