@@ -53,17 +53,6 @@ export function Footer() {
                   AI-verified deals and community-validated savings. Real discounts, no dead codes.
                 </p>
               </div>
-              <div className="flex gap-3">
-                <a href="#" className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[18px] text-gray-600">facebook</span>
-                </a>
-                <a href="#" className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[18px] text-gray-600">twitter</span>
-                </a>
-                <a href="#" className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[18px] text-gray-600">mail</span>
-                </a>
-              </div>
             </div>
 
             {/* Deals Column */}
@@ -130,31 +119,20 @@ export function Footer() {
 
       {/* MOBILE FOOTER */}
       <footer className="md:hidden bg-gradient-to-b from-white via-gray-50 to-white border-t border-gray-200/40">
-        <div className="px-4 py-12">
+        <div className="px-4 py-6">
           {/* Brand */}
-          <div className="mb-8">
+          <div className="mb-6">
             <div className="footer-brand text-xl leading-none mb-3">
               <span className="text-black">legit.</span>
               <span className="footer-accent">discount</span>
             </div>
-            <p className="text-xs text-gray-600 leading-relaxed mb-4">
+            <p className="text-xs text-gray-600 leading-relaxed">
               AI-verified deals and community-validated savings.
             </p>
-            <div className="flex gap-3">
-              <a href="#" className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
-                <span className="material-symbols-outlined text-[16px] text-gray-600">facebook</span>
-              </a>
-              <a href="#" className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
-                <span className="material-symbols-outlined text-[16px] text-gray-600">twitter</span>
-              </a>
-              <a href="#" className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
-                <span className="material-symbols-outlined text-[16px] text-gray-600">mail</span>
-              </a>
-            </div>
           </div>
 
           {/* Links Grid */}
-          <div className="grid grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-2 gap-6 mb-6">
             <div>
               <h3 className="font-bold text-gray-900 mb-3 text-xs uppercase tracking-wider">Browse</h3>
               <ul className="space-y-2">
