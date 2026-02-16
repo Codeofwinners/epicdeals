@@ -42,21 +42,27 @@ const SAMPLE_DEALS = [
 
 export async function seedDeals() {
   if (!db) {
-    console.log("Firebase not initialized, skipping seed");
+    console.error("❌ DB is null - cannot seed");
     return;
   }
 
   try {
-    console.log("Checking if deals need seeding...");
+    console.log("🔥 SEEDING DEALS NOW...");
 
-    // Try to seed each deal - setDoc with merge will handle duplicates
     for (const deal of SAMPLE_DEALS) {
-      const dealRef = doc(db, "deals", deal.id);
-      await setDoc(dealRef, deal, { merge: true });
-      console.log("✅ Deal ready:", deal.id);
+      try {
+        const dealRef = doc(db, "deals", deal.id);
+        console.log("Writing deal to:", `deals/${deal.id}`);
+        await setDoc(dealRef, deal, { merge: true });
+        console.log("✅ DEAL WRITTEN:", deal.id);
+      } catch (e) {
+        console.error("❌ FAILED TO WRITE DEAL:", deal.id, e);
+        throw e;
+      }
     }
-    console.log("✅ All deals seeded");
+    console.log("✅✅✅ ALL DEALS SEEDED SUCCESSFULLY");
   } catch (error) {
-    console.error("Error seeding deals:", error);
+    console.error("❌❌❌ SEEDING FAILED:", error);
+    throw error;
   }
 }
