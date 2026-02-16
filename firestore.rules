@@ -17,7 +17,7 @@ service cloud.firestore {
     }
 
     // ────── DEALS ──────
-    // Public read, authenticated create, owner/admin can update/delete
+    // Public read, authenticated create, owner/admin can update/delete, anyone can update netVotes
     match /deals/{dealId} {
       allow read: if true;
       allow create: if request.auth != null &&
@@ -26,9 +26,12 @@ service cloud.firestore {
                        request.resource.data.title is string && request.resource.data.title.size() > 0 &&
                        request.resource.data.description is string && request.resource.data.description.size() > 0 &&
                        request.resource.data.createdAt is timestamp;
-      allow update: if request.auth != null &&
-                       (request.auth.uid == resource.data.submittedBy || isAdmin()) &&
-                       request.resource.data.submittedBy == resource.data.submittedBy;
+      allow update: if request.auth != null && (
+                       // Owner or admin can update anything
+                       (request.auth.uid == resource.data.submittedBy || isAdmin()) ||
+                       // Anyone can update netVotes (for voting system)
+                       (request.resource.data.keys().size() == 1 && 'netVotes' in request.resource.data.keys())
+                       );
       allow delete: if request.auth != null &&
                        (request.auth.uid == resource.data.submittedBy || isAdmin());
     }
