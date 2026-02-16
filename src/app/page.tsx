@@ -5,7 +5,12 @@ import { AuthButton } from "@/components/auth/AuthButton";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { upvoteDeal, downvoteDeal, getVoteStatus } from "@/lib/firestore";
 import { db } from "@/lib/firebase";
-import { doc, setDoc, Timestamp } from "firebase/firestore";
+import { seedDeals } from "@/lib/seedDeals";
+
+// Seed deals on load
+if (typeof window !== "undefined") {
+  seedDeals().catch(err => console.error("Seed failed:", err));
+}
 
 function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: number; downvotes: number }) {
   const { user } = useAuth();
