@@ -149,9 +149,9 @@ export function Header() {
           <div className="flex items-center justify-between gap-3 mb-3">
             {/* Mobile Brand */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="nav-brand text-2xl leading-none">
-                <span className="text-black">legit</span>
-                <span className="nav-accent">.</span>
+              <div className="nav-brand text-xl leading-none">
+                <span className="text-black">legit.</span>
+                <span className="nav-accent">discount</span>
               </div>
               <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
                 <span className="text-white text-xs font-bold">✓</span>
