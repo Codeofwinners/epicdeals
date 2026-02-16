@@ -4,6 +4,9 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
@@ -410,4 +413,321 @@ export async function getBestComment(dealId: string): Promise<Comment | null> {
   }
   // Otherwise return the most recent
   return comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ?? null;
+}
+
+// ─── User Profile Management ────────────────────────────────────
+export interface UserProfile {
+  id: string;
+  displayName: string;
+  email: string;
+  photoURL?: string;
+  dealsSubmitted: number;
+  totalUpvotes: number;
+  reputation: number;
+  badges: string[];
+  createdAt: string;
+  role: "user" | "moderator" | "admin";
+}
+
+/** Create or get user profile on signup */
+export async function ensureUserProfile(userId: string, userData: {
+  displayName?: string;
+  email?: string;
+  photoURL?: string;
+}): Promise<void> {
+  if (!db) return;
+  const userRef = doc(db, "users", userId);
+  const snap = await getDoc(userRef);
+
+  if (!snap.exists()) {
+    await setDoc(userRef, {
+      displayName: userData.displayName || "User",
+      email: userData.email || "",
+      photoURL: userData.photoURL || null,
+      dealsSubmitted: 0,
+      totalUpvotes: 0,
+      reputation: 0,
+      badges: [],
+      createdAt: Timestamp.now(),
+      role: "user",
+    });
+  }
+}
+
+/** Get user profile */
+export async function getUserProfile(userId: string): Promise<UserProfile | null> {
+  if (!db) return null;
+  const snap = await getDoc(doc(db, "users", userId));
+  if (!snap.exists()) return null;
+
+  const data = snap.data();
+  return {
+    id: snap.id,
+    displayName: data.displayName || "User",
+    email: data.email || "",
+    photoURL: data.photoURL || undefined,
+    dealsSubmitted: data.dealsSubmitted || 0,
+    totalUpvotes: data.totalUpvotes || 0,
+    reputation: data.reputation || 0,
+    badges: data.badges || [],
+    createdAt: tsToISO(data.createdAt),
+    role: data.role || "user",
+  };
+}
+
+// ─── Voting System ──────────────────────────────────────────────
+export interface VoteStatus {
+  hasVoted: boolean;
+  voteType: "upvote" | "downvote" | null;
+}
+
+/** Check if user has voted on a deal */
+export async function getVoteStatus(userId: string, dealId: string): Promise<VoteStatus> {
+  if (!db) return { hasVoted: false, voteType: null };
+
+  try {
+    const upvoteRef = doc(db, "votes", userId, "dealUpvotes", dealId);
+    const downvoteRef = doc(db, "votes", userId, "dealDownvotes", dealId);
+
+    const [upvoteSnap, downvoteSnap] = await Promise.all([
+      getDoc(upvoteRef),
+      getDoc(downvoteRef),
+    ]);
+
+    if (upvoteSnap.exists()) return { hasVoted: true, voteType: "upvote" };
+    if (downvoteSnap.exists()) return { hasVoted: true, voteType: "downvote" };
+
+    return { hasVoted: false, voteType: null };
+  } catch (error) {
+    console.error("Error checking vote status:", error);
+    return { hasVoted: false, voteType: null };
+  }
+}
+
+/** Upvote a deal (toggle) */
+export async function upvoteDeal(userId: string, dealId: string): Promise<boolean> {
+  if (!db) throw new Error("Firebase not initialized");
+
+  const upvoteRef = doc(db, "votes", userId, "dealUpvotes", dealId);
+  const downvoteRef = doc(db, "votes", userId, "dealDownvotes", dealId);
+  const dealRef = doc(db, "deals", dealId);
+
+  try {
+    const [upvoteSnap, downvoteSnap, dealSnap] = await Promise.all([
+      getDoc(upvoteRef),
+      getDoc(downvoteRef),
+      getDoc(dealRef),
+    ]);
+
+    if (!dealSnap.exists()) throw new Error("Deal not found");
+
+    let netVoteChange = 0;
+
+    if (upvoteSnap.exists()) {
+      // Remove upvote
+      await deleteDoc(upvoteRef);
+      netVoteChange = -1;
+    } else {
+      // Add upvote and remove downvote if exists
+      await setDoc(upvoteRef, { votedAt: Timestamp.now() });
+      netVoteChange = 1;
+
+      if (downvoteSnap.exists()) {
+        await deleteDoc(downvoteRef);
+        netVoteChange = 2; // Remove -1, add +1
+      }
+    }
+
+    // Update deal's netVotes
+    await updateDoc(dealRef, {
+      netVotes: (dealSnap.data().netVotes || 0) + netVoteChange,
+    });
+
+    return !upvoteSnap.exists(); // Return true if upvote was added
+  } catch (error) {
+    console.error("Error upvoting deal:", error);
+    throw error;
+  }
+}
+
+/** Downvote a deal (toggle) */
+export async function downvoteDeal(userId: string, dealId: string): Promise<boolean> {
+  if (!db) throw new Error("Firebase not initialized");
+
+  const upvoteRef = doc(db, "votes", userId, "dealUpvotes", dealId);
+  const downvoteRef = doc(db, "votes", userId, "dealDownvotes", dealId);
+  const dealRef = doc(db, "deals", dealId);
+
+  try {
+    const [upvoteSnap, downvoteSnap, dealSnap] = await Promise.all([
+      getDoc(upvoteRef),
+      getDoc(downvoteRef),
+      getDoc(dealRef),
+    ]);
+
+    if (!dealSnap.exists()) throw new Error("Deal not found");
+
+    let netVoteChange = 0;
+
+    if (downvoteSnap.exists()) {
+      // Remove downvote
+      await deleteDoc(downvoteRef);
+      netVoteChange = 1;
+    } else {
+      // Add downvote and remove upvote if exists
+      await setDoc(downvoteRef, { votedAt: Timestamp.now() });
+      netVoteChange = -1;
+
+      if (upvoteSnap.exists()) {
+        await deleteDoc(upvoteRef);
+        netVoteChange = -2; // Remove +1, add -1
+      }
+    }
+
+    // Update deal's netVotes
+    await updateDoc(dealRef, {
+      netVotes: (dealSnap.data().netVotes || 0) + netVoteChange,
+    });
+
+    return !downvoteSnap.exists(); // Return true if downvote was added
+  } catch (error) {
+    console.error("Error downvoting deal:", error);
+    throw error;
+  }
+}
+
+// ─── Save/Bookmark System ───────────────────────────────────────
+/** Save a deal */
+export async function saveDeal(userId: string, deal: Deal): Promise<void> {
+  if (!db) throw new Error("Firebase not initialized");
+
+  const saveRef = doc(db, "savedDeals", userId, "deals", deal.id);
+
+  try {
+    await setDoc(saveRef, {
+      dealId: deal.id,
+      dealTitle: deal.title,
+      dealStore: deal.store.name,
+      dealSlug: deal.slug,
+      savedAt: Timestamp.now(),
+      expiresAt: deal.expiresAt ? Timestamp.fromDate(new Date(deal.expiresAt)) : null,
+    });
+  } catch (error) {
+    console.error("Error saving deal:", error);
+    throw error;
+  }
+}
+
+/** Unsave a deal */
+export async function unsaveDeal(userId: string, dealId: string): Promise<void> {
+  if (!db) throw new Error("Firebase not initialized");
+
+  const saveRef = doc(db, "savedDeals", userId, "deals", dealId);
+
+  try {
+    await deleteDoc(saveRef);
+  } catch (error) {
+    console.error("Error unsaving deal:", error);
+    throw error;
+  }
+}
+
+/** Check if deal is saved */
+export async function isSaved(userId: string, dealId: string): Promise<boolean> {
+  if (!db) return false;
+
+  try {
+    const saveRef = doc(db, "savedDeals", userId, "deals", dealId);
+    const snap = await getDoc(saveRef);
+    return snap.exists();
+  } catch (error) {
+    console.error("Error checking if deal is saved:", error);
+    return false;
+  }
+}
+
+/** Get saved deals for user */
+export async function getSavedDeals(userId: string, limit = 50): Promise<Deal[]> {
+  if (!db) return [];
+
+  try {
+    const savedCol = collection(db, "savedDeals", userId, "deals");
+    const q = query(savedCol, orderBy("savedAt", "desc"), firestoreLimit(limit));
+    const snap = await getDocs(q);
+
+    // Fetch full deal data for each saved deal
+    const deals = await Promise.all(
+      snap.docs.map(async (savedDoc) => {
+        const data = savedDoc.data();
+        return getDealById(data.dealId);
+      })
+    );
+
+    return deals.filter((d) => d !== null) as Deal[];
+  } catch (error) {
+    console.error("Error getting saved deals:", error);
+    return [];
+  }
+}
+
+// ─── View Tracking ──────────────────────────────────────────────
+/** Track deal view (increment viewCount) */
+export async function trackDealView(dealId: string): Promise<void> {
+  if (!db) return;
+
+  try {
+    const dealRef = doc(db, "deals", dealId);
+    const snap = await getDoc(dealRef);
+
+    if (snap.exists()) {
+      await updateDoc(dealRef, {
+        viewCount: (snap.data().viewCount || 0) + 1,
+        lastViewed: Timestamp.now(),
+      });
+    }
+  } catch (error) {
+    console.error("Error tracking deal view:", error);
+    // Silent fail - don't disrupt user experience
+  }
+}
+
+// ─── Expiration Management ──────────────────────────────────────
+/** Check and update expired deals */
+export async function checkExpiredDeals(): Promise<number> {
+  if (!db) return 0;
+
+  try {
+    const now = Timestamp.now();
+    const q = query(
+      dealsCol,
+      where("expiresAt", "<", now),
+      where("status", "!=", "expired")
+    );
+
+    const snap = await getDocs(q);
+    let updatedCount = 0;
+
+    for (const dealDoc of snap.docs) {
+      await updateDoc(dealDoc.ref, { status: "expired" });
+      updatedCount++;
+    }
+
+    return updatedCount;
+  } catch (error) {
+    console.error("Error checking expired deals:", error);
+    return 0;
+  }
+}
+
+/** Get expiration time remaining (in hours) */
+export function getTimeRemaining(expiresAt: string | undefined): number | null {
+  if (!expiresAt) return null;
+
+  const now = new Date().getTime();
+  const expiry = new Date(expiresAt).getTime();
+  const diffMs = expiry - now;
+
+  if (diffMs <= 0) return 0;
+
+  return Math.ceil(diffMs / (1000 * 60 * 60)); // Convert to hours
 }
