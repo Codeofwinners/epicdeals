@@ -265,7 +265,7 @@ export default function DashboardPage() {
               className={`flex items-center gap-2 px-4 lg:px-5 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl text-xs lg:text-sm font-bold whitespace-nowrap transition-all duration-200 ${
                 !filterStore
                   ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-glow"
-                  : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                  : "bg-slate-100 border border-slate-300 text-slate-900 hover:border-slate-400 hover:bg-slate-200"
               }`}
             >
               <span className="material-icons-round text-sm">filter_list</span>
@@ -278,7 +278,7 @@ export default function DashboardPage() {
                 className={`flex items-center gap-2 px-4 lg:px-5 py-2.5 lg:py-3 rounded-xl lg:rounded-2xl text-xs lg:text-sm font-bold whitespace-nowrap transition-all duration-200 ${
                   filterStore === store.id
                     ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-glow"
-                    : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                    : "bg-slate-100 border border-slate-300 text-slate-900 hover:border-slate-400 hover:bg-slate-200"
                 }`}
               >
                 {store.name}
@@ -388,13 +388,9 @@ export default function DashboardPage() {
 
           {/* Recent Comments Section */}
           <section className="pt-6 lg:pt-8 border-t border-slate-200">
-            <div className="flex justify-between items-baseline mb-4 lg:mb-6">
+            <div className="mb-4 lg:mb-6">
               <h2 className="text-xl lg:text-2xl font-bold text-slate-900">Recent Comments</h2>
-              {userComments.length > 0 && (
-                <button className="text-xs lg:text-sm font-bold text-slate-500 border border-slate-200 px-3 lg:px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors">
-                  Select Multiple
-                </button>
-              )}
+              <p className="text-sm text-slate-500 mt-1">Your feedback on deals</p>
             </div>
 
             {commentsError && (
@@ -411,15 +407,16 @@ export default function DashboardPage() {
                 <p className="text-slate-500 font-medium">No comments yet</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              <div className="space-y-3 lg:space-y-4">
                 {userComments.map((comment) => (
-                  <div key={comment.id} className="bg-white rounded-2xl lg:rounded-3xl shadow-card border border-slate-100 hover:border-slate-200 transition-all duration-200">
+                  <div key={comment.id} className="bg-white rounded-xl lg:rounded-2xl shadow-card border border-slate-200 hover:border-blue-300 hover:shadow-soft transition-all duration-300 overflow-hidden">
                     {editingCommentId === comment.id ? (
                       <div className="p-4 lg:p-6">
+                        <label className="block text-xs lg:text-sm font-bold text-slate-700 mb-2">Edit your comment</label>
                         <textarea
                           value={editingCommentText}
                           onChange={(e) => setEditingCommentText(e.target.value)}
-                          className="w-full p-3 lg:p-4 rounded-xl lg:rounded-2xl border border-slate-200 text-sm lg:text-base font-display min-h-[100px] lg:min-h-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                          className="w-full p-3 lg:p-4 rounded-lg lg:rounded-xl border-2 border-slate-200 text-sm lg:text-base font-display min-h-[100px] lg:min-h-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                         />
                         <div className="flex justify-end gap-2 lg:gap-3 mt-3 lg:mt-4">
                           <button
@@ -427,7 +424,7 @@ export default function DashboardPage() {
                               setEditingCommentId(null);
                               setEditingCommentText("");
                             }}
-                            className="text-xs lg:text-sm font-bold text-slate-500 border border-slate-200 px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg hover:bg-slate-50 transition-colors"
+                            className="text-xs lg:text-sm font-bold text-slate-600 px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg hover:bg-slate-100 transition-colors"
                           >
                             Cancel
                           </button>
@@ -435,42 +432,53 @@ export default function DashboardPage() {
                             onClick={() => handleEditComment(comment.id)}
                             className="text-xs lg:text-sm font-bold text-white bg-gradient-to-r from-blue-500 to-blue-600 px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg hover:shadow-glow transition-all duration-200"
                           >
-                            Save
+                            Save Changes
                           </button>
                         </div>
                       </div>
                     ) : (
                       <div className="p-4 lg:p-6">
-                        <div className="flex items-start gap-3 mb-3 lg:mb-4">
-                          <input type="checkbox" className="mt-1 rounded border-slate-300 text-blue-500 focus:ring-blue-500 cursor-pointer" />
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-xs lg:text-sm font-bold text-slate-900 truncate">
-                              Re: Comment
-                            </h4>
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-3 lg:mb-4">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="material-icons-round text-slate-400 text-lg lg:text-xl flex-shrink-0">chat_bubble</span>
+                            <div className="min-w-0">
+                              <p className="text-xs lg:text-sm text-slate-500">Your comment</p>
+                              <p className="text-[10px] lg:text-xs text-slate-400">
+                                {new Date(comment.createdAt).toLocaleDateString()} at{" "}
+                                {new Date(comment.createdAt).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                            </div>
                           </div>
-                          <span className="text-[10px] lg:text-xs text-slate-400 flex-shrink-0">
-                            {new Date(comment.createdAt).toLocaleDateString()}
-                          </span>
                         </div>
 
-                        <p className="text-xs lg:text-sm text-slate-600 leading-relaxed ml-8 mb-3 lg:mb-4 border-l-2 border-slate-100 pl-3">
-                          "{comment.content}"
-                        </p>
+                        {/* Comment Text */}
+                        <div className="bg-slate-50 rounded-lg lg:rounded-xl p-3 lg:p-4 mb-4 lg:mb-5 border border-slate-100">
+                          <p className="text-sm lg:text-base text-slate-700 leading-relaxed break-words">
+                            {comment.content}
+                          </p>
+                        </div>
 
-                        <div className="flex justify-end gap-4 ml-8">
+                        {/* Actions */}
+                        <div className="flex gap-2 lg:gap-3">
                           <button
                             onClick={() => {
                               setEditingCommentId(comment.id);
                               setEditingCommentText(comment.content);
                             }}
-                            className="text-xs lg:text-sm font-bold text-slate-400 hover:text-blue-600 transition-colors"
+                            className="flex items-center gap-1.5 px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-sm font-bold text-blue-600 hover:bg-blue-50 transition-colors flex-1 lg:flex-none justify-center lg:justify-start"
                           >
+                            <span className="material-icons-round text-base lg:text-lg">edit</span>
                             Edit
                           </button>
                           <button
                             onClick={() => handleDeleteComment(comment.id)}
-                            className="text-xs lg:text-sm font-bold text-slate-400 hover:text-red-600 transition-colors"
+                            className="flex items-center gap-1.5 px-3 lg:px-4 py-2 lg:py-2.5 rounded-lg text-xs lg:text-sm font-bold text-red-600 hover:bg-red-50 transition-colors flex-1 lg:flex-none justify-center lg:justify-start"
                           >
+                            <span className="material-icons-round text-base lg:text-lg">delete</span>
                             Delete
                           </button>
                         </div>
