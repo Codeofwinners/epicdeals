@@ -249,6 +249,7 @@ export default function Home() {
                   </div>
                 </div>
                 <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("nike-25off")} />
+                <CommentsSection dealId="nike-25off" darkBg={true} isOpen={openComments.has("nike-25off")} onToggle={(open) => toggleComments("nike-25off")} />
               </div>
             </div>
 
@@ -309,6 +310,7 @@ export default function Home() {
                   </div>
                 </div>
                 <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} onCommentClick={() => toggleComments("spotify-premium")} />
+                <CommentsSection dealId="spotify-premium" isOpen={openComments.has("spotify-premium")} onToggle={(open) => toggleComments("spotify-premium")} />
               </div>
             </div>
 
@@ -371,6 +373,7 @@ export default function Home() {
                   </div>
                 </div>
                 <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("uber-eats-15off")} />
+                <CommentsSection dealId="uber-eats-15off" darkBg={true} isOpen={openComments.has("uber-eats-15off")} onToggle={(open) => toggleComments("uber-eats-15off")} />
               </div>
             </div>
 
@@ -391,6 +394,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Organic Grocery Bundle</h3>
                 <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} onCommentClick={() => toggleComments("amazon-fresh-20off")} />
+                <CommentsSection dealId="amazon-fresh-20off" isOpen={openComments.has("amazon-fresh-20off")} onToggle={(open) => toggleComments("amazon-fresh-20off")} />
               </div>
             </div>
 
@@ -410,6 +414,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Wireless Headphones</h3>
                 <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} onCommentClick={() => toggleComments("best-buy-wireless")} />
+                <CommentsSection dealId="best-buy-wireless" isOpen={openComments.has("best-buy-wireless")} onToggle={(open) => toggleComments("best-buy-wireless")} />
               </div>
             </div>
 
@@ -429,6 +434,7 @@ export default function Home() {
                   <div className="text-5xl font-black tracking-tighter leading-[0.85] text-white break-words">EXTRA<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-rose-200">50%</span><br/>OFF</div>
                 </div>
                 <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("gap-50off")} />
+                <CommentsSection dealId="gap-50off" darkBg={true} isOpen={openComments.has("gap-50off")} onToggle={(open) => toggleComments("gap-50off")} />
               </div>
             </div>
 
@@ -450,6 +456,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Room Decor Collection</h3>
                 <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} onCommentClick={() => toggleComments("target-home")} />
+                <CommentsSection dealId="target-home" isOpen={openComments.has("target-home")} onToggle={(open) => toggleComments("target-home")} />
               </div>
             </div>
 
@@ -466,6 +473,7 @@ export default function Home() {
                   <p className="text-sm text-white/80">Up to 50% off select brands</p>
                 </div>
                 <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("sephora-beauty")} />
+                <CommentsSection dealId="sephora-beauty" darkBg={true} isOpen={openComments.has("sephora-beauty")} onToggle={(open) => toggleComments("sephora-beauty")} />
               </div>
             </div>
 
@@ -552,6 +560,7 @@ export default function Home() {
                     <span className="text-sm text-white/60 line-through mb-1">$275</span>
                   </div>
                   <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={0} onCommentClick={() => toggleComments("seiko-watch")} />
+                  <CommentsSection dealId="seiko-watch" isOpen={openComments.has("seiko-watch")} onToggle={(open) => toggleComments("seiko-watch")} />
                 </div>
               </div>
             </div>
@@ -571,6 +580,7 @@ export default function Home() {
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("nike-25off")} />
+                <CommentsSection dealId="nike-25off" darkBg={true} isOpen={openComments.has("nike-25off")} onToggle={(open) => toggleComments("nike-25off")} />
               </div>
             </div>
 
@@ -592,6 +602,7 @@ export default function Home() {
                     <span className="text-sm text-white/60 line-through mb-1">$750</span>
                   </div>
                   <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} onCommentClick={() => toggleComments("espresso-machine")} />
+                  <CommentsSection dealId="espresso-machine" isOpen={openComments.has("espresso-machine")} onToggle={(open) => toggleComments("espresso-machine")} />
                 </div>
               </div>
             </div>
@@ -634,6 +645,7 @@ export default function Home() {
                     <span className="text-sm text-white/60 line-through mb-1">$130</span>
                   </div>
                   <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} onCommentClick={() => toggleComments("nike-air-max")} />
+                  <CommentsSection dealId="nike-air-max" isOpen={openComments.has("nike-air-max")} onToggle={(open) => toggleComments("nike-air-max")} />
                 </div>
               </div>
             </div>
@@ -675,6 +687,7 @@ export default function Home() {
                     <span className="text-sm text-white/60 line-through mb-1">$45</span>
                   </div>
                   <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} onCommentClick={() => toggleComments("amazon-fresh-20off")} />
+                  <CommentsSection dealId="amazon-fresh-20off" isOpen={openComments.has("amazon-fresh-20off")} onToggle={(open) => toggleComments("amazon-fresh-20off")} />
                 </div>
               </div>
             </div>
@@ -697,6 +710,7 @@ export default function Home() {
                     <span className="text-sm text-white/60 line-through mb-1">$199</span>
                   </div>
                   <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} onCommentClick={() => toggleComments("best-buy-wireless")} />
+                  <CommentsSection dealId="best-buy-wireless" isOpen={openComments.has("best-buy-wireless")} onToggle={(open) => toggleComments("best-buy-wireless")} />
                 </div>
               </div>
             </div>
@@ -740,6 +754,7 @@ export default function Home() {
                     <span className="text-sm text-white/60 line-through mb-1">$79</span>
                   </div>
                   <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} onCommentClick={() => toggleComments("target-home")} />
+                  <CommentsSection dealId="target-home" isOpen={openComments.has("target-home")} onToggle={(open) => toggleComments("target-home")} />
                 </div>
               </div>
             </div>
