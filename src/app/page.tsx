@@ -83,7 +83,7 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false }: { dealId: s
   const textColor = darkBg ? "#fff" : "#666";
   const activeUpColor = darkBg ? "#FFB84D" : "#FF4500";
   const activeDownColor = darkBg ? "#FF6B6B" : "#ef4444";
-  const inactiveColor = darkBg ? "rgba(255,255,255,0.7)" : "#666";
+  const inactiveColor = darkBg ? "#fff" : "#666";
   const borderColor = darkBg ? "rgba(255,255,255,0.1)" : "border-[#EBEBEB]/60";
 
   return (
