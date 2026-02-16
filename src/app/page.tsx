@@ -92,10 +92,19 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = f
     <div className={`flex items-center justify-between pt-2 ${whiteText ? "text-white" : ""}`} style={{borderTop: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#EBEBEB"}`, ...( whiteText ? { color: "#fff" } : {})}}>
       {error && <div style={{color: "red", fontSize: "11px"}}>{error}</div>}
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1 font-bold text-xs" style={{color: activeUpColor}}>
+        <button
+          onClick={() => handleVote("up")}
+          disabled={voting}
+          className="flex items-center gap-1 font-bold text-xs transition-colors cursor-pointer hover:opacity-80"
+          style={{
+            color: voteStatus?.voteType === "upvote" ? activeUpColor : inactiveColor,
+            opacity: voting ? 0.5 : 1,
+          }}
+          title="Upvote"
+        >
           <span className="material-symbols-outlined text-[14px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span>
           {(displayUpvotes/1000).toFixed(1)}k
-        </div>
+        </button>
         <button onClick={() => onCommentClick?.()} style={{color: inactiveColor}} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
           <span className="material-symbols-outlined text-[14px]">chat_bubble</span>
         </button>
