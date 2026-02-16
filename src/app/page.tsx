@@ -355,7 +355,7 @@ export default function Home() {
             {/* Card 7: Amazon Fresh */}
             <div className="masonry-item relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB]">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Organic Grocery Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images-na.ssl-images-amazon.com/images/I/91qsGL6ECRL._SX522_.jpg" />
+                <img alt="Organic Grocery Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://cdn.shopify.com/s/files/1/0599/8002/0903/products/3_0fc0c6d0-9b4a-40eb-a2cf-6c5ba3a88267.jpg" />
                 <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-[#1A1A1A] text-xs font-bold shadow-sm border border-white/50">-25%</div>
                 <div className="absolute bottom-4 left-4 z-20 bg-black/80 backdrop-blur-md text-white px-3 py-2 rounded-xl border border-white/10 flex flex-col items-start leading-none">
                   <span className="text-xs opacity-70 line-through mb-0.5">$45</span>
@@ -454,7 +454,7 @@ export default function Home() {
             {/* Card 12: Whole Foods */}
             <div className="masonry-item relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB]">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Organic Health Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images-na.ssl-images-amazon.com/images/I/81ozVv5WXXL._SX522_.jpg" />
+                <img alt="Organic Health Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg" />
                 <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-green-500 text-white text-xs font-bold shadow-sm">Prime Day</div>
                 <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-xl text-[#1A1A1A] px-3 py-2 rounded-xl shadow-lg border border-white/50 flex flex-col items-start leading-none">
                   <span className="text-xs text-[#666666] line-through mb-0.5">$35</span>
@@ -646,7 +646,7 @@ export default function Home() {
             {/* Mobile Card 7: Amazon Fresh */}
             <div className="masonry-item relative group rounded-2xl overflow-hidden bg-white shadow-card">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Organic Grocery Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images-na.ssl-images-amazon.com/images/I/91qsGL6ECRL._SX522_.jpg" />
+                <img alt="Organic Grocery Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://cdn.shopify.com/s/files/1/0599/8002/0903/products/3_0fc0c6d0-9b4a-40eb-a2cf-6c5ba3a88267.jpg" />
                 <button className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg active:scale-90">
                   <span className="material-symbols-outlined text-[18px]">ios_share</span>
                 </button>
@@ -755,7 +755,7 @@ export default function Home() {
             {/* Mobile Card 12: Whole Foods */}
             <div className="masonry-item relative group rounded-2xl overflow-hidden bg-white shadow-card">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Organic Health Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images-na.ssl-images-amazon.com/images/I/81ozVv5WXXL._SX522_.jpg" />
+                <img alt="Organic Health Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg" />
                 <button className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg active:scale-90">
                   <span className="material-symbols-outlined text-[18px]">ios_share</span>
                 </button>
