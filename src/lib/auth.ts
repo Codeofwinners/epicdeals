@@ -15,14 +15,25 @@ export type { FirebaseUser };
 const googleProvider = new GoogleAuthProvider();
 
 export async function signInWithGoogle() {
-  if (!auth) throw new Error("Firebase not initialized");
-  const result = await signInWithPopup(auth, googleProvider);
-  await ensureUserProfile(result.user.uid, {
-    displayName: result.user.displayName || undefined,
-    email: result.user.email || undefined,
-    photoURL: result.user.photoURL || undefined,
-  });
-  return result.user;
+  if (!auth) {
+    const errorMsg =
+      "❌ Firebase not initialized. Check that environment variables are set correctly.";
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    console.log("✅ Google signin successful:", result.user.email);
+    await ensureUserProfile(result.user.uid, {
+      displayName: result.user.displayName || undefined,
+      email: result.user.email || undefined,
+      photoURL: result.user.photoURL || undefined,
+    });
+    return result.user;
+  } catch (error: any) {
+    console.error("❌ Google signin failed:", error);
+    throw error;
+  }
 }
 
 export async function signInWithEmail(email: string, password: string) {

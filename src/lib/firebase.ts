@@ -18,12 +18,34 @@ let app: any;
 let db: any;
 let auth: any;
 
+// Validate Firebase config
+const isConfigValid =
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId &&
+  firebaseConfig.appId;
+
+if (!isConfigValid) {
+  console.error(
+    "❌ Firebase configuration missing! Please set these environment variables:",
+    "NEXT_PUBLIC_FIREBASE_API_KEY",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+    "NEXT_PUBLIC_FIREBASE_APP_ID"
+  );
+}
+
 try {
-  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-  db = getFirestore(app);
-  auth = getAuth(app);
+  if (isConfigValid) {
+    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    auth = getAuth(app);
+    console.log("✅ Firebase initialized successfully");
+  } else {
+    throw new Error("Firebase configuration is incomplete");
+  }
 } catch (error) {
-  console.warn("Firebase initialization failed:", error);
+  console.error("❌ Firebase initialization failed:", error);
   // Create placeholder objects for build-time safety
   app = null;
   db = null;
