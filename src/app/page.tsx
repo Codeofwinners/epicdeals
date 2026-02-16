@@ -7,6 +7,8 @@ import { upvoteDeal, downvoteDeal, getVoteStatus } from "@/lib/firestore";
 import { db } from "@/lib/firebase";
 import { seedDeals } from "@/lib/seedDeals";
 import { CommentsSection } from "@/components/deals/CommentsSection";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
 function VoteButtons({ dealId, upvotes, downvotes, darkBg = false }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean }) {
   const { user } = useAuth();
@@ -174,169 +176,7 @@ export default function Home() {
 
       {/* DESKTOP */}
       <div className="hidden md:block bg-white text-black font-display min-h-screen antialiased">
-        <header className="sticky top-0 z-50 bg-white border-b border-gray-200/40 backdrop-blur-md">
-          <style>{`
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-
-            .nav-brand {
-              font-family: 'Outfit', sans-serif;
-              font-weight: 800;
-              letter-spacing: -0.025em;
-            }
-
-            .nav-accent {
-              background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              background-clip: text;
-            }
-
-            .nav-tab {
-              position: relative;
-              font-family: 'Outfit', sans-serif;
-              font-weight: 600;
-              letter-spacing: -0.01em;
-              transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-
-            .nav-tab::after {
-              content: '';
-              position: absolute;
-              bottom: -8px;
-              left: 0;
-              width: 0;
-              height: 2px;
-              background: linear-gradient(90deg, #0EA5E9 0%, #06B6D4 100%);
-              transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-
-            .nav-tab.active::after,
-            .nav-tab:hover::after {
-              width: 100%;
-            }
-
-            .nav-tab:hover {
-              transform: translateY(-2px);
-              color: #0EA5E9;
-            }
-
-            .search-container {
-              position: relative;
-              transition: all 0.3s ease;
-            }
-
-            .search-container:focus-within {
-              transform: translateY(-1px);
-            }
-
-            .search-input {
-              font-family: 'Inter', sans-serif;
-              transition: all 0.3s ease;
-              background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
-            }
-
-            .search-input:focus {
-              background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
-              box-shadow: 0 8px 24px rgba(14, 165, 233, 0.12);
-            }
-
-            .sort-btn {
-              font-family: 'Outfit', sans-serif;
-              font-weight: 600;
-              transition: all 0.25s ease;
-            }
-
-            .sort-btn:hover {
-              transform: translateY(-1px);
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            }
-
-            .sort-btn.active {
-              background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);
-              color: white;
-              box-shadow: 0 6px 16px rgba(14, 165, 233, 0.2);
-            }
-          `}</style>
-
-          <div className="px-8 py-5">
-            {/* Top row: Logo + Search + Actions */}
-            <div className="flex items-center justify-between gap-8 mb-8">
-              {/* Brand */}
-              <div className="flex flex-col gap-1.5 flex-shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="nav-brand text-4xl leading-none">
-                    <span className="text-black">legit.</span>
-                    <span className="nav-accent">discount</span>
-                  </div>
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">✓</span>
-                  </div>
-                </div>
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest ml-0.5">Verified Deals</span>
-              </div>
-
-              {/* Search + Profile */}
-              <div className="flex items-center gap-4 flex-1 max-w-lg">
-                <div className="search-container flex-1">
-                  <input
-                    type="text"
-                    placeholder="Search deals, stores, codes..."
-                    className="search-input w-full px-5 py-3.5 bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 transition-all duration-300"
-                  />
-                  <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors duration-300">
-                    <span className="material-symbols-outlined text-[20px]">search</span>
-                  </button>
-                </div>
-
-                <AuthButton />
-              </div>
-            </div>
-
-            {/* Bottom row: Tabs + Sort */}
-            <div className="flex items-center justify-between gap-8">
-              {/* Tabs Navigation */}
-              <div className="flex gap-8">
-                {[
-                  { label: 'Daily Hits', id: 'daily' },
-                  { label: 'Weekly Legends', id: 'weekly' },
-                  { label: 'All-Time Best', id: 'alltime' }
-                ].map((tab, i) => (
-                  <button
-                    key={tab.id}
-                    className={`nav-tab text-sm transition-all ${
-                      i === 0 ? 'text-black active' : 'text-gray-600'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Sort Options */}
-              <div className="flex items-center gap-2 pl-6 border-l border-gray-200/50">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mr-2">Sort:</span>
-                {[
-                  { icon: 'local_fire_department', label: 'Hot', accent: true },
-                  { icon: 'trending_up', label: 'Rising' },
-                  { icon: 'new_releases', label: 'New' },
-                  { icon: 'chat', label: 'Discussed' }
-                ].map((item, i) => (
-                  <button
-                    key={i}
-                    className={`sort-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-300 ${
-                      item.accent
-                        ? 'bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600 border border-blue-200/50'
-                        : 'bg-white text-gray-700 border border-gray-200/50 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[14px]">{item.icon}</span>
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </header>
+        <Header />
 
         <main className="px-4 py-4">
           <div className="masonry-grid">
@@ -673,123 +513,7 @@ export default function Home() {
 
       {/* MOBILE */}
       <div className="md:hidden bg-white text-black font-display min-h-screen antialiased">
-        <header className="sticky top-0 z-50 bg-white border-b border-gray-200/40 backdrop-blur-md">
-          <style>{`
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-
-            .mobile-nav-brand {
-              font-family: 'Outfit', sans-serif;
-              font-weight: 800;
-              letter-spacing: -0.02em;
-            }
-
-            .mobile-nav-accent {
-              background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              background-clip: text;
-            }
-
-            .mobile-tab {
-              font-family: 'Outfit', sans-serif;
-              font-weight: 600;
-              transition: all 0.2s ease;
-              position: relative;
-            }
-
-            .mobile-tab.active {
-              color: #0EA5E9;
-              background: linear-gradient(135deg, #f0f9ff 0%, #ecf8ff 100%);
-            }
-
-            .mobile-tab:active {
-              transform: scale(0.95);
-            }
-
-            .mobile-search {
-              font-family: 'Inter', sans-serif;
-              transition: all 0.3s ease;
-            }
-          `}</style>
-
-          <div className="px-4 py-3.5">
-            {/* Top section: Brand + Actions */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="mobile-nav-brand text-xl leading-none">
-                  <span className="text-black">legit.</span>
-                  <span className="mobile-nav-accent">discount</span>
-                </div>
-                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-xs font-bold">✓</span>
-                </div>
-              </div>
-
-              <div className="ml-auto flex items-center gap-2">
-                <AuthButton />
-                <button className="p-2.5 rounded-lg hover:bg-gray-100 transition-all active:scale-90 relative">
-                  <span className="material-symbols-outlined text-[20px] text-gray-700">notifications</span>
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full"></span>
-                </button>
-              </div>
-            </div>
-
-            {/* Search Bar */}
-            <div className="relative group mb-3">
-              <input
-                type="text"
-                placeholder="Search deals, stores..."
-                className="mobile-search w-full px-4 py-2.5 bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
-              />
-              <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors">
-                <span className="material-symbols-outlined text-[18px]">search</span>
-              </button>
-            </div>
-
-            {/* Tabs section */}
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar mb-3 pb-0.5">
-              {[
-                { label: 'Daily Hits', id: 'daily' },
-                { label: 'Weekly Legends', id: 'weekly' },
-                { label: 'All-Time Best', id: 'alltime' }
-              ].map((tab, i) => (
-                <button
-                  key={tab.id}
-                  className={`mobile-tab flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                    i === 0
-                      ? 'active bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Sort section */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar border-t border-gray-200/50 pt-2.5">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex-shrink-0">Sort:</span>
-              {[
-                { icon: 'local_fire_department', label: 'Hot', accent: true },
-                { icon: 'trending_up', label: 'Rising' },
-                { icon: 'new_releases', label: 'New' },
-                { icon: 'chat', label: 'Discussed' }
-              ].map((item, i) => (
-                <button
-                  key={i}
-                  className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-90 ${
-                    item.accent
-                      ? 'bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600 border border-blue-200/50'
-                      : 'bg-white text-gray-700 border border-gray-200/50'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[13px]">{item.icon}</span>
-                  <span className="hidden sm:inline">{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </header>
+        <Header />
 
         <main className="px-3 py-3 pb-24">
           <div className="masonry-grid">
@@ -1077,6 +801,8 @@ export default function Home() {
           </div>
         </nav>
       </div>
+
+      <Footer />
     </>
   );
 }
