@@ -8,9 +8,11 @@ import type { Comment } from "@/types/deals";
 interface CommentsSectionProps {
   dealId: string;
   darkBg?: boolean;
+  isOpen?: boolean;
+  onToggle?: (isOpen: boolean) => void;
 }
 
-export function CommentsSection({ dealId, darkBg = false }: CommentsSectionProps) {
+export function CommentsSection({ dealId, darkBg = false, isOpen = false, onToggle }: CommentsSectionProps) {
   const { user } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState("");
@@ -19,11 +21,16 @@ export function CommentsSection({ dealId, darkBg = false }: CommentsSectionProps
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [localIsOpen, setLocalIsOpen] = useState(isOpen);
+
+  const handleToggle = (newState: boolean) => {
+    setLocalIsOpen(newState);
+    onToggle?.(newState);
+  };
 
   // Real-time listener for comments - only load when opened
   useEffect(() => {
-    if (!isOpen) return;
+    if (!localIsOpen) return;
 
     setLoading(true);
     const unsubscribe = onDealComments(dealId, (newComments) => {
@@ -31,7 +38,7 @@ export function CommentsSection({ dealId, darkBg = false }: CommentsSectionProps
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [dealId, isOpen]);
+  }, [dealId, localIsOpen]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,37 +118,16 @@ export function CommentsSection({ dealId, darkBg = false }: CommentsSectionProps
   const bgColor = darkBg ? "rgba(255,255,255,0.05)" : "#F9F9F7";
   const inputBgColor = darkBg ? "rgba(0,0,0,0.2)" : "#ffffff";
 
-  // If closed, show minimal button
-  if (!isOpen) {
-    return (
-      <div style={{ borderTop: `1px solid ${borderColor}`, paddingTop: "12px", marginTop: "12px" }}>
-        <button
-          onClick={() => setIsOpen(true)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            fontSize: "12px",
-            fontWeight: "600",
-            color: textColor,
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: 0,
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: "16px" }}>chat_bubble</span>
-          {comments.length} {comments.length === 1 ? "comment" : "comments"}
-        </button>
-      </div>
-    );
+  // If closed, return nothing - parent controls visibility via comment icon
+  if (!localIsOpen) {
+    return null;
   }
 
   return (
     <div style={{ borderTop: `1px solid ${borderColor}`, paddingTop: "12px", marginTop: "12px" }}>
       {/* Close button */}
       <button
-        onClick={() => setIsOpen(false)}
+        onClick={() => handleToggle(false)}
         style={{
           display: "flex",
           alignItems: "center",

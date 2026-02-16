@@ -10,7 +10,7 @@ import { CommentsSection } from "@/components/deals/CommentsSection";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
-function VoteButtons({ dealId, upvotes, downvotes, darkBg = false }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean }) {
+function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean; onCommentClick?: () => void }) {
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
   const [voting, setVoting] = useState(false);
@@ -121,7 +121,7 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false }: { dealId: s
           >
             <span className="material-symbols-outlined text-[16px]">arrow_downward</span> {(displayDownvotes/1000).toFixed(1)}k
           </button>
-          <button style={{color: inactiveColor}} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
+          <button onClick={onCommentClick} style={{color: inactiveColor}} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
             <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
           </button>
         </div>
@@ -134,6 +134,20 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false }: { dealId: s
 }
 
 export default function Home() {
+  const [openComments, setOpenComments] = useState<Set<string>>(new Set());
+
+  const toggleComments = (dealId: string) => {
+    setOpenComments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(dealId)) {
+        newSet.delete(dealId);
+      } else {
+        newSet.add(dealId);
+      }
+      return newSet;
+    });
+  };
+
   // Seed deals on mount
   useEffect(() => {
     console.log("🔥 Home mounted - seeding deals...");
@@ -204,7 +218,7 @@ export default function Home() {
                   </div>
                 </div>
                 <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={45} />
-                <CommentsSection dealId="seiko-watch" />
+                <CommentsSection dealId="seiko-watch" isOpen={openComments.has("seiko-watch")} onToggle={(open) => toggleComments("seiko-watch")} />
               </div>
             </div>
 
@@ -261,7 +275,7 @@ export default function Home() {
                   </div>
                 </div>
                 <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} />
-                <CommentsSection dealId="espresso-machine" />
+                <CommentsSection dealId="espresso-machine" isOpen={openComments.has("espresso-machine")} onToggle={(open) => toggleComments("espresso-machine")} />
               </div>
             </div>
 
@@ -323,7 +337,7 @@ export default function Home() {
                   </div>
                 </div>
                 <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} />
-                <CommentsSection dealId="nike-air-max" />
+                <CommentsSection dealId="nike-air-max" isOpen={openComments.has("nike-air-max")} onToggle={(open) => toggleComments("nike-air-max")} />
               </div>
             </div>
 
@@ -596,7 +610,7 @@ export default function Home() {
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} darkBg={true} />
-                <CommentsSection dealId="spotify-premium" darkBg={true} />
+                <CommentsSection dealId="spotify-premium" darkBg={true} isOpen={openComments.has("spotify-premium")} onToggle={(open) => toggleComments("spotify-premium")} />
               </div>
             </div>
 
@@ -639,7 +653,7 @@ export default function Home() {
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} />
-                <CommentsSection dealId="uber-eats-15off" darkBg={true} />
+                <CommentsSection dealId="uber-eats-15off" darkBg={true} isOpen={openComments.has("uber-eats-15off")} onToggle={(open) => toggleComments("uber-eats-15off")} />
               </div>
             </div>
 
@@ -702,7 +716,7 @@ export default function Home() {
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} />
-                <CommentsSection dealId="gap-50off" darkBg={true} />
+                <CommentsSection dealId="gap-50off" darkBg={true} isOpen={openComments.has("gap-50off")} onToggle={(open) => toggleComments("gap-50off")} />
               </div>
             </div>
 
@@ -745,7 +759,7 @@ export default function Home() {
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} />
-                <CommentsSection dealId="sephora-beauty" darkBg={true} />
+                <CommentsSection dealId="sephora-beauty" darkBg={true} isOpen={openComments.has("sephora-beauty")} onToggle={(open) => toggleComments("sephora-beauty")} />
               </div>
             </div>
 
