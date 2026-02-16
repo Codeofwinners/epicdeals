@@ -483,7 +483,10 @@ export interface VoteStatus {
 
 /** Check if user has voted on a deal */
 export async function getVoteStatus(userId: string, dealId: string): Promise<VoteStatus> {
-  if (!db) return { hasVoted: false, voteType: null };
+  if (!db) {
+    console.log("DB not initialized");
+    return { hasVoted: false, voteType: null };
+  }
 
   try {
     const upvoteRef = doc(db, "votes", userId, "dealUpvotes", dealId);
@@ -494,9 +497,18 @@ export async function getVoteStatus(userId: string, dealId: string): Promise<Vot
       getDoc(downvoteRef),
     ]);
 
-    if (upvoteSnap.exists()) return { hasVoted: true, voteType: "upvote" };
-    if (downvoteSnap.exists()) return { hasVoted: true, voteType: "downvote" };
+    console.log(`Vote status for ${userId}/${dealId}:`, { upvoteExists: upvoteSnap.exists(), downvoteExists: downvoteSnap.exists() });
 
+    if (upvoteSnap.exists()) {
+      console.log("Found upvote");
+      return { hasVoted: true, voteType: "upvote" };
+    }
+    if (downvoteSnap.exists()) {
+      console.log("Found downvote");
+      return { hasVoted: true, voteType: "downvote" };
+    }
+
+    console.log("No vote found");
     return { hasVoted: false, voteType: null };
   } catch (error) {
     console.error("Error checking vote status:", error);
@@ -513,6 +525,7 @@ export async function upvoteDeal(userId: string, dealId: string): Promise<boolea
   const dealRef = doc(db, "deals", dealId);
 
   try {
+    console.log("Upvoting:", { userId, dealId });
     const [upvoteSnap, downvoteSnap, dealSnap] = await Promise.all([
       getDoc(upvoteRef),
       getDoc(downvoteRef),
@@ -525,10 +538,12 @@ export async function upvoteDeal(userId: string, dealId: string): Promise<boolea
 
     if (upvoteSnap.exists()) {
       // Remove upvote
+      console.log("Removing upvote");
       await deleteDoc(upvoteRef);
       netVoteChange = -1;
     } else {
       // Add upvote and remove downvote if exists
+      console.log("Adding upvote");
       await setDoc(upvoteRef, { votedAt: Timestamp.now() });
       netVoteChange = 1;
 
@@ -538,11 +553,13 @@ export async function upvoteDeal(userId: string, dealId: string): Promise<boolea
       }
     }
 
+    console.log("Updating deal netVotes by:", netVoteChange);
     // Update deal's netVotes
     await updateDoc(dealRef, {
       netVotes: (dealSnap.data().netVotes || 0) + netVoteChange,
     });
 
+    console.log("Vote successful");
     return !upvoteSnap.exists(); // Return true if upvote was added
   } catch (error) {
     console.error("Error upvoting deal:", error);
