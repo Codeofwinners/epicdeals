@@ -7,17 +7,6 @@ import { upvoteDeal, downvoteDeal, getVoteStatus } from "@/lib/firestore";
 import { db } from "@/lib/firebase";
 import { seedDeals } from "@/lib/seedDeals";
 
-// Seed deals on load
-let dealsSeeded = false;
-if (typeof window !== "undefined") {
-  seedDeals()
-    .then(() => {
-      dealsSeeded = true;
-      console.log("✅ Deals seeded");
-    })
-    .catch(err => console.error("Seed failed:", err));
-}
-
 function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: number; downvotes: number }) {
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
@@ -121,6 +110,12 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
 }
 
 export default function Home() {
+  // Seed deals on mount
+  useEffect(() => {
+    console.log("🔥 Home mounted - seeding deals...");
+    seedDeals().catch(err => console.error("Seed failed:", err));
+  }, []);
+
   return (
     <>
       <style>{`
