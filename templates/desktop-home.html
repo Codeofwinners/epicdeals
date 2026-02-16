@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Legit Discount Expiry Feed</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2563EB", 
+                        "primary-dark": "#1d4ed8",
+                        "cta-accent": "#000000",
+                        "cta-highlight": "#333333",
+                        "background-light": "#F9F9F7","surface": "#FFFFFF",
+                        "text-primary": "#1A1A1A",
+                        "text-secondary": "#666666",
+                        "accent-success": "#00C853",
+                        "accent-danger": "#FF3D00",
+                        "accent-upvote": "#FF4500","border-subtle": "#EBEBEB",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    boxShadow: {
+                        "card": "0 2px 12px -2px rgba(0, 0, 0, 0.04)",
+                        "card-hover": "0 12px 32px -4px rgba(0, 0, 0, 0.08)",
+                        "float": "0 8px 32px rgba(0, 0, 0, 0.12)",
+                    },
+                    borderRadius: { "xl": "1rem", "2xl": "1.5rem", "3xl": "2rem" },
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            min-height: 100vh;
+            background-color: #F9F9F7;
+            padding-bottom: 140px;
+        }.masonry-grid {
+            column-count: 1;column-gap: 16px;
+        }
+        @media (min-width: 640px) {
+            .masonry-grid {
+                column-count: 2;
+            }
+        }
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 16px;
+        }
+        .card-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0) 100%);
+        }.poster-text-stroke {
+            -webkit-text-stroke: 1px rgba(255,255,255,0.2);
+            color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light text-text-primary font-display min-h-screen antialiased selection:bg-accent-upvote selection:text-white">
+<header class="sticky top-0 z-50 bg-background-light/95 backdrop-blur-xl pt-14 pb-4 px-5 border-b border-border-subtle/50 transition-all duration-300">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<h1 class="text-3xl font-black tracking-tighter text-text-primary leading-none">legit.discount</h1>
+<p class="text-xs font-semibold text-text-secondary tracking-widest uppercase mt-1">Trending Insights</p>
+</div>
+<div class="flex gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-border-subtle shadow-sm hover:bg-gray-50 transition-colors">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden border border-white shadow-sm">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaztf_xfHR_2jqx0QAMIOycu7InafOGLaIDmCEBmIMlWPCPNW9BahgE21DBj_7yIeogWZgaiGZzhayqIC0tgffRYAv6rfu6G7FJNeX_nk2ltYZdHKnawwxG6IpD3OP5cB4HVIjexdBX_j2d9mgPKgOX4BPsCOgEA6sd87-WPcN6dGXc9oUpRYi9ffcd7bo3S_OiOY2k1KIPuZcTtxQbU4Gs3HLeLrjGPTxcafHusWWEoQXaeTtl-mE-2F7UVb4zahDo84ILz71WRw"/>
+</div>
+</div>
+</div>
+<div class="flex justify-between items-center mb-4 bg-white p-1 rounded-2xl shadow-sm border border-border-subtle">
+<button class="flex-1 py-2 text-xs font-bold rounded-xl bg-black text-white shadow-sm">Daily Hits</button>
+<button class="flex-1 py-2 text-xs font-bold rounded-xl text-text-secondary hover:bg-gray-50">Weekly Legends</button>
+<button class="flex-1 py-2 text-xs font-bold rounded-xl text-text-secondary hover:bg-gray-50">All-Time Best</button>
+</div>
+<div class="overflow-x-auto no-scrollbar flex gap-2 pb-1">
+<span class="text-xs font-bold text-text-secondary uppercase tracking-wider self-center mr-2">Sort by:</span>
+<button class="flex-shrink-0 bg-white border border-border-subtle text-text-primary px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-accent-upvote">local_fire_department</span> Hot
+        </button>
+<button class="flex-shrink-0 bg-white border border-border-subtle text-text-secondary px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1 hover:text-text-primary">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> Rising
+        </button>
+<button class="flex-shrink-0 bg-white border border-border-subtle text-text-secondary px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1 hover:text-text-primary">
+<span class="material-symbols-outlined text-[14px]">new_releases</span> Newest
+        </button>
+<button class="flex-shrink-0 bg-white border border-border-subtle text-text-secondary px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1 hover:text-text-primary">
+<span class="material-symbols-outlined text-[14px]">chat</span> Discussed
+        </button>
+</div>
+</header>
+<main class="px-4 py-4">
+<div class="masonry-grid">
+<div class="masonry-item relative group rounded-3xl overflow-hidden bg-surface shadow-card hover:shadow-card-hover transition-all duration-300 border border-border-subtle">
+<div class="relative w-full aspect-[3/4]">
+<img alt="Seiko Watch" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0M6y_NX6jGlMjvXEm7w7l2tq0mKxvJGuh4j0yxEw91TqbxYYxGpmZDTWebRASaYfh9bzMuwEvD_TnX6qymYF0iMs8RGpY6M3Fzi6DMr9auKo_xxiS3cS-pmSmOBbix-1dgdCxjv9GoVFfCqeI9uJgJXJkL95BjLQMNriA65qMlsxoQAh7-vXjhgdmUWgMXTl83h66jQCLnRfkdF7dlgOlEUbWUP7d2smtKieBXn9rPcmm_fUtiqVEd2HpcVluK04xrjHyHx4cZrs"/>
+<div class="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-text-primary text-xs font-bold shadow-sm border border-white/50">
+                    -33%
+                </div>
+<div class="absolute bottom-4 left-4 z-20 bg-black/80 backdrop-blur-md text-white px-3 py-2 rounded-xl border border-white/10 flex flex-col items-start leading-none">
+<span class="text-xs opacity-70 line-through mb-0.5">$275</span>
+<span class="text-lg font-bold">$185</span>
+</div>
+</div>
+<div class="p-4 pt-3">
+<div class="flex items-center gap-1.5 mb-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Amazon</span>
+<span class="material-symbols-outlined text-[12px] text-blue-500 filled">verified</span>
+</div>
+<h3 class="font-bold text-base leading-snug text-text-primary mb-3 line-clamp-2">Seiko 5 Sports Automatic Watch</h3>
+<div class="bg-gray-50 rounded-xl p-2.5 mb-3 border border-gray-100 flex gap-2.5 items-start">
+<img alt="User" class="w-6 h-6 rounded-full border border-white shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDh5glKU2OYGAnxpAphPCIf_DvROcj5qnpIXzq5uF98p-p4faGz2bW17B1Gw7whrcy5pgnA2KImIQVpnMWysX92afM35gTJ6sbozc63heXlppQhn0WBbYmeTEq_tSqhxv1uBltFW69qHP54NEoCk5sN5aVtXtAVOR6AA_IGuUiYOul1wWtgkJvhtLY6gJkz9cfu0-9FFGQO9_3nGfZC5skqft2dhDKLw7hpW1RPeAvaTt8FN4pmPvdaL2LRIbn2XJHkZDHbfldbqw"/>
+<div class="flex flex-col">
+<span class="text-[10px] font-bold text-text-primary mb-0.5">WatchCollector88</span>
+<p class="text-[11px] leading-snug text-text-secondary line-clamp-2">Best entry level automatic. The jubilee bracelet is surprisingly comfy for this price point.</p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-border-subtle/60">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 text-accent-upvote font-bold text-xs">
+<span class="material-symbols-outlined text-[16px] filled">arrow_upward</span>
+                            1.2k
+                         </div>
+<div class="flex items-center gap-1 text-text-secondary font-bold text-xs hover:text-text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[16px]">chat_bubble</span>
+                            45
+                         </div>
+</div>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-text-secondary hover:bg-gray-50 hover:text-text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+<div class="masonry-item rounded-3xl overflow-hidden bg-[#111] shadow-card text-white flex flex-col justify-between min-h-[420px] relative border border-gray-800">
+<div class="absolute top-0 right-0 w-32 h-32 bg-purple-600 rounded-full blur-[60px] opacity-40 pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 w-40 h-40 bg-blue-600 rounded-full blur-[80px] opacity-30 pointer-events-none"></div>
+<div class="p-6 relative z-10 flex flex-col h-full">
+<div class="flex justify-between items-start mb-6">
+<span class="text-[10px] font-mono border border-white/20 px-2 py-1 rounded text-white/70 uppercase">NIKE25</span>
+<div class="flex flex-col items-end">
+<span class="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-purple-400 mb-0.5">
+<span class="material-symbols-outlined text-[11px]">schedule</span> Ends in
+</span>
+<div class="text-xl font-black text-white leading-none tracking-tight">2d 14h</div>
+</div>
+</div>
+<div class="flex-grow flex flex-col justify-center mb-6">
+<h2 class="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2">Nike Store Event</h2>
+<div class="text-6xl font-black tracking-tighter leading-[0.85] text-white break-words">
+                        EXTRA<br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">25%</span><br/>
+                        OFF
+                    </div>
+<p class="mt-4 text-sm text-white/80 font-medium leading-relaxed border-l-2 border-purple-500 pl-3">
+                        Valid on clearance items. The community is going crazy over the Air Jordan restocks included in this.
+                    </p>
+</div>
+<div class="bg-white/5 rounded-xl p-3 mb-4 border border-white/10 flex gap-3 items-start backdrop-blur-sm">
+<img alt="User" class="w-8 h-8 rounded-full border border-white/20 shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMOiVe6WRRQ2d1Uu7ClaIp5O-tQtD1qrgs0S4govVxLR6kbds89rHg0ZkAh1Yc7BLdH55SVRfTHKAkKEfxwrNPOooRQx1jaoX7xdVx9_8QU8WMS9YAbcEsEwtK3s4niQyBFHrZwiMcxV-AZV9INwq_ddus4rwA3cunOYBuNzy2TeKfkav1HcUwlvGhxDcV5DDVl8Ef5kMLJciOYGZa3D_dL0OFtl-ixQWx-79pHXTPzVaWysZNpsdW_LJj3ws1op42c1-sXI7wFOI"/>
+<div class="flex flex-col">
+<span class="text-[11px] font-bold text-white mb-0.5">SneakerHead_Official</span>
+<p class="text-[12px] leading-snug text-white/70">Confirmed working on outlet items too. Just grabbed VaporMax for $90.</p>
+</div>
+</div>
+<div class="pt-4 border-t border-white/10 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 text-purple-400 font-bold text-sm">
+<span class="material-symbols-outlined text-[18px] filled">bolt</span>
+                            2.1k
+                        </div>
+<div class="flex items-center gap-1.5 text-white/60 font-bold text-sm hover:text-white transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+                            128
+                         </div>
+</div>
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+<div class="masonry-item relative group rounded-3xl overflow-hidden bg-surface shadow-card hover:shadow-card-hover transition-all duration-300 border border-border-subtle">
+<div class="relative w-full aspect-[3/5]">
+<img alt="Espresso Machine" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV16gCseuB648qlcRc4CHJX4IxCPsxHtUsUUaYUw-ISHdB5OzL0jw3JFkqJ1O4hUQGx0KUdJsHRw4njcmOJptpJBirt3kF0bCOLrAdfoxXjiB46-uXLwTg-3SUbdVRYNIyzIQChi5UNplCciGQ146s_SS3AvtHOJ1khEQgZVp2-rvsdSOLn9xTv4DVKrtU5M0zKBK0nUpY2em7pZzzkg4jY96KfTcnGI8-7Yw54kCKuX3Ma37EDalUv1bCsMk1weE6w7niYhpuMMs"/>
+<div class="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-accent-success text-white text-xs font-bold shadow-sm">
+                    $150 OFF
+                </div>
+<div class="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-xl text-text-primary px-3 py-2 rounded-xl shadow-lg border border-white/50 flex flex-col items-start leading-none">
+<span class="text-xs text-text-secondary line-through mb-0.5">$750</span>
+<span class="text-lg font-bold">$599</span>
+</div>
+</div>
+<div class="p-4 pt-3">
+<div class="flex items-center gap-1.5 mb-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Best Buy</span>
+</div>
+<h3 class="font-bold text-base leading-snug text-text-primary mb-3 line-clamp-2">Breville Barista Express Espresso Machine</h3>
+<div class="bg-gray-50 rounded-xl p-2.5 mb-3 border border-gray-100 flex gap-2.5 items-start">
+<img alt="User" class="w-6 h-6 rounded-full border border-white shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiRnqIybdKOPItxVVI2iC0fiw5Bj4zhKLMqfUyTERGDWsyTV-wZSzrN0jehIdnp-aLqdw-hsCxgnTgoS1mGMqhQTGOASP52oxBFExc5a_JkDGfutm3PAdsQ84vfTDRIheEwwnMtLlBskOKhMNe3MJfQ2fAkZJzkAZi4zniCylkiLaFfO-V78sD3LnufLf8z2Gpwc2PPxQWwtENYPMIjeEZXRg9oe8ZXsajGWQhmF3guwOHJLPR3pW3IPlwIT0PHRTBO85qhQawEJU"/>
+<div class="flex flex-col">
+<span class="text-[10px] font-bold text-text-primary mb-0.5">BaristaBob</span>
+<p class="text-[11px] leading-snug text-text-secondary line-clamp-2">Requires some dialing in, but once set, it beats Starbucks easily. Grinder is consistent.</p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-border-subtle/60">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 text-accent-upvote font-bold text-xs">
+<span class="material-symbols-outlined text-[16px] filled">arrow_upward</span>
+                            8.5k
+                         </div>
+<div class="flex items-center gap-1 text-text-secondary font-bold text-xs hover:text-text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[16px]">chat_bubble</span>
+                            342
+                         </div>
+</div>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-text-secondary hover:bg-gray-50 hover:text-text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+<div class="masonry-item rounded-3xl overflow-hidden bg-surface shadow-card border border-border-subtle flex flex-col justify-between min-h-[380px] relative">
+<div class="absolute inset-0 bg-[#1db954] opacity-[0.03]"></div>
+<div class="p-6 relative z-10 flex flex-col h-full">
+<div class="flex items-center justify-between mb-8">
+<div class="flex items-center gap-2">
+<span class="w-8 h-8 rounded-full bg-[#1db954] flex items-center justify-center text-white shadow-sm">
+<span class="material-symbols-outlined text-[18px]">music_note</span>
+</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-[#1db954] bg-[#1db954]/10 px-2 py-1 rounded-full">Free</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-text-secondary mb-0.5">
+<span class="material-symbols-outlined text-[11px]">schedule</span> Expiring
+</span>
+<div class="text-xl font-black text-[#1db954] leading-none tracking-tight">Dec 31</div>
+</div>
+</div>
+<div class="flex-grow mb-4">
+<h2 class="text-5xl font-black tracking-tighter leading-[0.9] text-text-primary mb-3">
+                        3 Months<br/>
+<span class="text-[#1db954]">Premium</span>
+</h2>
+<p class="text-sm text-text-secondary font-medium">New subscribers only. Standard auto-renewal applies after trial.</p>
+</div>
+<div class="bg-white rounded-xl p-3 mb-4 border border-border-subtle shadow-sm flex gap-3 items-start">
+<img alt="User" class="w-8 h-8 rounded-full border border-gray-100 shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv0Ga-q3HerYTotdiaCosccCbAfFWkneGO5NpTqfoXt1nSZBXx9cspVOha8giGHdSIlOYJEpIDL3EYNC-CoW9CTit27_hx86FIC4hatLY36gP5GBhH3ZaLmXXCDxPRzSjClPOIWnJedmhrV0gZ2kgyqX4p7Xz-89ygGhBkne4gvc0s0-8Sj1618La1s4Y-KMEC2-KwdlovRvMF9V-yZQ5PbWzBwzVZkrPhWfYiwT_jXm-EZpHSyAi-HzXb1emgO3wl1qpkEF75qNw"/>
+<div class="flex flex-col">
+<span class="text-[11px] font-bold text-text-primary mb-0.5">MelodyMaker</span>
+<p class="text-[12px] leading-snug text-text-secondary">Used a different email and it worked perfectly. Playlist migration tools exist if you need them!</p>
+</div>
+</div>
+<div class="pt-4 border-t border-border-subtle flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 text-[#1db954] font-bold text-sm">
+<span class="material-symbols-outlined text-[18px] filled">arrow_upward</span>
+                            856
+                         </div>
+<div class="flex items-center gap-1 text-text-secondary font-bold text-sm hover:text-text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+                            92
+                         </div>
+</div>
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-text-secondary hover:bg-gray-50 hover:text-text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+<div class="masonry-item relative group rounded-3xl overflow-hidden bg-surface shadow-card hover:shadow-card-hover transition-all duration-300 border border-border-subtle">
+<div class="relative w-full aspect-[3/4]">
+<img alt="Nike Sneakers" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrVhiuaqKmVRLRrFcmiNyBJfPAZq0E3YggMFtb8Pkb2ZbqW-53NaOnbVcDWyYQ5ByVOMAN6N8Vj1zlyHBia1tHjomX2XJE5L7ufrEJ0shYJN8ulfFbgn6eZvYBsNiVO83jGsr2_4fHcuQxR7BxZw8rULSkeTr0CyPiObv5ZvBv5rERBcjgdxIoeE9XdQv7DD62v0fQQJvPyUw9whxojNPOP67OYN7untf74VjsZUKq_GLDXgDUAq6s_IYtqkipb33pmYWJ8m-Mfp0"/>
+<div class="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-accent-danger text-white text-xs font-bold shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">local_fire_department</span> Hot
+                </div>
+<div class="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-xl text-text-primary px-3 py-2 rounded-xl shadow-lg border border-white/50 flex flex-col items-start leading-none">
+<span class="text-xs text-text-secondary line-through mb-0.5">$130</span>
+<span class="text-lg font-bold text-accent-danger">$89.99</span>
+</div>
+</div>
+<div class="p-4 pt-3">
+<div class="flex items-center gap-1.5 mb-2">
+<span class="text-[10px] font-bold uppercase tracking-wider text-text-secondary">Nike</span>
+</div>
+<h3 class="font-bold text-base leading-snug text-text-primary mb-3 line-clamp-2">Nike Air Max 90 - University Red</h3>
+<div class="bg-gray-50 rounded-xl p-2.5 mb-3 border border-gray-100 flex gap-2.5 items-start">
+<img alt="User" class="w-6 h-6 rounded-full border border-white shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1nGE4DabXMcO-5JUOpjROjBygdimvjZjpvbDl1W2Tecj_J4MVUU3w_MbbpZXG6nDzhMQ813cYaF1dydOmfjWONvW0TxOoR8rewS2Xj_9m3g_YXdIIyetHYU__9Ougmzm4Hw96D3SVBpY-bYpdXzDZQTlYEAgMWMpKooZwecUHG2x2G5dlcli8GGNXb_ANkN6tdOijzPqsfryjsF0W1i7SpobOUrlLKpVnr5jJPLjuP2DCzPaCKi9AqdJrwbnPS-kf9vO9oHF-9vk"/>
+<div class="flex flex-col">
+<span class="text-[10px] font-bold text-text-primary mb-0.5">AirMaxLover</span>
+<p class="text-[11px] leading-snug text-text-secondary line-clamp-2">Size up 0.5 if you have wide feet. The red pops way more in person.</p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-border-subtle/60">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 text-accent-upvote font-bold text-xs">
+<span class="material-symbols-outlined text-[16px] filled">arrow_upward</span>
+                            12k
+                         </div>
+<div class="flex items-center gap-1 text-text-secondary font-bold text-xs hover:text-text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[16px]">chat_bubble</span>
+                            504
+                         </div>
+</div>
+<button class="w-8 h-8 rounded-full flex items-center justify-center text-text-secondary hover:bg-gray-50 hover:text-text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+<div class="masonry-item rounded-3xl overflow-hidden bg-black shadow-card text-white flex flex-col justify-between min-h-[400px] relative border border-gray-800">
+<div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+<div class="absolute top-[-20%] right-[-20%] w-60 h-60 bg-white/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="p-6 relative z-10 flex flex-col h-full">
+<div class="flex justify-between items-center mb-6">
+<div class="flex items-center gap-2">
+<span class="text-[10px] font-bold uppercase tracking-widest text-white/50">Uber Eats</span>
+<span class="text-xs font-mono bg-white text-black px-2 py-1 rounded font-bold">EATS20</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-green-400 mb-0.5">
+<span class="material-symbols-outlined text-[11px]">schedule</span> Expires
+</span>
+<div class="text-xl font-black text-white leading-none tracking-tight">4h 12m</div>
+</div>
+</div>
+<div class="flex-grow text-center py-4">
+<div class="text-8xl font-black leading-none tracking-tighter text-white drop-shadow-xl">$20</div>
+<div class="text-xl font-bold tracking-[0.3em] mt-2 text-white/80">OFF FIRST</div>
+<div class="text-sm font-medium text-white/40 mt-1 uppercase tracking-widest">Order Only</div>
+</div>
+<div class="bg-white/5 rounded-xl p-3 mb-4 border border-white/10 flex gap-3 items-start backdrop-blur-sm mt-4">
+<img alt="User" class="w-8 h-8 rounded-full border border-white/20 shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD0IPnzq3Lg7y_HCQ384BKEiVxRck7H-4C98uWN-GYXxvjZ6yTQt1UiNkBd7s0Qc0gV1NbcK4lyNmCz2siPo_4O8V1IlBRBz7mxneuqTSQ4cjCinfor9HsHfrDYIOrLSzxyNbBuhCwU6SQO3iTiG7uYSAo6oY7-wMZlSypL_zNeJ0ZHdudFrldoey297dBsMFMvwoyufWn1o6r5aHEe5H6try3cC_lfPS-lFNdbbFl3RqW-cTx3ImK5pfXV0yLkVpPt1IRZq88m9g"/>
+<div class="flex flex-col text-left">
+<span class="text-[11px] font-bold text-white mb-0.5">LateNightSnack</span>
+<p class="text-[12px] leading-snug text-white/70">Works for existing accounts if you haven't ordered in 30 days! Tested in NYC.</p>
+</div>
+</div>
+<div class="pt-4 border-t border-white/10 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5 text-green-400 font-bold text-sm">
+<span class="material-symbols-outlined text-[18px] filled">bolt</span>
+                            440
+                        </div>
+<div class="flex items-center gap-1.5 text-white/60 font-bold text-sm hover:text-white transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+                            28
+                         </div>
+</div>
+<button class="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[20px]">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-black/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-float p-2 z-50">
+<div class="flex justify-between items-center px-1 relative">
+<a class="flex flex-col items-center justify-center p-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all w-16" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-medium mt-1">Feed</span>
+</a>
+<a class="flex flex-col items-center justify-center p-2 rounded-xl bg-white/20 text-white w-16 shadow-inner" href="#">
+<span class="material-symbols-outlined text-[24px]">trending_up</span>
+<span class="text-[10px] font-bold mt-1">Trends</span>
+</a>
+<div class="relative -top-6">
+<button class="w-14 h-14 bg-accent-upvote rounded-full flex items-center justify-center shadow-lg border-4 border-[#1A1A1A] text-white">
+<span class="material-symbols-outlined text-[28px]">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center p-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all w-16 relative" href="#">
+<div class="absolute top-2 right-4 w-1.5 h-1.5 bg-accent-danger rounded-full"></div>
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+<span class="text-[10px] font-medium mt-1">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center p-2 rounded-xl text-white/50 hover:text-white hover:bg-white/10 transition-all w-16" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="text-[10px] font-medium mt-1">Me</span>
+</a>
+</div>
+</nav>
+</body></html>

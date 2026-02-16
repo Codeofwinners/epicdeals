@@ -1,18 +1,479 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FBFBFB;
-  --foreground: #1D1D1F;
+  /* ─── Premium Minimal Foundation (Apple/Notion/Slack) ── */
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #FAFBFC;
+  --surface-overlay: rgba(255, 255, 255, 0.98);
+
+  /* Text — professional black/gray scale */
+  --text-primary: #0A0E27;
+  --text-secondary: #525866;
+  --text-muted: #8B92A9;
+  --text-faint: #C5CDD9;
+
+  /* Borders — barely visible */
+  --border: #EAECF0;
+  --border-light: #F5F6F8;
+  --border-focus: #0A0E27;
+
+  /* ─── Brand: Sophisticated Teal (Premium) ──── */
+  --brand: #0891B2;
+  --brand-light: #06B6D4;
+  --brand-dark: #0E7490;
+  --brand-muted: rgba(8, 145, 178, 0.08);
+  --brand-glow: rgba(8, 145, 178, 0.12);
+
+  /* ─── Semantic Colors (muted modern) ──────── */
+  --success: #10B981;
+  --success-light: #ECFDF5;
+  --success-dark: #059669;
+
+  --danger: #EF4444;
+  --danger-light: #FEF2F2;
+  --danger-dark: #DC2626;
+
+  --warning: #F59E0B;
+  --warning-light: #FFFBEB;
+
+  --info: #3B82F6;
+  --info-light: #EFF6FF;
+
+  /* ─── Accent Colors (modern muted) ──────────── */
+  --accent-coral: #FB7185;
+  --accent-amber: #F59E0B;
+  --accent-blue: #3B82F6;
+  --accent-emerald: #10B981;
+
+  /* ─── Savings Gradient (modern blue→cyan) ─── */
+  --savings-from: #3B82F6;
+  --savings-to: #06B6D4;
+
+  /* ─── Spacing & Radius ─────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+
+  /* ─── 8px Grid System (Mobile-First) ────────── */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+
+  /* ─── Modern Border Radius (12-16px range) ─── */
+  --radius-card: 12px;
+  --radius-lg-card: 14px;
+  --radius-xl-card: 16px;
+
+  /* ─── Header Heights ────────────────────────── */
+  --header-height-expanded: 80px;
+  --header-height-collapsed: 56px;
+
+  /* ─── Animation Tokens ──────────────────────── */
+  --anim-duration-fast: 200ms;
+  --anim-duration-normal: 300ms;
+  --anim-duration-slow: 600ms;
+  --anim-easing-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --anim-easing-ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), sans-serif;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-manrope), var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide scrollbar for horizontal carousels */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll snap for carousels */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-snap-x > * {
+  scroll-snap-align: start;
+}
+
+/* ─── Keyframes ──────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes flame-flicker {
+  0%, 100% { transform: scaleY(1) scaleX(1); opacity: 1; }
+  25% { transform: scaleY(1.12) scaleX(0.93); opacity: 0.88; }
+  50% { transform: scaleY(0.93) scaleX(1.06); opacity: 1; }
+  75% { transform: scaleY(1.06) scaleX(0.96); opacity: 0.92; }
+}
+
+@keyframes badge-glow-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes sparkle-rotate {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(12deg) scale(1.15); }
+  50% { transform: rotate(0deg) scale(1); }
+  75% { transform: rotate(-12deg) scale(1.15); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+@keyframes ai-scan {
+  0% { opacity: 0.5; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-1.5px); }
+  100% { opacity: 0.5; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes countPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes ring-fill {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: var(--ring-offset, 0); }
+}
+
+@keyframes code-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes glow-breathe {
+  0%, 100% { box-shadow: 0 0 20px rgba(19, 164, 236, 0.06), 0 0 60px rgba(19, 164, 236, 0.03); }
+  50% { box-shadow: 0 0 30px rgba(19, 164, 236, 0.12), 0 0 80px rgba(19, 164, 236, 0.06); }
+}
+
+@keyframes border-travel {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes check-pop {
+  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes live-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.4; }
+}
+
+@keyframes rank-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(19, 164, 236, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(19, 164, 236, 0); }
+}
+
+@keyframes stagger-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20;
+  /* ─── Bento Grid Utilities ──────────────────── */
+  .bento-container {
+    display: grid;
+    gap: var(--space-2);
   }
+
+  @media (min-width: 768px) {
+    .bento-container {
+      gap: var(--space-3);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .bento-container {
+      grid-template-columns: repeat(12, 1fr);
+      gap: var(--space-4);
+    }
+  }
+
+  /* Bento tile size utilities for 12-column grid */
+  .bento-1x1 { @media (min-width: 1024px) { grid-column: span 3; } }
+  .bento-2x1 { @media (min-width: 1024px) { grid-column: span 6; } }
+  .bento-2x2 { @media (min-width: 1024px) { grid-column: span 12; } }
+  .bento-hero { @media (min-width: 1024px) { grid-column: span 8; } }
+
+  /* Mobile-first default: full width */
+  .bento-item {
+    grid-column: span 1;
+  }
+
+  @media (min-width: 1024px) {
+    .bento-item {
+      grid-column: span 3;
+    }
+  }
+
+  /* ─── Card Lift Animation ──────────────────── */
+  .card-lift {
+    @apply transition-all duration-300;
+  }
+
+  @media (hover: hover) {
+    .card-lift:hover {
+      @apply -translate-y-0.5 shadow-lg;
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, #EEF1F4 25%, #E2E8F0 50%, #EEF1F4 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+  .animate-flame { animation: flame-flicker 1.5s ease-in-out infinite; transform-origin: bottom center; }
+  .animate-badge-glow { animation: badge-glow-pulse 2s ease-in-out infinite; }
+  .animate-gradient-shift { background-size: 200% 200%; animation: gradient-shift 3s ease infinite; }
+  .animate-sparkle { animation: sparkle-rotate 2s ease-in-out infinite; }
+  .animate-ai-scan { animation: ai-scan 2s ease-in-out infinite; }
+  .animate-float { animation: float 3s ease-in-out infinite; }
+  .animate-count-pulse { animation: countPulse 0.3s ease-out; }
+  .animate-slide-in { animation: slideIn 0.3s ease-out both; }
+  .animate-glow-breathe { animation: glow-breathe 3s ease-in-out infinite; }
+  .animate-border-travel { background-size: 300% 300%; animation: border-travel 4s ease infinite; }
+  .animate-check-pop { animation: check-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+  .animate-live-pulse { animation: live-pulse 2s ease-in-out infinite; }
+  .animate-rank-glow { animation: rank-glow 2s ease-in-out infinite; }
+
+  .code-shimmer {
+    background: linear-gradient(
+      90deg,
+      currentColor 0%,
+      currentColor 40%,
+      rgba(61, 184, 245, 0.6) 50%,
+      currentColor 60%,
+      currentColor 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: code-shimmer 3s linear infinite;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/30;
+  }
+
+  .glass-dark {
+    @apply bg-black/5 backdrop-blur-xl border border-white/10;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Savings gradient text — electric blue */
+  .text-savings {
+    background: linear-gradient(135deg, var(--savings-from), var(--savings-to));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-brand-gradient {
+    background: linear-gradient(135deg, var(--brand), var(--brand-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Display font — Manrope */
+  .font-editorial {
+    font-family: var(--font-manrope), var(--font-display), system-ui, sans-serif;
+  }
+
+  /* Card shadow utilities */
+  .shadow-card {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  }
+
+  .shadow-soft {
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 15px -3px rgba(19, 164, 236, 0.3);
+  }
+
+  /* Stagger animation delay helpers */
+  .stagger-1 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.05s both; }
+  .stagger-2 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both; }
+  .stagger-3 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.15s both; }
+  .stagger-4 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both; }
+  .stagger-5 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.25s both; }
+  .stagger-6 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both; }
+  .stagger-7 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.35s both; }
+  .stagger-8 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s both; }
+  .stagger-9 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.45s both; }
+  .stagger-10 { animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.5s both; }
+
+  /* ─── Section reveal animations (fade in on scroll) ────── */
+  @keyframes section-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-section-enter {
+    animation: section-fade-in 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
+  /* ─── Horizontal scroll momentum and snap ──────────────── */
+  .scroll-smooth-x {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ─── Card grid with responsive stagger ──────────────── */
+  .grid-stagger > * {
+    animation: stagger-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  }
+
+  .grid-stagger > :nth-child(1) { animation-delay: 0.05s; }
+  .grid-stagger > :nth-child(2) { animation-delay: 0.1s; }
+  .grid-stagger > :nth-child(3) { animation-delay: 0.15s; }
+  .grid-stagger > :nth-child(4) { animation-delay: 0.2s; }
+  .grid-stagger > :nth-child(5) { animation-delay: 0.25s; }
+  .grid-stagger > :nth-child(6) { animation-delay: 0.3s; }
+  .grid-stagger > :nth-child(7) { animation-delay: 0.35s; }
+  .grid-stagger > :nth-child(8) { animation-delay: 0.4s; }
+}
+
+/* Selection color */
+::selection {
+  background: var(--brand);
+  color: white;
+}
+
+/* ─── Material Symbols Icon Styling ──────────────────── */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  src: url('https://fonts.gstatic.com/s/materialsymbolsoutlined/v226/kJF1BnwUbMsVaCjMSEEoLWlyaGH55MPc6B0G-g.woff2') format('woff2');
+}
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal !important;
+  font-style: normal !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  display: inline-block !important;
+  white-space: nowrap !important;
+  word-wrap: normal !important;
+  direction: ltr !important;
+  font-feature-settings: 'liga' !important;
+  -webkit-font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+  -moz-osx-font-smoothing: grayscale !important;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1 !important;
+}
+
+/* ─── Material Icons Outlined Styling ──────────────────── */
+.material-icons-outlined {
+  font-family: 'Material Icons Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ─── Button Reset & Styling ──────────────────── */
+button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  transition: all 200ms ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Ensure icons always display properly */
+[class*="material-icons"],
+[class*="material-symbols"] {
+  display: inline-block;
+  overflow: hidden;
+  word-wrap: normal;
+}
+
+/* Fix shadow utility */
+.shadow-float {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.08);
 }
