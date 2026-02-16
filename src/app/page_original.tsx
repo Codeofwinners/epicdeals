@@ -5,7 +5,7 @@ import { AuthButton } from "@/components/auth/AuthButton";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { upvoteDeal, downvoteDeal, getVoteStatus } from "@/lib/firestore";
 import { db } from "@/lib/firebase";
-import { seedDeals } from "@/lib/seedDeals";
+import { doc, setDoc, Timestamp } from "firebase/firestore";
 
 function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: number; downvotes: number }) {
   const { user } = useAuth();
@@ -44,9 +44,6 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
       alert("Firebase not initialized");
       return;
     }
-
-    // Wait a moment for deals to be seeded
-    await new Promise(r => setTimeout(r, 500));
 
     setError(null);
     setVoting(true);
@@ -110,12 +107,6 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
 }
 
 export default function Home() {
-  // Seed deals on mount
-  useEffect(() => {
-    console.log("🔥 Home mounted - seeding deals...");
-    seedDeals().catch(err => console.error("Seed failed:", err));
-  }, []);
-
   return (
     <>
       <style>{`
@@ -152,116 +143,32 @@ export default function Home() {
 
       {/* DESKTOP */}
       <div className="hidden md:block bg-white text-black font-display min-h-screen antialiased">
-        <header className="sticky top-0 z-50 bg-white border-b border-gray-200/40 backdrop-blur-md">
-          <style>{`
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-
-            .nav-brand {
-              font-family: 'Outfit', sans-serif;
-              font-weight: 800;
-              letter-spacing: -0.025em;
-            }
-
-            .nav-accent {
-              background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              background-clip: text;
-            }
-
-            .nav-tab {
-              position: relative;
-              font-family: 'Outfit', sans-serif;
-              font-weight: 600;
-              letter-spacing: -0.01em;
-              transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-
-            .nav-tab::after {
-              content: '';
-              position: absolute;
-              bottom: -8px;
-              left: 0;
-              width: 0;
-              height: 2px;
-              background: linear-gradient(90deg, #0EA5E9 0%, #06B6D4 100%);
-              transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-
-            .nav-tab.active::after,
-            .nav-tab:hover::after {
-              width: 100%;
-            }
-
-            .nav-tab:hover {
-              transform: translateY(-2px);
-              color: #0EA5E9;
-            }
-
-            .search-container {
-              position: relative;
-              transition: all 0.3s ease;
-            }
-
-            .search-container:focus-within {
-              transform: translateY(-1px);
-            }
-
-            .search-input {
-              font-family: 'Inter', sans-serif;
-              transition: all 0.3s ease;
-              background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
-            }
-
-            .search-input:focus {
-              background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
-              box-shadow: 0 8px 24px rgba(14, 165, 233, 0.12);
-            }
-
-            .sort-btn {
-              font-family: 'Outfit', sans-serif;
-              font-weight: 600;
-              transition: all 0.25s ease;
-            }
-
-            .sort-btn:hover {
-              transform: translateY(-1px);
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            }
-
-            .sort-btn.active {
-              background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);
-              color: white;
-              box-shadow: 0 6px 16px rgba(14, 165, 233, 0.2);
-            }
-          `}</style>
-
-          <div className="px-8 py-5">
-            {/* Top row: Logo + Search + Actions */}
+        <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
+          <div className="px-8 py-4">
+            {/* Top row: Logo + Actions */}
             <div className="flex items-center justify-between gap-8 mb-8">
-              {/* Brand */}
-              <div className="flex flex-col gap-1.5 flex-shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="nav-brand text-4xl leading-none">
-                    <span className="text-black">legit.</span>
-                    <span className="nav-accent">discount</span>
-                  </div>
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
-                    <span className="text-white text-sm font-bold">✓</span>
-                  </div>
+              {/* Brand - Apple-inspired */}
+              <div className="flex flex-col gap-1 flex-shrink-0">
+                <div className="text-4xl font-black tracking-tight text-black leading-none" style={{fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", letterSpacing: '-0.03em', fontWeight: 900}}>
+                  legit.
+                  <br/>
+                  <span className="text-blue-600">discount</span>
                 </div>
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest ml-0.5">Verified Deals</span>
+                <div className="flex items-center gap-2 ml-0.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Verified</span>
+                </div>
               </div>
 
               {/* Search + Profile */}
-              <div className="flex items-center gap-4 flex-1 max-w-lg">
-                <div className="search-container flex-1">
+              <div className="flex items-center gap-4 flex-1 max-w-md">
+                <div className="flex-1 relative group">
                   <input
                     type="text"
                     placeholder="Search deals, stores, codes..."
-                    className="search-input w-full px-5 py-3.5 bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/50 transition-all duration-300"
+                    className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-xl text-base text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200"
                   />
-                  <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors duration-300">
+                  <button className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-blue-600 transition-colors">
                     <span className="material-symbols-outlined text-[20px]">search</span>
                   </button>
                 </div>
@@ -270,29 +177,28 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Bottom row: Tabs + Sort */}
-            <div className="flex items-center justify-between gap-8">
-              {/* Tabs Navigation */}
-              <div className="flex gap-8">
-                {[
-                  { label: 'Daily Hits', id: 'daily' },
-                  { label: 'Weekly Legends', id: 'weekly' },
-                  { label: 'All-Time Best', id: 'alltime' }
-                ].map((tab, i) => (
+            {/* Tabs & Filters */}
+            <div className="flex items-center justify-between gap-6">
+              {/* Tabs */}
+              <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
+                {['Daily Hits', 'Weekly Legends', 'All-Time Best'].map((tab, i) => (
                   <button
-                    key={tab.id}
-                    className={`nav-tab text-sm transition-all ${
-                      i === 0 ? 'text-black active' : 'text-gray-600'
+                    key={i}
+                    style={{fontWeight: i === 0 ? 700 : 600}}
+                    className={`px-4 py-2.5 rounded-lg text-sm transition-all duration-200 ${
+                      i === 0
+                        ? 'bg-white text-black shadow-sm'
+                        : 'text-gray-600 hover:text-black hover:bg-gray-50'
                     }`}
                   >
-                    {tab.label}
+                    {tab}
                   </button>
                 ))}
               </div>
 
               {/* Sort Options */}
-              <div className="flex items-center gap-2 pl-6 border-l border-gray-200/50">
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider mr-2">Sort:</span>
+              <div className="flex items-center gap-1.5 pl-4 border-l border-gray-200">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Sort:</span>
                 {[
                   { icon: 'local_fire_department', label: 'Hot', accent: true },
                   { icon: 'trending_up', label: 'Rising' },
@@ -301,14 +207,17 @@ export default function Home() {
                 ].map((item, i) => (
                   <button
                     key={i}
-                    className={`sort-btn flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-300 ${
-                      item.accent
-                        ? 'bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600 border border-blue-200/50'
-                        : 'bg-white text-gray-700 border border-gray-200/50 hover:bg-gray-50'
-                    }`}
+                    style={{
+                      backgroundColor: '#fff',
+                      color: item.accent ? '#2563eb' : '#666',
+                      border: '1px solid #e5e7eb'
+                    }}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold hover:border-gray-300 hover:bg-gray-50 transition-all"
                   >
-                    <span className="material-symbols-outlined text-[14px]">{item.icon}</span>
-                    <span>{item.label}</span>
+                    <span className="material-symbols-outlined text-[13px]" style={{color: item.accent ? '#2563eb' : 'inherit'}}>
+                      {item.icon}
+                    </span>
+                    {item.label}
                   </button>
                 ))}
               </div>
@@ -371,7 +280,19 @@ export default function Home() {
                     <p className="text-[12px] leading-snug text-white/70">Confirmed working on outlet items too. Just grabbed VaporMax for $90.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} />
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 text-purple-400 font-bold text-sm">
+                      <span className="material-symbols-outlined text-[18px]" style={{fontVariationSettings: "'FILL' 1"}}>bolt</span> 2.1k
+                    </div>
+                    <div className="flex items-center gap-1.5 text-white/60 font-bold text-sm hover:text-white transition-colors cursor-pointer">
+                      <span className="material-symbols-outlined text-[18px]">chat_bubble</span> 128
+                    </div>
+                  </div>
+                  <button className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -397,7 +318,19 @@ export default function Home() {
                     <p className="text-[11px] leading-snug text-[#666666] line-clamp-2">Requires some dialing in, but once set, it beats Starbucks easily. Grinder is consistent.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} />
+                <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 text-[#FF4500] font-bold text-xs">
+                      <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> 8.5k
+                    </div>
+                    <div className="flex items-center gap-1 text-[#666666] font-bold text-xs hover:text-[#1A1A1A] transition-colors cursor-pointer">
+                      <span className="material-symbols-outlined text-[16px]">chat_bubble</span> 342
+                    </div>
+                  </div>
+                  <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -430,7 +363,19 @@ export default function Home() {
                     <p className="text-[12px] leading-snug text-[#666666]">Used a different email and it worked perfectly. Playlist migration tools exist if you need them!</p>
                   </div>
                 </div>
-                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} />
+                <div className="pt-4 border-t border-[#EBEBEB] flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 text-[#1db954] font-bold text-sm">
+                      <span className="material-symbols-outlined text-[18px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> 856
+                    </div>
+                    <div className="flex items-center gap-1 text-[#666666] font-bold text-sm hover:text-[#1A1A1A] transition-colors cursor-pointer">
+                      <span className="material-symbols-outlined text-[18px]">chat_bubble</span> 92
+                    </div>
+                  </div>
+                  <button className="w-9 h-9 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -458,7 +403,19 @@ export default function Home() {
                     <p className="text-[11px] leading-snug text-[#666666] line-clamp-2">Size up 0.5 if you have wide feet. The red pops way more in person.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} />
+                <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 text-[#FF4500] font-bold text-xs">
+                      <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> 12k
+                    </div>
+                    <div className="flex items-center gap-1 text-[#666666] font-bold text-xs hover:text-[#1A1A1A] transition-colors cursor-pointer">
+                      <span className="material-symbols-outlined text-[16px]">chat_bubble</span> 504
+                    </div>
+                  </div>
+                  <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -491,7 +448,19 @@ export default function Home() {
                     <p className="text-[12px] leading-snug text-white/70">Works for existing accounts if you haven't ordered in 30 days! Tested in NYC.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} />
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 text-green-400 font-bold text-sm">
+                      <span className="material-symbols-outlined text-[18px]" style={{fontVariationSettings: "'FILL' 1"}}>bolt</span> 440
+                    </div>
+                    <div className="flex items-center gap-1.5 text-white/60 font-bold text-sm hover:text-white transition-colors cursor-pointer">
+                      <span className="material-symbols-outlined text-[18px]">chat_bubble</span> 28
+                    </div>
+                  </div>
+                  <button className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -511,7 +480,14 @@ export default function Home() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#666666]">Amazon Fresh</span>
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Organic Grocery Bundle</h3>
-                <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} />
+                <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
+                  <div className="flex items-center gap-1 text-[#FF4500] font-bold text-xs">
+                    <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> 3.2k
+                  </div>
+                  <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -530,7 +506,14 @@ export default function Home() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#666666]">Best Buy</span>
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Wireless Headphones</h3>
-                <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} />
+                <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
+                  <div className="flex items-center gap-1 text-[#FF4500] font-bold text-xs">
+                    <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> 5.8k
+                  </div>
+                  <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -549,7 +532,14 @@ export default function Home() {
                   <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2">Gap & Old Navy</h2>
                   <div className="text-5xl font-black tracking-tighter leading-[0.85] text-white break-words">EXTRA<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-rose-200">50%</span><br/>OFF</div>
                 </div>
-                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} />
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-pink-200 font-bold text-sm">
+                    <span className="material-symbols-outlined text-[18px]" style={{fontVariationSettings: "'FILL' 1"}}>bolt</span> 1.9k
+                  </div>
+                  <button className="w-9 h-9 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -570,7 +560,14 @@ export default function Home() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#666666]">Target</span>
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Room Decor Collection</h3>
-                <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} />
+                <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
+                  <div className="flex items-center gap-1 text-[#FF4500] font-bold text-xs">
+                    <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> 6.4k
+                  </div>
+                  <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -586,7 +583,14 @@ export default function Home() {
                   <h2 className="text-4xl font-black tracking-tighter leading-[0.9] text-white mb-2">Beauty<br/>Sale</h2>
                   <p className="text-sm text-white/80">Up to 50% off select brands</p>
                 </div>
-                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} />
+                <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-purple-300 font-bold text-sm">
+                    <span className="material-symbols-outlined text-[18px]" style={{fontVariationSettings: "'FILL' 1"}}>bolt</span> 2.3k
+                  </div>
+                  <button className="w-8 h-8 rounded-full flex items-center justify-center text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                    <span className="material-symbols-outlined text-[20px]">bookmark</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -648,121 +652,80 @@ export default function Home() {
 
       {/* MOBILE */}
       <div className="md:hidden bg-white text-black font-display min-h-screen antialiased">
-        <header className="sticky top-0 z-50 bg-white border-b border-gray-200/40 backdrop-blur-md">
-          <style>{`
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
-
-            .mobile-nav-brand {
-              font-family: 'Outfit', sans-serif;
-              font-weight: 800;
-              letter-spacing: -0.02em;
-            }
-
-            .mobile-nav-accent {
-              background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              background-clip: text;
-            }
-
-            .mobile-tab {
-              font-family: 'Outfit', sans-serif;
-              font-weight: 600;
-              transition: all 0.2s ease;
-              position: relative;
-            }
-
-            .mobile-tab.active {
-              color: #0EA5E9;
-              background: linear-gradient(135deg, #f0f9ff 0%, #ecf8ff 100%);
-            }
-
-            .mobile-tab:active {
-              transform: scale(0.95);
-            }
-
-            .mobile-search {
-              font-family: 'Inter', sans-serif;
-              transition: all 0.3s ease;
-            }
-          `}</style>
-
-          <div className="px-4 py-3.5">
-            {/* Top section: Brand + Actions */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center gap-2">
-                <div className="mobile-nav-brand text-xl leading-none">
-                  <span className="text-black">legit.</span>
-                  <span className="mobile-nav-accent">discount</span>
-                </div>
-                <div className="w-6 h-6 rounded-md bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-xs font-bold">✓</span>
-                </div>
+        <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
+          {/* Top section: Logo + Search + Actions */}
+          <div className="px-4 py-4">
+            {/* Brand + Search Row */}
+            <div className="flex items-center gap-3 mb-3">
+              {/* Brand */}
+              <div className="text-2xl font-black tracking-tight text-black flex-shrink-0" style={{fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", letterSpacing: '-0.03em', fontWeight: 900}}>
+                legit.<span className="text-blue-600">discount</span>
               </div>
 
+              {/* Auth Button + Alerts */}
               <div className="ml-auto flex items-center gap-2">
                 <AuthButton />
-                <button className="p-2.5 rounded-lg hover:bg-gray-100 transition-all active:scale-90 relative">
-                  <span className="material-symbols-outlined text-[20px] text-gray-700">notifications</span>
-                  <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full"></span>
+                <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
+                  <span className="material-symbols-outlined text-[22px] text-gray-700">notifications</span>
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
                 </button>
               </div>
             </div>
 
             {/* Search Bar */}
-            <div className="relative group mb-3">
+            <div className="relative group">
               <input
                 type="text"
                 placeholder="Search deals, stores..."
-                className="mobile-search w-full px-4 py-2.5 bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all"
+                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200"
               />
-              <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors">
+              <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-blue-600 transition-colors">
                 <span className="material-symbols-outlined text-[18px]">search</span>
               </button>
             </div>
+          </div>
 
-            {/* Tabs section */}
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar mb-3 pb-0.5">
-              {[
-                { label: 'Daily Hits', id: 'daily' },
-                { label: 'Weekly Legends', id: 'weekly' },
-                { label: 'All-Time Best', id: 'alltime' }
-              ].map((tab, i) => (
-                <button
-                  key={tab.id}
-                  className={`mobile-tab flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                    i === 0
-                      ? 'active bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600'
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+          {/* Tabs section */}
+          <div className="px-4 pb-3 flex gap-1 overflow-x-auto no-scrollbar">
+            {['Daily Hits', 'Weekly Legends', 'All-Time Best'].map((tab, i) => (
+              <button
+                key={i}
+                style={{
+                  backgroundColor: i === 0 ? '#000' : '#fff',
+                  color: i === 0 ? '#fff' : '#666',
+                  border: i === 0 ? 'none' : '1px solid #e5e7eb'
+                }}
+                className="flex-shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition-all active:scale-95"
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
 
-            {/* Sort section */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar border-t border-gray-200/50 pt-2.5">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex-shrink-0">Sort:</span>
-              {[
-                { icon: 'local_fire_department', label: 'Hot', accent: true },
-                { icon: 'trending_up', label: 'Rising' },
-                { icon: 'new_releases', label: 'New' },
-                { icon: 'chat', label: 'Discussed' }
-              ].map((item, i) => (
-                <button
-                  key={i}
-                  className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-90 ${
-                    item.accent
-                      ? 'bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600 border border-blue-200/50'
-                      : 'bg-white text-gray-700 border border-gray-200/50'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-[13px]">{item.icon}</span>
-                  <span className="hidden sm:inline">{item.label}</span>
-                </button>
-              ))}
-            </div>
+          {/* Sort section */}
+          <div className="px-4 pt-3 pb-3 flex items-center gap-1.5 overflow-x-auto no-scrollbar border-t border-gray-100">
+            <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex-shrink-0">Sort:</span>
+            {[
+              { icon: 'local_fire_department', label: 'Hot', accent: true },
+              { icon: 'trending_up', label: 'Rising' },
+              { icon: 'new_releases', label: 'New' },
+              { icon: 'chat', label: 'Discussed' }
+            ].map((item, i) => (
+              <button
+                key={i}
+                style={{
+                  backgroundColor: '#fff',
+                  color: item.accent ? '#2563eb' : '#666',
+                  border: '1px solid #e5e7eb'
+                }}
+                className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold hover:border-gray-300 hover:bg-gray-50 transition-all"
+              >
+                <span className="material-symbols-outlined text-[12px]" style={{color: item.accent ? '#2563eb' : 'inherit'}}>
+                  {item.icon}
+                </span>
+                <span className="hidden sm:inline">{item.label}</span>
+              </button>
+            ))}
           </div>
         </header>
 
