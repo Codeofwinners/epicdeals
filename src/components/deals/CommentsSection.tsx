@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { addComment, onDealComments, deleteComment, editComment } from "@/lib/firestore";
+import { signInWithGoogle } from "@/lib/auth";
 import type { Comment } from "@/types/deals";
 
 interface CommentsSectionProps {
@@ -21,16 +22,14 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
-  const [localIsOpen, setLocalIsOpen] = useState(isOpen);
 
   const handleToggle = (newState: boolean) => {
-    setLocalIsOpen(newState);
     onToggle?.(newState);
   };
 
   // Real-time listener for comments - only load when opened
   useEffect(() => {
-    if (!localIsOpen) return;
+    if (!isOpen) return;
 
     setLoading(true);
     const unsubscribe = onDealComments(dealId, (newComments) => {
@@ -38,7 +37,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [dealId, localIsOpen]);
+  }, [dealId, isOpen]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,7 +118,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
   const inputBgColor = darkBg ? "rgba(0,0,0,0.2)" : "#ffffff";
 
   // If closed, return nothing - parent controls visibility via comment icon
-  if (!localIsOpen) {
+  if (!isOpen) {
     return null;
   }
 
@@ -234,9 +233,20 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
       ) : (
         <div style={{ textAlign: "center", padding: "12px", marginBottom: "12px" }}>
           <span style={{ fontSize: "13px", color: secondaryTextColor }}>
-            <a href="#" style={{ color: "#0EA5E9", textDecoration: "none" }}>
+            <button
+              onClick={() => signInWithGoogle()}
+              style={{
+                color: "#0EA5E9",
+                background: "none",
+                border: "none",
+                padding: 0,
+                font: "inherit",
+                cursor: "pointer",
+                textDecoration: "underline"
+              }}
+            >
               Sign in
-            </a>
+            </button>
             {" "}to comment
           </span>
         </div>

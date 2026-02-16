@@ -17,6 +17,7 @@ import {
   getCategoryBySlug,
   getAllStores,
   getAllCategories,
+  getBestComment,
   onDealComments,
 } from "@/lib/firestore";
 
@@ -135,4 +136,8 @@ export function useDealComments(dealId: string) {
   }, [dealId]);
 
   return state;
+}
+
+export function useBestComment(dealId: string) {
+  return useAsync<Comment | null>(() => getBestComment(dealId), [dealId]);
 }

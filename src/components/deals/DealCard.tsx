@@ -16,6 +16,7 @@ import {
 } from "@/lib/firestore";
 import type { VoteStatus } from "@/lib/firestore";
 import type { Deal, Comment } from "@/types/deals";
+import { useBestComment } from "@/hooks/useFirestore";
 
 function timeAgo(dateStr: string) {
   const sec = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
@@ -108,22 +109,9 @@ export function DealCard({ deal, variant = "featured" }: DealCardProps) {
             </div>
           </div>
 
-          {/* Top Comment */}
+          {/* Dynamic Top Comment / Helpful Insight */}
           {deal.commentCount > 0 && (
-            <div className="hidden md:block bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 max-w-xs">
-              <div className="flex items-center justify-between mb-2 pb-2 border-b border-white/10">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center text-[10px] text-white font-bold">
-                    U
-                  </div>
-                  <span className="text-xs text-gray-200 font-medium">Top Comment</span>
-                </div>
-                <span className="text-[10px] text-gray-400">now</span>
-              </div>
-              <p className="text-sm text-white/90 leading-relaxed line-clamp-2">
-                "Great deal! Just worked for me and saved {deal.savingsAmount}!"
-              </p>
-            </div>
+            <TopComment dealId={deal.id} variant="featured" />
           )}
         </div>
       </div>
@@ -202,20 +190,7 @@ function SideCard({ deal }: { deal: Deal }) {
           <h3 className="text-xl font-bold !text-black dark:!text-white mb-2 leading-tight">
             {deal.title}
           </h3>
-          {deal.commentCount > 0 && (
-            <div className="border-t border-gray-100 dark:border-white/5 pt-3 mt-3">
-              <div className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 shrink-0 flex items-center justify-center text-[10px] text-orange-600 dark:text-orange-400 font-bold border border-orange-200 dark:border-orange-800/30">
-                  U
-                </div>
-                <div>
-                  <p className="text-xs text-gray-700 dark:text-gray-300 font-medium line-clamp-2">
-                    "{deal.description || "Great deal verified!"}"
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+          <HelpfulComment dealId={deal.id} />
         </div>
 
         {/* Vote & Action */}
@@ -225,11 +200,10 @@ function SideCard({ deal }: { deal: Deal }) {
               onClick={() => handleVote("up")}
               disabled={voting}
               title={user ? "Upvote" : "Sign in to vote"}
-              className={`material-icons-outlined text-sm transition-colors ${
-                voteStatus?.voteType === "upvote"
-                  ? "text-green-500"
-                  : "text-gray-400 hover:text-green-500"
-              } ${voting ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`material-icons-outlined text-sm transition-colors ${voteStatus?.voteType === "upvote"
+                ? "text-green-500"
+                : "text-gray-400 hover:text-green-500"
+                } ${voting ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               keyboard_arrow_up
             </button>
@@ -238,11 +212,10 @@ function SideCard({ deal }: { deal: Deal }) {
               onClick={() => handleVote("down")}
               disabled={voting}
               title={user ? "Downvote" : "Sign in to vote"}
-              className={`material-icons-outlined text-sm transition-colors ${
-                voteStatus?.voteType === "downvote"
-                  ? "text-red-500"
-                  : "text-gray-400 hover:text-red-500"
-              } ${voting ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`material-icons-outlined text-sm transition-colors ${voteStatus?.voteType === "downvote"
+                ? "text-red-500"
+                : "text-gray-400 hover:text-red-500"
+                } ${voting ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               keyboard_arrow_down
             </button>
@@ -309,15 +282,7 @@ function GridCard({ deal }: { deal: Deal }) {
 
         {/* Comment & Vote */}
         <div className="mt-auto pt-4 border-t border-gray-100 dark:border-white/5 flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">
-              <div className="w-5 h-5 rounded-full border-2 border-white dark:border-surface-dark bg-gradient-to-br from-blue-400 to-purple-500"></div>
-              <div className="w-5 h-5 rounded-full border-2 border-white dark:border-surface-dark bg-gradient-to-br from-green-400 to-blue-500"></div>
-            </div>
-            <span className="text-xs text-gray-700 dark:text-gray-300 line-clamp-1">
-              "{deal.description || "Worked for me!"}"
-            </span>
-          </div>
+          <CompactComment dealId={deal.id} />
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
               <span className="material-icons-outlined text-xs text-gray-400">thumb_up</span>
@@ -358,5 +323,67 @@ function CompactCard({ deal }: { deal: Deal }) {
         </div>
       </motion.div>
     </Link>
+  );
+}
+// Helper components for dynamic comments within cards
+function TopComment({ dealId, variant }: { dealId: string; variant: "featured" | "side" }) {
+  const { data: comment, loading } = useBestComment(dealId);
+  if (loading || !comment) return null;
+
+  if (variant === "featured") {
+    return (
+      <div className="hidden md:block bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 max-w-xs">
+        <div className="flex items-center justify-between mb-2 pb-2 border-b border-white/10">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center text-[10px] text-white font-bold">
+              {comment.user.username[0].toUpperCase()}
+            </div>
+            <span className="text-xs text-gray-200 font-medium">{comment.user.username}</span>
+          </div>
+          <span className="text-[10px] text-gray-400">{timeAgo(comment.createdAt)}</span>
+        </div>
+        <p className="text-sm text-white/90 leading-relaxed line-clamp-2">
+          "{comment.content}"
+        </p>
+      </div>
+    );
+  }
+  return null;
+}
+
+function HelpfulComment({ dealId }: { dealId: string }) {
+  const { data: comment, loading } = useBestComment(dealId);
+  if (loading || !comment) return null;
+
+  return (
+    <div className="border-t border-gray-100 dark:border-white/5 pt-3 mt-3">
+      <div className="flex items-start gap-2.5">
+        <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 shrink-0 flex items-center justify-center text-[10px] text-orange-600 dark:text-orange-400 font-bold border border-orange-200 dark:border-orange-800/30">
+          {comment.user.username[0].toUpperCase()}
+        </div>
+        <div>
+          <p className="text-xs text-gray-700 dark:text-gray-300 font-medium line-clamp-2">
+            "{comment.content}"
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CompactComment({ dealId }: { dealId: string }) {
+  const { data: comment, loading } = useBestComment(dealId);
+  if (loading || !comment) return null;
+
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex -space-x-2">
+        <div className="w-5 h-5 rounded-full border-2 border-white dark:border-surface-dark bg-gradient-to-br from-blue-400 to-purple-500"></div>
+        <div className="w-5 h-5 rounded-full border-2 border-white dark:border-surface-dark bg-gradient-to-br from-green-400 to-blue-500"></div>
+      </div>
+      <span className="text-xs text-gray-700 dark:text-gray-300 line-clamp-1">
+        "{comment.content}"
+      </span>
+    </div>
   );
 }

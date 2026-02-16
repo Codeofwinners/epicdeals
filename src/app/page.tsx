@@ -9,6 +9,7 @@ import { seedDeals } from "@/lib/seedDeals";
 import { CommentsSection } from "@/components/deals/CommentsSection";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { useBestComment } from "@/hooks/useFirestore";
 
 function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = false, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean; whiteText?: boolean; onCommentClick?: () => void }) {
   const { user } = useAuth();
@@ -89,8 +90,8 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = f
   const borderColor = darkBg ? "rgba(255,255,255,0.1)" : "border-[#EBEBEB]/60";
 
   return (
-    <div className={`flex items-center justify-between pt-2 ${whiteText ? "text-white" : ""}`} style={{borderTop: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#EBEBEB"}`, ...( whiteText ? { color: "#fff" } : {})}}>
-      {error && <div style={{color: "red", fontSize: "11px"}}>{error}</div>}
+    <div className={`flex items-center justify-between pt-2 ${whiteText ? "text-white" : ""}`} style={{ borderTop: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#EBEBEB"}`, ...(whiteText ? { color: "#fff" } : {}) }}>
+      {error && <div style={{ color: "red", fontSize: "11px" }}>{error}</div>}
       <div className="flex items-center gap-3">
         <button
           onClick={() => handleVote("up")}
@@ -102,14 +103,14 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = f
           }}
           title="Upvote"
         >
-          <span className="material-symbols-outlined text-[14px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span>
-          {(displayUpvotes/1000).toFixed(1)}k
+          <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>arrow_upward</span>
+          {(displayUpvotes / 1000).toFixed(1)}k
         </button>
-        <button onClick={() => onCommentClick?.()} style={{color: inactiveColor}} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
+        <button onClick={() => onCommentClick?.()} style={{ color: inactiveColor }} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
           <span className="material-symbols-outlined text-[14px]">chat_bubble</span>
         </button>
       </div>
-      <button style={{color: inactiveColor}} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer hover:opacity-80" title="Save deal">
+      <button style={{ color: inactiveColor }} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer hover:opacity-80" title="Save deal">
         <span className="material-symbols-outlined text-[18px]">bookmark</span>
       </button>
     </div>
@@ -190,15 +191,11 @@ export default function Home() {
               <div className="p-4 pt-3">
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#666666]">Amazon</span>
-                  <span className="material-symbols-outlined text-[12px] text-blue-500" style={{fontVariationSettings: "'FILL' 1"}}>verified</span>
+                  <span className="material-symbols-outlined text-[12px] text-blue-500" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Seiko 5 Sports Automatic Watch</h3>
                 <div className="bg-gray-50 rounded-xl p-2.5 mb-3 border border-gray-100 flex gap-2.5 items-start">
-                  <img alt="User" className="w-6 h-6 rounded-full border border-white shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDh5glKU2OYGAnxpAphPCIf_DvROcj5qnpIXzq5uF98p-p4faGz2bW17B1Gw7whrcy5pgnA2KImIQVpnMWysX92afM35gTJ6sbozc63heXlppQhn0WBbYmeTEq_tSqhxv1uBltFW69qHP54NEoCk5sN5aVtXtAVOR6AA_IGuUiYOul1wWtgkJvhtLY6gJkz9cfu0-9FFGQO9_3nGfZC5skqft2dhDKLw7hpW1RPeAvaTt8FN4pmPvdaL2LRIbn2XJHkZDHbfldbqw" />
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-[#1A1A1A] mb-0.5">WatchCollector88</span>
-                    <p className="text-[11px] leading-snug text-[#666666] line-clamp-2">Best entry level automatic. The jubilee bracelet is surprisingly comfy for this price point.</p>
-                  </div>
+                  <TopComment dealId="seiko-watch" />
                 </div>
                 <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={45} onCommentClick={() => toggleComments("seiko-watch")} />
                 <CommentsSection dealId="seiko-watch" isOpen={openComments.has("seiko-watch")} onToggle={(open) => toggleComments("seiko-watch")} />
@@ -221,16 +218,10 @@ export default function Home() {
                 </div>
                 <div className="flex-grow flex flex-col justify-center mb-6">
                   <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2">Nike Store Event</h2>
-                  <div className="text-6xl font-black tracking-tighter leading-[0.85] text-white break-words">EXTRA<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">25%</span><br/>OFF</div>
+                  <div className="text-6xl font-black tracking-tighter leading-[0.85] text-white break-words">EXTRA<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">25%</span><br />OFF</div>
                   <p className="mt-4 text-sm text-white/80 font-medium leading-relaxed border-l-2 border-purple-500 pl-3">Valid on clearance items. The community is going crazy over the Air Jordan restocks included in this.</p>
                 </div>
-                <div className="bg-white/5 rounded-xl p-3 mb-4 border border-white/10 flex gap-3 items-start backdrop-blur-sm">
-                  <img alt="User" className="w-8 h-8 rounded-full border border-white/20 shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMOiVe6WRRQ2d1Uu7ClaIp5O-tQtD1qrgs0S4govVxLR6kbds89rHg0ZkAh1Yc7BLdH55SVRfTHKAkKEfxwrNPOooRQx1jaoX7xdVx9_8QU8WMS9YAbcEsEwtK3s4niQyBFHrZwiMcxV-AZV9INwq_ddus4rwA3cunOYBuNzy2TeKfkav1HcUwlvGhxDcV5DDVl8Ef5kMLJciOYGZa3D_dL0OFtl-ixQWx-79pHXTPzVaWysZNpsdW_LJj3ws1op42c1-sXI7wFOI" />
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-bold text-white mb-0.5">SneakerHead_Official</span>
-                    <p className="text-[12px] leading-snug text-white/70">Confirmed working on outlet items too. Just grabbed VaporMax for $90.</p>
-                  </div>
-                </div>
+                <DarkComment dealId="nike-25off" />
                 <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("nike-25off")} />
                 <CommentsSection dealId="nike-25off" darkBg={true} isOpen={openComments.has("nike-25off")} onToggle={(open) => toggleComments("nike-25off")} />
               </div>
@@ -252,11 +243,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Breville Barista Express Espresso Machine</h3>
                 <div className="bg-gray-50 rounded-xl p-2.5 mb-3 border border-gray-100 flex gap-2.5 items-start">
-                  <img alt="User" className="w-6 h-6 rounded-full border border-white shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiRnqIybdKOPItxVVI2iC0fiw5Bj4zhKLMqfUyTERGDWsyTV-wZSzrN0jehIdnp-aLqdw-hsCxgnTgoS1mGMqhQTGOASP52oxBFExc5a_JkDGfutm3PAdsQ84vfTDRIheEwwnMtLlBskOKhMNe3MJfQ2fAkZJzkAZi4zniCylkiLaFfO-V78sD3LnufLf8z2Gpwc2PPxQWwtENYPMIjeEZXRg9oe8ZXsajGWQhmF3guwOHJLPR3pW3IPlwIT0PHRTBO85qhQawEJU" />
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-[#1A1A1A] mb-0.5">BaristaBob</span>
-                    <p className="text-[11px] leading-snug text-[#666666] line-clamp-2">Requires some dialing in, but once set, it beats Starbucks easily. Grinder is consistent.</p>
-                  </div>
+                  <TopComment dealId="espresso-machine" />
                 </div>
                 <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} onCommentClick={() => toggleComments("espresso-machine")} />
                 <CommentsSection dealId="espresso-machine" isOpen={openComments.has("espresso-machine")} onToggle={(open) => toggleComments("espresso-machine")} />
@@ -282,15 +269,11 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex-grow mb-4">
-                  <h2 className="text-5xl font-black tracking-tighter leading-[0.9] text-[#1A1A1A] mb-3">3 Months<br/><span className="text-[#1db954]">Premium</span></h2>
+                  <h2 className="text-5xl font-black tracking-tighter leading-[0.9] text-[#1A1A1A] mb-3">3 Months<br /><span className="text-[#1db954]">Premium</span></h2>
                   <p className="text-sm text-[#666666] font-medium">New subscribers only. Standard auto-renewal applies after trial.</p>
                 </div>
                 <div className="bg-white rounded-xl p-3 mb-4 border border-[#EBEBEB] shadow-sm flex gap-3 items-start">
-                  <img alt="User" className="w-8 h-8 rounded-full border border-gray-100 shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv0Ga-q3HerYTotdiaCosccCbAfFWkneGO5NpTqfoXt1nSZBXx9cspVOha8giGHdSIlOYJEpIDL3EYNC-CoW9CTit27_hx86FIC4hatLY36gP5GBhH3ZaLmXXCDxPRzSjClPOIWnJedmhrV0gZ2kgyqX4p7Xz-89ygGhBkne4gvc0s0-8Sj1618La1s4Y-KMEC2-KwdlovRvMF9V-yZQ5PbWzBwzVZkrPhWfYiwT_jXm-EZpHSyAi-HzXb1emgO3wl1qpkEF75qNw" />
-                  <div className="flex flex-col">
-                    <span className="text-[11px] font-bold text-[#1A1A1A] mb-0.5">MelodyMaker</span>
-                    <p className="text-[12px] leading-snug text-[#666666]">Used a different email and it worked perfectly. Playlist migration tools exist if you need them!</p>
-                  </div>
+                  <TopComment dealId="spotify-premium" />
                 </div>
                 <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} onCommentClick={() => toggleComments("spotify-premium")} />
                 <CommentsSection dealId="spotify-premium" isOpen={openComments.has("spotify-premium")} onToggle={(open) => toggleComments("spotify-premium")} />
@@ -315,11 +298,7 @@ export default function Home() {
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Nike Air Max 90 - University Red</h3>
                 <div className="bg-gray-50 rounded-xl p-2.5 mb-3 border border-gray-100 flex gap-2.5 items-start">
-                  <img alt="User" className="w-6 h-6 rounded-full border border-white shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1nGE4DabXMcO-5JUOpjROjBygdimvjZjpvbDl1W2Tecj_J4MVUU3w_MbbpZXG6nDzhMQ813cYaF1dydOmfjWONvW0TxOoR8rewS2Xj_9m3g_YXdIIyetHYU__9Ougmzm4Hw96D3SVBpY-bYpdXzDZQTlYEAgMWMpKooZwecUHG2x2G5dlcli8GGNXb_ANkN6tdOijzPqsfryjsF0W1i7SpobOUrlLKpVnr5jJPLjuP2DCzPaCKi9AqdJrwbnPS-kf9vO9oHF-9vk" />
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold text-[#1A1A1A] mb-0.5">AirMaxLover</span>
-                    <p className="text-[11px] leading-snug text-[#666666] line-clamp-2">Size up 0.5 if you have wide feet. The red pops way more in person.</p>
-                  </div>
+                  <TopComment dealId="nike-air-max" />
                 </div>
                 <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} onCommentClick={() => toggleComments("nike-air-max")} />
                 <CommentsSection dealId="nike-air-max" isOpen={openComments.has("nike-air-max")} onToggle={(open) => toggleComments("nike-air-max")} />
@@ -348,13 +327,7 @@ export default function Home() {
                   <div className="text-xl font-bold tracking-[0.3em] mt-2 text-white/80">OFF FIRST</div>
                   <div className="text-sm font-medium text-white/40 mt-1 uppercase tracking-widest">Order Only</div>
                 </div>
-                <div className="bg-white/5 rounded-xl p-3 mb-4 border border-white/10 flex gap-3 items-start backdrop-blur-sm mt-4">
-                  <img alt="User" className="w-8 h-8 rounded-full border border-white/20 shadow-sm flex-shrink-0" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD0IPnzq3Lg7y_HCQ384BKEiVxRck7H-4C98uWN-GYXxvjZ6yTQt1UiNkBd7s0Qc0gV1NbcK4lyNmCz2siPo_4O8V1IlBRBz7mxneuqTSQ4cjCinfor9HsHfrDYIOrLSzxyNbBuhCwU6SQO3iTiG7uYSAo6oY7-wMZlSypL_zNeJ0ZHdudFrldoey297dBsMFMvwoyufWn1o6r5aHEe5H6try3cC_lfPS-lFNdbbFl3RqW-cTx3ImK5pfXV0yLkVpPt1IRZq88m9g" />
-                  <div className="flex flex-col text-left">
-                    <span className="text-[11px] font-bold text-white mb-0.5">LateNightSnack</span>
-                    <p className="text-[12px] leading-snug text-white/70">Works for existing accounts if you haven't ordered in 30 days! Tested in NYC.</p>
-                  </div>
-                </div>
+                <DarkComment dealId="uber-eats-15off" />
                 <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("uber-eats-15off")} />
                 <CommentsSection dealId="uber-eats-15off" darkBg={true} isOpen={openComments.has("uber-eats-15off")} onToggle={(open) => toggleComments("uber-eats-15off")} />
               </div>
@@ -414,7 +387,7 @@ export default function Home() {
                 </div>
                 <div className="flex-grow flex flex-col justify-center mb-6">
                   <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2">Gap & Old Navy</h2>
-                  <div className="text-5xl font-black tracking-tighter leading-[0.85] text-white break-words">EXTRA<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-rose-200">50%</span><br/>OFF</div>
+                  <div className="text-5xl font-black tracking-tighter leading-[0.85] text-white break-words">EXTRA<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-rose-200">50%</span><br />OFF</div>
                 </div>
                 <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("gap-50off")} />
                 <CommentsSection dealId="gap-50off" darkBg={true} isOpen={openComments.has("gap-50off")} onToggle={(open) => toggleComments("gap-50off")} />
@@ -452,7 +425,7 @@ export default function Home() {
                   <div className="text-sm font-black text-white">VIP+</div>
                 </div>
                 <div className="flex-grow mb-4">
-                  <h2 className="text-4xl font-black tracking-tighter leading-[0.9] text-white mb-2">Beauty<br/>Sale</h2>
+                  <h2 className="text-4xl font-black tracking-tighter leading-[0.9] text-white mb-2">Beauty<br />Sale</h2>
                   <p className="text-sm text-white/80">Up to 50% off select brands</p>
                 </div>
                 <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("sephora-beauty")} />
@@ -477,7 +450,7 @@ export default function Home() {
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Organic Health Bundle</h3>
                 <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
                   <div className="flex items-center gap-1 text-[#FF4500] font-bold text-xs">
-                    <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> 4.1k
+                    <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>arrow_upward</span> 4.1k
                   </div>
                   <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors">
                     <span className="material-symbols-outlined text-[20px]">bookmark</span>
@@ -534,7 +507,7 @@ export default function Home() {
                   <div className="flex items-center gap-1 mb-1 opacity-90">
                     <span className="text-[10px] uppercase font-bold tracking-widest bg-white/20 px-1.5 py-0.5 rounded backdrop-blur-sm">Amazon</span>
                     <span className="text-[10px] font-medium text-green-300 flex items-center gap-0.5">
-                      <span className="material-symbols-outlined text-[10px]" style={{fontVariationSettings: "'FILL' 1"}}>verified</span> Verified
+                      <span className="material-symbols-outlined text-[10px]" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span> Verified
                     </span>
                   </div>
                   <h3 className="font-bold text-lg leading-tight mb-1 line-clamp-2">Seiko 5 Sports Automatic</h3>
@@ -542,6 +515,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$185</span>
                     <span className="text-sm text-white/60 line-through mb-1">$275</span>
                   </div>
+                  <TopComment dealId="seiko-watch" />
                   <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={0} whiteText={true} onCommentClick={() => toggleComments("seiko-watch")} />
                   <CommentsSection dealId="seiko-watch" isOpen={openComments.has("seiko-watch")} onToggle={(open) => toggleComments("seiko-watch")} />
                 </div>
@@ -558,10 +532,11 @@ export default function Home() {
               </div>
               <div className="my-4 text-center">
                 <div className="text-xs font-bold uppercase tracking-widest mb-1 opacity-80">Nike Store</div>
-                <div className="text-4xl font-black leading-none tracking-tighter mb-2">EXTRA<br/>25%<br/>OFF</div>
+                <div className="text-4xl font-black leading-none tracking-tighter mb-2">EXTRA<br />25%<br />OFF</div>
                 <div className="text-sm font-medium opacity-90">Clearance Items</div>
               </div>
               <div className="pt-3 border-t border-white/10">
+                <DarkComment dealId="nike-25off" />
                 <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("nike-25off")} />
                 <CommentsSection dealId="nike-25off" darkBg={true} isOpen={openComments.has("nike-25off")} onToggle={(open) => toggleComments("nike-25off")} />
               </div>
@@ -584,6 +559,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$599</span>
                     <span className="text-sm text-white/60 line-through mb-1">$750</span>
                   </div>
+                  <TopComment dealId="espresso-machine" />
                   <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} whiteText={true} onCommentClick={() => toggleComments("espresso-machine")} />
                   <CommentsSection dealId="espresso-machine" isOpen={openComments.has("espresso-machine")} onToggle={(open) => toggleComments("espresso-machine")} />
                 </div>
@@ -599,10 +575,11 @@ export default function Home() {
                 </button>
               </div>
               <div className="my-3">
-                <div style={{fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.9, color: "#fff"}}>Spotify Premium</div>
-                <div style={{fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff"}}>3 Months<br/>Free Trial</div>
+                <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.9, color: "#fff" }}>Spotify Premium</div>
+                <div style={{ fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff" }}>3 Months<br />Free Trial</div>
               </div>
               <div className="pt-3 border-t border-white/10">
+                <DarkComment dealId="spotify-premium" />
                 <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("spotify-premium")} />
                 <CommentsSection dealId="spotify-premium" darkBg={true} isOpen={openComments.has("spotify-premium")} onToggle={(open) => toggleComments("spotify-premium")} />
               </div>
@@ -627,6 +604,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$89.99</span>
                     <span className="text-sm text-white/60 line-through mb-1">$130</span>
                   </div>
+                  <TopComment dealId="nike-air-max" />
                   <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} whiteText={true} onCommentClick={() => toggleComments("nike-air-max")} />
                   <CommentsSection dealId="nike-air-max" isOpen={openComments.has("nike-air-max")} onToggle={(open) => toggleComments("nike-air-max")} />
                 </div>
@@ -642,11 +620,12 @@ export default function Home() {
                 </button>
               </div>
               <div className="my-4 text-center">
-                <div style={{fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.8, color: "#fff"}}>Uber Eats</div>
-                <div style={{fontSize: "40px", fontWeight: "900", lineHeight: 1, letterSpacing: "-0.02em", color: "#fff"}}>$20</div>
-                <div style={{fontSize: "16px", fontWeight: "700", letterSpacing: "-0.01em", color: "#fff"}}>OFF FIRST ORDER</div>
+                <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.8, color: "#fff" }}>Uber Eats</div>
+                <div style={{ fontSize: "40px", fontWeight: "900", lineHeight: 1, letterSpacing: "-0.02em", color: "#fff" }}>$20</div>
+                <div style={{ fontSize: "16px", fontWeight: "700", letterSpacing: "-0.01em", color: "#fff" }}>OFF FIRST ORDER</div>
               </div>
               <div className="pt-3 border-t border-white/10">
+                <DarkComment dealId="uber-eats-15off" />
                 <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("uber-eats-15off")} />
                 <CommentsSection dealId="uber-eats-15off" darkBg={true} isOpen={openComments.has("uber-eats-15off")} onToggle={(open) => toggleComments("uber-eats-15off")} />
               </div>
@@ -707,9 +686,9 @@ export default function Home() {
                 </button>
               </div>
               <div className="my-3">
-                <div style={{fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.8, color: "#fff"}}>Gap & Old Navy</div>
-                <div style={{fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff"}}>EXTRA<br/>50%<br/>OFF</div>
-                <div style={{fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff"}}>Flash Sale - 2h left</div>
+                <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.8, color: "#fff" }}>Gap & Old Navy</div>
+                <div style={{ fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff" }}>EXTRA<br />50%<br />OFF</div>
+                <div style={{ fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff" }}>Flash Sale - 2h left</div>
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("gap-50off")} />
@@ -751,9 +730,9 @@ export default function Home() {
                 </button>
               </div>
               <div className="my-3">
-                <div style={{fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.8, color: "#fff"}}>Sephora Beauty</div>
-                <div style={{fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff"}}>50%<br/>OFF</div>
-                <div style={{fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff"}}>Select brands</div>
+                <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.125em", marginBottom: "8px", opacity: 0.8, color: "#fff" }}>Sephora Beauty</div>
+                <div style={{ fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff" }}>50%<br />OFF</div>
+                <div style={{ fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff" }}>Select brands</div>
               </div>
               <div className="pt-3 border-t border-white/10">
                 <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("sephora-beauty")} />
@@ -801,7 +780,7 @@ export default function Home() {
               <span className="material-symbols-outlined text-[24px]">explore</span>
             </a>
             <a className="flex flex-col items-center justify-center p-3 rounded-full text-gray-400 hover:text-black hover:bg-gray-50 transition-all w-12 h-12" href="#">
-              <span className="material-symbols-outlined text-[24px]" style={{fontVariationSettings: "'FILL' 1"}}>add_circle</span>
+              <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>add_circle</span>
             </a>
             <a className="flex flex-col items-center justify-center p-3 rounded-full text-gray-400 hover:text-black hover:bg-gray-50 transition-all w-12 h-12 relative" href="#">
               <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-red-500 rounded-full border border-white"></div>
@@ -816,6 +795,41 @@ export default function Home() {
 
       <Footer />
     </>
+  );
+}
+
+// Helper components for dynamic comments within cards in page.tsx
+function TopComment({ dealId }: { dealId: string }) {
+  const { data: comment, loading } = useBestComment(dealId);
+  if (loading || !comment) return null;
+
+  return (
+    <div className="bg-gray-50 rounded-xl p-2.5 mb-3 border border-gray-100 flex gap-2.5 items-start">
+      <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center text-[10px] text-white font-bold border border-white shadow-sm shrink-0">
+        {comment.user.username[0].toUpperCase()}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-[10px] font-bold text-[#1A1A1A] mb-0.5">{comment.user.username}</span>
+        <p className="text-[11px] leading-snug text-[#666666] line-clamp-2 italic">"{comment.content}"</p>
+      </div>
+    </div>
+  );
+}
+
+function DarkComment({ dealId }: { dealId: string }) {
+  const { data: comment, loading } = useBestComment(dealId);
+  if (loading || !comment) return null;
+
+  return (
+    <div className="bg-white/5 rounded-xl p-3 mb-4 border border-white/10 flex gap-3 items-start backdrop-blur-sm">
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-[10px] text-white font-bold border border-white/20 shadow-sm flex-shrink-0">
+        {comment.user.username[0].toUpperCase()}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-[11px] font-bold text-white mb-0.5">{comment.user.username}</span>
+        <p className="text-[12px] leading-snug text-white/70 italic line-clamp-2">"{comment.content}"</p>
+      </div>
+    </div>
   );
 }
 // Force redeploy
