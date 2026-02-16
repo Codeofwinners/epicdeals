@@ -123,6 +123,22 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
     return null;
   }
 
+  // Intelligent comment sorting:
+  // 1. User's own comment first (if they have one)
+  // 2. Then most popular comments (by upvotes)
+  // 3. Then chronologically newest
+  const sortedComments = [...comments].sort((a, b) => {
+    // User's own comment goes first
+    if (user?.uid === a.user.id && user?.uid !== b.user.id) return -1;
+    if (user?.uid !== a.user.id && user?.uid === b.user.id) return 1;
+
+    // Then sort by upvotes (most upvoted first)
+    if (a.upvotes !== b.upvotes) return b.upvotes - a.upvotes;
+
+    // Finally by date (newest first)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   return (
     <div style={{ borderTop: `1px solid ${borderColor}`, paddingTop: "12px", marginTop: "12px" }}>
       {/* Close button */}
@@ -237,7 +253,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {comments.slice(0, 5).map((comment) => (
+          {sortedComments.slice(0, 5).map((comment) => (
             <div key={comment.id}>
               {editingId === comment.id ? (
                 <div
@@ -308,6 +324,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                     backgroundColor: bgColor,
                     borderRadius: "8px",
                     border: `1px solid ${borderColor}`,
+                    ...(user?.uid === comment.user.id && { borderColor: "#0EA5E9", borderWidth: "2px" }),
                   }}
                 >
                   <div style={{ display: "flex", gap: "8px" }}>
@@ -328,6 +345,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                         <div>
                           <span style={{ fontSize: "12px", fontWeight: "600", color: textColor }}>
                             {comment.user.username}
+                            {user?.uid === comment.user.id && <span style={{ fontSize: "10px", color: "#0EA5E9", marginLeft: "6px" }}>(You)</span>}
                           </span>
                           <span style={{ fontSize: "11px", color: secondaryTextColor, marginLeft: "8px" }}>
                             {new Date(comment.createdAt).toLocaleDateString()}
