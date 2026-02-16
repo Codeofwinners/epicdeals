@@ -152,7 +152,13 @@ export default function DashboardPage() {
     );
   }
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ fontSize: "16px", color: "#666" }}>Redirecting to login...</div>
+      </div>
+    );
+  }
 
   return (
     <div
