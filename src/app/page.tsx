@@ -1,3 +1,7 @@
+"use client";
+
+import { AuthButton } from "@/components/auth/AuthButton";
+
 export default function Home() {
   return (
     <>
@@ -65,9 +69,7 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 p-0.5 shadow-sm hover:shadow-lg transition-all cursor-pointer flex-shrink-0">
-                  <img alt="You" className="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaztf_xfHR_2jqx0QAMIOycu7InafOGLaIDmCEBmIMlWPCPNW9BahgE21DBj_7yIeogWZgaiGZzhayqIC0tgffRYAv6rfu6G7FJNeX_nk2ltYZdHKnawwxG6IpD3OP5cB4HVIjexdBX_j2d9mgPKgOX4BPsCOgEA6sd87-WPcN6dGXc9oUpRYi9ffcd7bo3S_OiOY2k1KIPuZcTtxQbU4Gs3HLeLrjGPTxcafHusWWEoQXaeTtl-mE-2F7UVb4zahDo84ILz71WRw" />
-                </div>
+                <AuthButton />
               </div>
             </div>
 
@@ -568,8 +570,9 @@ export default function Home() {
                 legit.<span className="text-blue-600">discount</span>
               </div>
 
-              {/* Alerts */}
-              <div className="ml-auto">
+              {/* Auth Button + Alerts */}
+              <div className="ml-auto flex items-center gap-2">
+                <AuthButton />
                 <button className="p-2 rounded-lg hover:bg-gray-100 transition-colors relative">
                   <span className="material-symbols-outlined text-[22px] text-gray-700">notifications</span>
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full"></span>
