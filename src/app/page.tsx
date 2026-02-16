@@ -8,8 +8,14 @@ import { db } from "@/lib/firebase";
 import { seedDeals } from "@/lib/seedDeals";
 
 // Seed deals on load
+let dealsSeeded = false;
 if (typeof window !== "undefined") {
-  seedDeals().catch(err => console.error("Seed failed:", err));
+  seedDeals()
+    .then(() => {
+      dealsSeeded = true;
+      console.log("✅ Deals seeded");
+    })
+    .catch(err => console.error("Seed failed:", err));
 }
 
 function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: number; downvotes: number }) {
@@ -49,6 +55,9 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
       alert("Firebase not initialized");
       return;
     }
+
+    // Wait a moment for deals to be seeded
+    await new Promise(r => setTimeout(r, 500));
 
     setError(null);
     setVoting(true);

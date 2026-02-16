@@ -47,13 +47,15 @@ export async function seedDeals() {
   }
 
   try {
-    console.log("Seeding deals...");
+    console.log("Checking if deals need seeding...");
+
+    // Try to seed each deal - setDoc with merge will handle duplicates
     for (const deal of SAMPLE_DEALS) {
       const dealRef = doc(db, "deals", deal.id);
-      await setDoc(dealRef, deal);
-      console.log("Created deal:", deal.id);
+      await setDoc(dealRef, deal, { merge: true });
+      console.log("✅ Deal ready:", deal.id);
     }
-    console.log("✅ Deals seeded successfully");
+    console.log("✅ All deals seeded");
   } catch (error) {
     console.error("Error seeding deals:", error);
   }
