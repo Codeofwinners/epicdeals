@@ -217,7 +217,7 @@ export default function Home() {
                     <p className="text-[11px] leading-snug text-[#666666] line-clamp-2">Best entry level automatic. The jubilee bracelet is surprisingly comfy for this price point.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={45} />
+                <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={45} onCommentClick={() => toggleComments("seiko-watch")} />
                 <CommentsSection dealId="seiko-watch" isOpen={openComments.has("seiko-watch")} onToggle={(open) => toggleComments("seiko-watch")} />
               </div>
             </div>
@@ -248,7 +248,7 @@ export default function Home() {
                     <p className="text-[12px] leading-snug text-white/70">Confirmed working on outlet items too. Just grabbed VaporMax for $90.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} />
+                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("nike-25off")} />
               </div>
             </div>
 
@@ -274,7 +274,7 @@ export default function Home() {
                     <p className="text-[11px] leading-snug text-[#666666] line-clamp-2">Requires some dialing in, but once set, it beats Starbucks easily. Grinder is consistent.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} />
+                <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} onCommentClick={() => toggleComments("espresso-machine")} />
                 <CommentsSection dealId="espresso-machine" isOpen={openComments.has("espresso-machine")} onToggle={(open) => toggleComments("espresso-machine")} />
               </div>
             </div>
@@ -308,7 +308,7 @@ export default function Home() {
                     <p className="text-[12px] leading-snug text-[#666666]">Used a different email and it worked perfectly. Playlist migration tools exist if you need them!</p>
                   </div>
                 </div>
-                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} />
+                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} onCommentClick={() => toggleComments("spotify-premium")} />
               </div>
             </div>
 
@@ -336,7 +336,7 @@ export default function Home() {
                     <p className="text-[11px] leading-snug text-[#666666] line-clamp-2">Size up 0.5 if you have wide feet. The red pops way more in person.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} />
+                <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} onCommentClick={() => toggleComments("nike-air-max")} />
                 <CommentsSection dealId="nike-air-max" isOpen={openComments.has("nike-air-max")} onToggle={(open) => toggleComments("nike-air-max")} />
               </div>
             </div>
@@ -370,7 +370,7 @@ export default function Home() {
                     <p className="text-[12px] leading-snug text-white/70">Works for existing accounts if you haven't ordered in 30 days! Tested in NYC.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} />
+                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("uber-eats-15off")} />
               </div>
             </div>
 
@@ -390,7 +390,7 @@ export default function Home() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#666666]">Amazon Fresh</span>
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Organic Grocery Bundle</h3>
-                <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} />
+                <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} onCommentClick={() => toggleComments("amazon-fresh-20off")} />
               </div>
             </div>
 
@@ -409,7 +409,7 @@ export default function Home() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#666666]">Best Buy</span>
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Wireless Headphones</h3>
-                <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} />
+                <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} onCommentClick={() => toggleComments("best-buy-wireless")} />
               </div>
             </div>
 
@@ -428,7 +428,7 @@ export default function Home() {
                   <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2">Gap & Old Navy</h2>
                   <div className="text-5xl font-black tracking-tighter leading-[0.85] text-white break-words">EXTRA<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-rose-200">50%</span><br/>OFF</div>
                 </div>
-                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} />
+                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("gap-50off")} />
               </div>
             </div>
 
@@ -449,7 +449,7 @@ export default function Home() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#666666]">Target</span>
                 </div>
                 <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">Room Decor Collection</h3>
-                <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} />
+                <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} onCommentClick={() => toggleComments("target-home")} />
               </div>
             </div>
 
@@ -465,7 +465,7 @@ export default function Home() {
                   <h2 className="text-4xl font-black tracking-tighter leading-[0.9] text-white mb-2">Beauty<br/>Sale</h2>
                   <p className="text-sm text-white/80">Up to 50% off select brands</p>
                 </div>
-                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} />
+                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("sephora-beauty")} />
               </div>
             </div>
 
@@ -551,7 +551,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$185</span>
                     <span className="text-sm text-white/60 line-through mb-1">$275</span>
                   </div>
-                  <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={0} />
+                  <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={0} onCommentClick={() => toggleComments("seiko-watch")} />
                 </div>
               </div>
             </div>
@@ -570,7 +570,7 @@ export default function Home() {
                 <div className="text-sm font-medium opacity-90">Clearance Items</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} />
+                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("nike-25off")} />
               </div>
             </div>
 
@@ -591,7 +591,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$599</span>
                     <span className="text-sm text-white/60 line-through mb-1">$750</span>
                   </div>
-                  <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} />
+                  <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} onCommentClick={() => toggleComments("espresso-machine")} />
                 </div>
               </div>
             </div>
@@ -609,7 +609,7 @@ export default function Home() {
                 <div style={{fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff"}}>3 Months<br/>Free Trial</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} darkBg={true} />
+                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("spotify-premium")} />
                 <CommentsSection dealId="spotify-premium" darkBg={true} isOpen={openComments.has("spotify-premium")} onToggle={(open) => toggleComments("spotify-premium")} />
               </div>
             </div>
@@ -633,7 +633,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$89.99</span>
                     <span className="text-sm text-white/60 line-through mb-1">$130</span>
                   </div>
-                  <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} />
+                  <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} onCommentClick={() => toggleComments("nike-air-max")} />
                 </div>
               </div>
             </div>
@@ -652,7 +652,7 @@ export default function Home() {
                 <div style={{fontSize: "16px", fontWeight: "700", letterSpacing: "-0.01em", color: "#fff"}}>OFF FIRST ORDER</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} />
+                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("uber-eats-15off")} />
                 <CommentsSection dealId="uber-eats-15off" darkBg={true} isOpen={openComments.has("uber-eats-15off")} onToggle={(open) => toggleComments("uber-eats-15off")} />
               </div>
             </div>
@@ -674,7 +674,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$34</span>
                     <span className="text-sm text-white/60 line-through mb-1">$45</span>
                   </div>
-                  <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} />
+                  <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} onCommentClick={() => toggleComments("amazon-fresh-20off")} />
                 </div>
               </div>
             </div>
@@ -696,7 +696,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$119</span>
                     <span className="text-sm text-white/60 line-through mb-1">$199</span>
                   </div>
-                  <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} />
+                  <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} onCommentClick={() => toggleComments("best-buy-wireless")} />
                 </div>
               </div>
             </div>
@@ -715,7 +715,7 @@ export default function Home() {
                 <div style={{fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff"}}>Flash Sale - 2h left</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} />
+                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("gap-50off")} />
                 <CommentsSection dealId="gap-50off" darkBg={true} isOpen={openComments.has("gap-50off")} onToggle={(open) => toggleComments("gap-50off")} />
               </div>
             </div>
@@ -739,7 +739,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$49</span>
                     <span className="text-sm text-white/60 line-through mb-1">$79</span>
                   </div>
-                  <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} />
+                  <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} onCommentClick={() => toggleComments("target-home")} />
                 </div>
               </div>
             </div>
@@ -758,7 +758,7 @@ export default function Home() {
                 <div style={{fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff"}}>Select brands</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} />
+                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("sephora-beauty")} />
                 <CommentsSection dealId="sephora-beauty" darkBg={true} isOpen={openComments.has("sephora-beauty")} onToggle={(open) => toggleComments("sephora-beauty")} />
               </div>
             </div>
