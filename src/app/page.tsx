@@ -89,7 +89,7 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = f
   const borderColor = darkBg ? "rgba(255,255,255,0.1)" : "border-[#EBEBEB]/60";
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={`flex flex-col gap-2 ${whiteText ? "text-white" : ""}`} style={whiteText ? { color: "#fff" } : {}}>
       {error && <div style={{color: "red", fontSize: "12px"}}>{error}</div>}
       <div className="flex items-center justify-between pt-2" style={{borderTop: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#EBEBEB"}`}}>
         <div className="flex items-center gap-3">
