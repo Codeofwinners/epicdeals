@@ -5,14 +5,12 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useRouter } from "next/navigation";
 import {
   getDealById,
-  getVoteStatus,
   upvoteDeal,
-  getDealComments,
   deleteComment,
   editComment,
 } from "@/lib/firestore";
 import type { Deal, Comment } from "@/types/deals";
-import { collection, getDocs, query, where, onSnapshot, doc } from "firebase/firestore";
+import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export default function DashboardPage() {
@@ -146,95 +144,47 @@ export default function DashboardPage() {
 
   if (authLoading || loading) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ fontSize: "16px", color: "#666" }}>Loading your dashboard...</div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-slate-600">Loading your dashboard...</div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ fontSize: "16px", color: "#666" }}>Redirecting to login...</div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-slate-600">Redirecting to login...</div>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f8f9fa",
-        fontFamily: "Manrope, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        color: "#1a1a1a",
-      }}
-    >
-      <div style={{ maxWidth: "900px", margin: "0 auto", paddingBottom: "120px" }}>
+    <div className="bg-slate-50 min-h-screen font-display pb-28">
+      <div className="max-w-md mx-auto">
         {/* Header */}
-        <header
-          style={{
-            padding: "48px 24px 16px",
-            borderBottom: "1px solid #e5e5e5",
-            backgroundColor: "#fff",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: "16px",
-          }}
-        >
+        <header className="px-6 pt-12 pb-4 flex justify-between items-center sticky top-0 z-20 bg-slate-50/95 backdrop-blur-md">
           <div>
-            <h1 style={{ fontSize: "28px", fontWeight: "800", margin: "0 0 8px 0" }}>Pro Dashboard</h1>
-            <p style={{ fontSize: "14px", fontWeight: "500", color: "#999", margin: 0 }}>
-              Manage interactions & history
-            </p>
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Pro Dashboard</h1>
+            <p className="text-sm font-medium text-slate-400 mt-0.5">Manage interactions & history</p>
           </div>
           {user.photoURL && (
-            <div
-              style={{
-                position: "relative",
-                display: "inline-block",
-              }}
-            >
+            <div className="relative group cursor-pointer">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-blue-400 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-200"></div>
               <img
                 src={user.photoURL}
                 alt={user.displayName || "User"}
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  border: "2px solid #fff",
-                  boxShadow: "0 0 10px rgba(48, 110, 232, 0.2)",
-                  objectFit: "cover",
-                }}
+                className="relative w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm"
               />
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  right: 0,
-                  width: "10px",
-                  height: "10px",
-                  backgroundColor: "#22c55e",
-                  borderRadius: "50%",
-                  border: "2px solid #fff",
-                  boxShadow: "0 0 4px rgba(34, 197, 94, 0.3)",
-                }}
-              />
+              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
           )}
         </header>
 
         {/* Search & Filters */}
-        <div
-          style={{
-            padding: "16px 24px",
-            backgroundColor: "#fff",
-            borderBottom: "1px solid #e5e5e5",
-          }}
-        >
-          <div style={{ position: "relative", marginBottom: "16px" }}>
-            <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" color="#999">
+        <div className="px-6 space-y-4 mb-6 sticky top-20 z-10 bg-slate-50/95 backdrop-blur-md pb-4 border-b border-slate-200">
+          <div className="relative">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8"></circle>
                 <path d="m21 21-4.35-4.35"></path>
               </svg>
@@ -244,64 +194,31 @@ export default function DashboardPage() {
               placeholder="Search my history..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: "100%",
-                paddingLeft: "40px",
-                paddingRight: "16px",
-                paddingTop: "12px",
-                paddingBottom: "12px",
-                borderRadius: "12px",
-                border: "1px solid #e5e5e5",
-                backgroundColor: "#fff",
-                fontSize: "14px",
-                boxSizing: "border-box",
-                fontFamily: "inherit",
-              }}
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-white border border-slate-200 text-sm focus:ring-blue-500 focus:border-blue-500 shadow-sm"
             />
           </div>
 
           {/* Filter buttons */}
-          <div
-            style={{
-              display: "flex",
-              gap: "8px",
-              overflowX: "auto",
-              paddingBottom: "8px",
-            }}
-          >
+          <div className="flex gap-2 overflow-x-auto pb-1">
             <button
               onClick={() => setFilterStore("")}
-              style={{
-                padding: "8px 16px",
-                borderRadius: "8px",
-                border: !filterStore ? "none" : "1px solid #e5e5e5",
-                backgroundColor: !filterStore ? "#306ee8" : "#fff",
-                color: !filterStore ? "#fff" : "#666",
-                fontWeight: "600",
-                fontSize: "12px",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                transition: "all 0.2s",
-              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${
+                !filterStore
+                  ? "bg-blue-500 text-white shadow-md"
+                  : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+              }`}
             >
-              All Stores
+              <span className="text-xs">📋</span> All Status
             </button>
             {stores.map((store) => (
               <button
                 key={store.id}
                 onClick={() => setFilterStore(store.id)}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "8px",
-                  border: filterStore === store.id ? "none" : "1px solid #e5e5e5",
-                  backgroundColor: filterStore === store.id ? "#306ee8" : "#fff",
-                  color: filterStore === store.id ? "#fff" : "#666",
-                  fontWeight: "600",
-                  fontSize: "12px",
-                  cursor: "pointer",
-                  whiteSpace: "nowrap",
-                  transition: "all 0.2s",
-                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${
+                  filterStore === store.id
+                    ? "bg-blue-500 text-white shadow-md"
+                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                }`}
               >
                 {store.name}
               </button>
@@ -310,190 +227,90 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Content */}
-        <main style={{ padding: "24px" }}>
+        <main className="px-6 space-y-8">
           {/* Active Engagements Section */}
-          <section style={{ marginBottom: "48px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "700", margin: 0, display: "flex", alignItems: "center", gap: "8px" }}>
+          <section>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                 Active Engagements
-                <span
-                  style={{
-                    fontSize: "10px",
-                    backgroundColor: "#e5e5e5",
-                    color: "#666",
-                    padding: "4px 8px",
-                    borderRadius: "999px",
-                    fontWeight: "600",
-                  }}
-                >
+                <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full">
                   {filteredDeals.length}
                 </span>
               </h2>
             </div>
 
             {filteredDeals.length === 0 ? (
-              <div
-                style={{
-                  padding: "32px",
-                  textAlign: "center",
-                  backgroundColor: "#fff",
-                  borderRadius: "12px",
-                  border: "1px solid #e5e5e5",
-                  color: "#999",
-                }}
-              >
+              <div className="bg-white rounded-xl p-12 shadow-card border border-slate-200 text-center text-slate-500">
                 No upvoted deals yet
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div className="space-y-3">
                 {filteredDeals.map((deal) => (
                   <div
                     key={deal.id}
-                    style={{
-                      backgroundColor: "#fff",
-                      borderRadius: "12px",
-                      padding: "16px",
-                      border: "1px solid #e5e5e5",
-                      display: "flex",
-                      gap: "12px",
-                      transition: "all 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = "#306ee8";
-                      (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 3px rgba(48, 110, 232, 0.1)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = "#e5e5e5";
-                      (e.currentTarget as HTMLElement).style.boxShadow = "none";
-                    }}
+                    className="group bg-white rounded-xl p-3 shadow-card border border-slate-200 relative hover:border-blue-400 transition-all"
                   >
-                    {/* Deal Image */}
-                    {deal.imageUrl && (
-                      <div
-                        style={{
-                          width: "64px",
-                          height: "64px",
-                          minWidth: "64px",
-                          borderRadius: "8px",
-                          overflow: "hidden",
-                          backgroundColor: "#f5f5f5",
-                        }}
-                      >
-                        <img
-                          src={deal.imageUrl}
-                          alt={deal.title}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                      </div>
-                    )}
-
-                    {/* Deal Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "8px" }}>
-                        <h3 style={{ fontSize: "14px", fontWeight: "600", margin: 0, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {deal.title}
-                        </h3>
-                        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                          {deal.savingsAmount && (
-                            <>
-                              <span style={{ fontSize: "11px", textDecoration: "line-through", color: "#999" }}>
-                                ${deal.savingsValue > 0 ? deal.savingsValue : "N/A"}
-                              </span>
-                              <span style={{ fontSize: "14px", fontWeight: "700", color: "#306ee8" }}>
-                                {deal.savingsAmount}
-                              </span>
-                            </>
-                          )}
+                    <div className="flex gap-3">
+                      {deal.imageUrl && (
+                        <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100">
+                          <img
+                            alt={deal.title}
+                            className="w-full h-full object-cover"
+                            src={deal.imageUrl}
+                          />
                         </div>
-                      </div>
-
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end" }}>
-                        <div>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              fontSize: "10px",
-                              fontWeight: "600",
-                              color: "#ff9500",
-                              backgroundColor: "rgba(255, 149, 0, 0.1)",
-                              padding: "4px 8px",
-                              borderRadius: "4px",
-                              marginBottom: "4px",
-                              width: "fit-content",
-                            }}
-                          >
-                            ⏱️ Active
-                          </div>
-                          <div style={{ fontSize: "10px", color: "#999" }}>
-                            {deal.store.name}
+                      )}
+                      <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                        <div className="flex justify-between items-start">
+                          <h3 className="font-bold text-slate-900 text-sm truncate pr-2">
+                            {deal.title}
+                          </h3>
+                          <div className="flex items-center gap-1.5">
+                            {deal.savingsValue > 0 && (
+                              <span className="text-xs line-through text-slate-400">
+                                ${deal.savingsValue}
+                              </span>
+                            )}
+                            <span className="text-blue-500 font-bold text-sm">
+                              {deal.savingsAmount}
+                            </span>
                           </div>
                         </div>
-
-                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                          <button
-                            onClick={() => {
-                              const text = `Check out this deal: ${deal.title} at ${deal.store.name} - ${deal.savingsAmount} off`;
-                              if (navigator.share) {
-                                navigator.share({ title: deal.title, text });
-                              } else {
-                                navigator.clipboard.writeText(`${deal.title} - ${window.location.origin}/deals/${deal.slug}`);
-                                alert("Deal link copied!");
-                              }
-                            }}
-                            style={{
-                              padding: "8px",
-                              borderRadius: "50%",
-                              border: "none",
-                              backgroundColor: "#f5f5f5",
-                              color: "#666",
-                              cursor: "pointer",
-                              fontSize: "16px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "all 0.2s",
-                            }}
-                            onMouseEnter={(e) => {
-                              (e.currentTarget as HTMLElement).style.backgroundColor = "#306ee8";
-                              (e.currentTarget as HTMLElement).style.color = "#fff";
-                            }}
-                            onMouseLeave={(e) => {
-                              (e.currentTarget as HTMLElement).style.backgroundColor = "#f5f5f5";
-                              (e.currentTarget as HTMLElement).style.color = "#666";
-                            }}
-                            title="Share Deal"
-                          >
-                            ↗️
-                          </button>
-                          <button
-                            onClick={() => handleRemoveVote(deal.id)}
-                            style={{
-                              padding: "8px",
-                              borderRadius: "50%",
-                              border: "none",
-                              backgroundColor: "rgba(34, 197, 94, 0.1)",
-                              color: "#22c55e",
-                              cursor: "pointer",
-                              fontSize: "16px",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              transition: "all 0.2s",
-                            }}
-                            onMouseEnter={(e) => {
-                              (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(239, 68, 68, 0.1)";
-                              (e.currentTarget as HTMLElement).style.color = "#ef4444";
-                            }}
-                            onMouseLeave={(e) => {
-                              (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(34, 197, 94, 0.1)";
-                              (e.currentTarget as HTMLElement).style.color = "#22c55e";
-                            }}
-                            title="Remove Vote"
-                          >
-                            👍
-                          </button>
+                        <div className="flex justify-between items-end mt-1">
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-1 text-[10px] font-medium text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded w-fit">
+                              <span>⏱️</span> Exp: Active
+                            </div>
+                            <div className="text-[10px] text-slate-500">
+                              {deal.store.name} • Now
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                const text = `Check out this deal: ${deal.title} at ${deal.store.name}`;
+                                if (navigator.share) {
+                                  navigator.share({ title: deal.title, text });
+                                } else {
+                                  navigator.clipboard.writeText(
+                                    `${deal.title} - ${window.location.origin}/deals/${deal.slug}`
+                                  );
+                                  alert("Deal link copied!");
+                                }
+                              }}
+                              className="p-1.5 rounded-full bg-slate-50 text-slate-400 hover:text-blue-500 transition-colors"
+                              title="Share Deal"
+                            >
+                              <span className="text-sm">📤</span>
+                            </button>
+                            <button
+                              onClick={() => handleRemoveVote(deal.id)}
+                              className="p-1.5 rounded-full bg-slate-50 text-green-500 hover:bg-red-50 hover:text-red-500 transition-colors"
+                              title="Remove Vote"
+                            >
+                              <span className="text-sm">👍</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -504,80 +321,45 @@ export default function DashboardPage() {
           </section>
 
           {/* Recent Comments Section */}
-          <section style={{ paddingTop: "24px", borderTop: "1px solid #e5e5e5" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "16px" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: "700", margin: 0 }}>Recent Comments</h2>
+          <section>
+            <div className="flex justify-between items-baseline mb-4 pt-4 border-t border-slate-200">
+              <h2 className="text-lg font-bold text-slate-900">Recent Comments</h2>
             </div>
 
             {commentsError && (
-              <div style={{ padding: "12px", backgroundColor: "rgba(239, 68, 68, 0.1)", color: "#ef4444", borderRadius: "8px", marginBottom: "16px", fontSize: "13px" }}>
+              <div className="p-3 bg-red-50 text-red-600 rounded-lg mb-4 text-sm">
                 {commentsError}
               </div>
             )}
 
             {userComments.length === 0 ? (
-              <div
-                style={{
-                  padding: "32px",
-                  textAlign: "center",
-                  backgroundColor: "#fff",
-                  borderRadius: "12px",
-                  border: "1px solid #e5e5e5",
-                  color: "#999",
-                }}
-              >
+              <div className="bg-white p-12 rounded-xl border border-slate-200 text-center text-slate-500">
                 No comments yet
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div className="space-y-3">
                 {userComments.map((comment) => (
-                  <div key={comment.id} style={{ backgroundColor: "#fff", padding: "16px", borderRadius: "12px", border: "1px solid #e5e5e5" }}>
+                  <div key={comment.id} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                     {editingCommentId === comment.id ? (
                       <div>
                         <textarea
                           value={editingCommentText}
                           onChange={(e) => setEditingCommentText(e.target.value)}
-                          style={{
-                            width: "100%",
-                            padding: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #e5e5e5",
-                            fontFamily: "inherit",
-                            fontSize: "13px",
-                            minHeight: "80px",
-                            boxSizing: "border-box",
-                          }}
+                          className="w-full p-3 rounded-lg border border-slate-200 text-sm font-display min-h-[80px]"
                         />
-                        <div style={{ display: "flex", gap: "8px", marginTop: "8px", justifyContent: "flex-end" }}>
+                        <div className="flex justify-end gap-3 mt-3">
                           <button
                             onClick={() => {
                               setEditingCommentId(null);
                               setEditingCommentText("");
                             }}
-                            style={{
-                              padding: "6px 12px",
-                              backgroundColor: "#f5f5f5",
-                              border: "1px solid #e5e5e5",
-                              borderRadius: "6px",
-                              fontSize: "12px",
-                              fontWeight: "600",
-                              cursor: "pointer",
-                            }}
+                            className="text-[10px] font-bold text-slate-400 border border-slate-200 px-2 py-1 rounded hover:bg-slate-50"
                           >
                             Cancel
                           </button>
                           <button
                             onClick={() => handleEditComment(comment.id)}
-                            style={{
-                              padding: "6px 12px",
-                              backgroundColor: "#306ee8",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: "6px",
-                              fontSize: "12px",
-                              fontWeight: "600",
-                              cursor: "pointer",
-                            }}
+                            className="text-[10px] font-bold text-blue-500 px-2 py-1 rounded hover:bg-blue-50"
                           >
                             Save
                           </button>
@@ -585,48 +367,32 @@ export default function DashboardPage() {
                       </div>
                     ) : (
                       <div>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                          <div>
-                            <h4 style={{ fontSize: "12px", fontWeight: "600", margin: "0 0 4px 0", color: "#1a1a1a" }}>
-                              Comment
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-bold text-slate-900 truncate">
+                              Re: Comment
                             </h4>
-                            <span style={{ fontSize: "11px", color: "#999" }}>
-                              {new Date(comment.createdAt).toLocaleDateString()}
-                            </span>
                           </div>
+                          <span className="text-[10px] text-slate-400">
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
-                        <p style={{ fontSize: "13px", color: "#666", lineHeight: "1.5", margin: "8px 0", wordBreak: "break-word" }}>
+                        <p className="text-xs text-slate-600 leading-relaxed ml-0 mb-2">
                           "{comment.content}"
                         </p>
-                        <div style={{ display: "flex", gap: "16px", marginTop: "12px" }}>
+                        <div className="flex justify-end gap-3">
                           <button
                             onClick={() => {
                               setEditingCommentId(comment.id);
                               setEditingCommentText(comment.content);
                             }}
-                            style={{
-                              fontSize: "12px",
-                              fontWeight: "600",
-                              color: "#306ee8",
-                              border: "none",
-                              backgroundColor: "transparent",
-                              cursor: "pointer",
-                              padding: 0,
-                            }}
+                            className="text-[10px] font-bold text-slate-400 hover:text-blue-500 transition-colors"
                           >
                             Edit
                           </button>
                           <button
                             onClick={() => handleDeleteComment(comment.id)}
-                            style={{
-                              fontSize: "12px",
-                              fontWeight: "600",
-                              color: "#ef4444",
-                              border: "none",
-                              backgroundColor: "transparent",
-                              cursor: "pointer",
-                              padding: 0,
-                            }}
+                            className="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors"
                           >
                             Delete
                           </button>
