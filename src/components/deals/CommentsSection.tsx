@@ -1,0 +1,231 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { addComment, onDealComments } from "@/lib/firestore";
+import type { Comment } from "@/types/deals";
+
+interface CommentsSectionProps {
+  dealId: string;
+  darkBg?: boolean;
+}
+
+export function CommentsSection({ dealId, darkBg = false }: CommentsSectionProps) {
+  const { user } = useAuth();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentText, setCommentText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Real-time listener for comments
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = onDealComments(dealId, (newComments) => {
+      setComments(newComments);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [dealId]);
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      alert("Sign in to comment");
+      return;
+    }
+
+    if (!commentText.trim()) {
+      setError("Comment cannot be empty");
+      return;
+    }
+
+    if (commentText.length > 1000) {
+      setError("Comment must be under 1000 characters");
+      return;
+    }
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      await addComment({
+        dealId,
+        content: commentText,
+        user: {
+          id: user.uid,
+          username: user.displayName || "Anonymous",
+          avatar: user.photoURL || "",
+          badges: [],
+        },
+      });
+      setCommentText("");
+    } catch (err: any) {
+      console.error("Error adding comment:", err);
+      setError("Failed to post comment");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const textColor = darkBg ? "#fff" : "#1A1A1A";
+  const secondaryTextColor = darkBg ? "rgba(255,255,255,0.7)" : "#666666";
+  const borderColor = darkBg ? "rgba(255,255,255,0.1)" : "#EBEBEB";
+  const bgColor = darkBg ? "rgba(255,255,255,0.05)" : "#F9F9F7";
+  const inputBgColor = darkBg ? "rgba(0,0,0,0.2)" : "#ffffff";
+
+  return (
+    <div style={{ borderTop: `1px solid ${borderColor}`, paddingTop: "12px", marginTop: "12px" }}>
+      {/* Comment Form */}
+      {user ? (
+        <form onSubmit={handleSubmitComment} style={{ marginBottom: "16px" }}>
+          <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+            {user.photoURL && (
+              <img
+                src={user.photoURL}
+                alt={user.displayName || "User"}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "50%",
+                  flexShrink: 0,
+                }}
+              />
+            )}
+            <div style={{ flex: 1 }}>
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Share your thoughts..."
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  border: `1px solid ${borderColor}`,
+                  backgroundColor: inputBgColor,
+                  color: textColor,
+                  fontSize: "13px",
+                  fontFamily: "inherit",
+                  minHeight: "60px",
+                  resize: "vertical",
+                  boxSizing: "border-box",
+                }}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginTop: "6px",
+                  gap: "8px",
+                }}
+              >
+                <span style={{ fontSize: "11px", color: secondaryTextColor }}>
+                  {commentText.length}/1000
+                </span>
+                <button
+                  type="submit"
+                  disabled={submitting || !commentText.trim()}
+                  style={{
+                    padding: "6px 16px",
+                    backgroundColor: commentText.trim() ? "#0EA5E9" : "#ccc",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    cursor: commentText.trim() ? "pointer" : "not-allowed",
+                    opacity: submitting ? 0.7 : 1,
+                  }}
+                >
+                  {submitting ? "Posting..." : "Post"}
+                </button>
+              </div>
+              {error && <div style={{ color: "#ef4444", fontSize: "12px", marginTop: "4px" }}>{error}</div>}
+            </div>
+          </div>
+        </form>
+      ) : (
+        <div style={{ textAlign: "center", padding: "12px", marginBottom: "12px" }}>
+          <span style={{ fontSize: "13px", color: secondaryTextColor }}>
+            <a href="#" style={{ color: "#0EA5E9", textDecoration: "none" }}>
+              Sign in
+            </a>
+            {" "}to comment
+          </span>
+        </div>
+      )}
+
+      {/* Comments List */}
+      {loading ? (
+        <div style={{ textAlign: "center", padding: "12px", color: secondaryTextColor, fontSize: "13px" }}>
+          Loading comments...
+        </div>
+      ) : comments.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "12px", color: secondaryTextColor, fontSize: "13px" }}>
+          No comments yet. Be the first to comment!
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {comments.slice(0, 5).map((comment) => (
+            <div
+              key={comment.id}
+              style={{
+                padding: "10px 12px",
+                backgroundColor: bgColor,
+                borderRadius: "8px",
+                border: `1px solid ${borderColor}`,
+              }}
+            >
+              <div style={{ display: "flex", gap: "8px" }}>
+                {comment.user && (comment.user as any).avatar && (
+                  <img
+                    src={(comment.user as any).avatar}
+                    alt={comment.user.username}
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      borderRadius: "50%",
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: "600", color: textColor }}>
+                      {comment.user.username}
+                    </span>
+                    <span style={{ fontSize: "11px", color: secondaryTextColor }}>
+                      {new Date(comment.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: textColor,
+                      margin: 0,
+                      wordBreak: "break-word",
+                      lineHeight: "1.4",
+                    }}
+                  >
+                    {comment.content}
+                  </p>
+                  {comment.upvotes > 0 && (
+                    <div style={{ marginTop: "6px", fontSize: "11px", color: "#0EA5E9" }}>
+                      👍 {comment.upvotes} {comment.upvotes === 1 ? "person" : "people"} found this helpful
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          {comments.length > 5 && (
+            <div style={{ textAlign: "center", padding: "8px", color: "#0EA5E9", fontSize: "12px", fontWeight: "600" }}>
+              +{comments.length - 5} more comments
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

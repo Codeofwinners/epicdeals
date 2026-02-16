@@ -6,6 +6,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { upvoteDeal, downvoteDeal, getVoteStatus } from "@/lib/firestore";
 import { db } from "@/lib/firebase";
 import { seedDeals } from "@/lib/seedDeals";
+import { CommentsSection } from "@/components/deals/CommentsSection";
 
 function VoteButtons({ dealId, upvotes, downvotes, darkBg = false }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean }) {
   const { user } = useAuth();
@@ -363,6 +364,7 @@ export default function Home() {
                   </div>
                 </div>
                 <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={45} />
+                <CommentsSection dealId="seiko-watch" />
               </div>
             </div>
 
@@ -419,6 +421,7 @@ export default function Home() {
                   </div>
                 </div>
                 <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} />
+                <CommentsSection dealId="espresso-machine" />
               </div>
             </div>
 
@@ -480,6 +483,7 @@ export default function Home() {
                   </div>
                 </div>
                 <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} />
+                <CommentsSection dealId="nike-air-max" />
               </div>
             </div>
 
