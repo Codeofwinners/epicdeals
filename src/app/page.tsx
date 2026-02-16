@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { upvoteDeal, downvoteDeal, getVoteStatus } from "@/lib/firestore";
+import { db } from "@/lib/firebase";
+import { doc, setDoc, Timestamp } from "firebase/firestore";
 
 function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: number; downvotes: number }) {
   const { user } = useAuth();
@@ -12,6 +14,12 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log("DB initialized:", !!db, "User:", user?.uid, "DealId:", dealId);
+    if (!db) {
+      setError("Firebase DB not initialized");
+      return;
+    }
+
     if (user?.uid) {
       console.log("Loading vote status for user:", user.uid, "deal:", dealId);
       getVoteStatus(user.uid, dealId)
@@ -21,7 +29,7 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
         })
         .catch(err => {
           console.error("Error loading vote status:", err);
-          setError("Error loading votes");
+          setError("Error: " + err.message);
         });
     }
   }, [user?.uid, dealId]);
@@ -29,6 +37,11 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
   const handleVote = async (type: "up" | "down") => {
     if (!user) {
       alert("Sign in to vote");
+      return;
+    }
+
+    if (!db) {
+      alert("Firebase not initialized");
       return;
     }
 
@@ -50,9 +63,11 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
       console.log("New vote status:", newStatus);
       setVoteStatus(newStatus);
     } catch (error: any) {
-      console.error("Vote error:", error);
-      setError(error?.message || "Vote failed");
-      alert("Vote failed: " + (error?.message || "Unknown error"));
+      console.error("Full error object:", error);
+      const errorMsg = error?.message || error?.code || JSON.stringify(error);
+      console.error("Vote error:", errorMsg);
+      setError("ERROR: " + errorMsg);
+      alert("Vote failed:\n" + errorMsg);
     } finally {
       setVoting(false);
     }
