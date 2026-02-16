@@ -5,7 +5,16 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { signInWithGoogle } from "@/lib/auth";
-import { addComment, onDealComments, getLatestComment } from "@/lib/firestore";
+import {
+  addComment,
+  onDealComments,
+  getLatestComment,
+  upvoteDeal,
+  downvoteDeal,
+  getVoteStatus,
+  trackDealView
+} from "@/lib/firestore";
+import type { VoteStatus } from "@/lib/firestore";
 import type { Deal, Comment } from "@/types/deals";
 
 function timeAgo(dateStr: string) {
@@ -124,10 +133,42 @@ export function DealCard({ deal, variant = "featured" }: DealCardProps) {
 
 // SIDE CARD - Right column (4 cols)
 function SideCard({ deal }: { deal: Deal }) {
-  const [reaction, setReaction] = useState<"up" | "down" | null>(null);
+  const { user } = useAuth();
+  const [voteStatus, setVoteStatus] = useState<VoteStatus | null>(null);
+  const [voting, setVoting] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
 
-  const workedYes = deal.workedYes + (reaction === "up" ? 1 : 0);
-  const workedNo = deal.workedNo + (reaction === "down" ? 1 : 0);
+  useEffect(() => {
+    if (user?.uid) {
+      getVoteStatus(user.uid, deal.id).then(setVoteStatus);
+    }
+  }, [user?.uid, deal.id]);
+
+  const handleVote = async (type: "up" | "down") => {
+    if (!user) {
+      setShowSignIn(true);
+      return;
+    }
+
+    setVoting(true);
+    try {
+      if (type === "up") {
+        await upvoteDeal(user.uid, deal.id);
+      } else {
+        await downvoteDeal(user.uid, deal.id);
+      }
+      // Refresh vote status
+      const newStatus = await getVoteStatus(user.uid, deal.id);
+      setVoteStatus(newStatus);
+    } catch (error) {
+      console.error("Voting error:", error);
+    } finally {
+      setVoting(false);
+    }
+  };
+
+  const workedYes = deal.workedYes + (voteStatus?.voteType === "upvote" ? 1 : 0);
+  const workedNo = deal.workedNo + (voteStatus?.voteType === "downvote" ? 1 : 0);
 
   return (
     <motion.div
@@ -181,19 +222,27 @@ function SideCard({ deal }: { deal: Deal }) {
         <div className="mt-4 flex items-center gap-3">
           <div className="flex items-center gap-1 bg-gray-50 dark:bg-white/5 rounded-lg px-2 py-1.5 border border-gray-100 dark:border-white/5">
             <button
-              onClick={() => setReaction(reaction === "up" ? null : "up")}
-              className={`material-icons-outlined text-sm ${
-                reaction === "up" ? "text-green-500" : "text-gray-400 hover:text-green-500"
-              }`}
+              onClick={() => handleVote("up")}
+              disabled={voting}
+              title={user ? "Upvote" : "Sign in to vote"}
+              className={`material-icons-outlined text-sm transition-colors ${
+                voteStatus?.voteType === "upvote"
+                  ? "text-green-500"
+                  : "text-gray-400 hover:text-green-500"
+              } ${voting ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               keyboard_arrow_up
             </button>
             <span className="text-xs font-bold w-6 text-center !text-black dark:!text-white">{workedYes}</span>
             <button
-              onClick={() => setReaction(reaction === "down" ? null : "down")}
-              className={`material-icons-outlined text-sm ${
-                reaction === "down" ? "text-red-500" : "text-gray-400 hover:text-red-500"
-              }`}
+              onClick={() => handleVote("down")}
+              disabled={voting}
+              title={user ? "Downvote" : "Sign in to vote"}
+              className={`material-icons-outlined text-sm transition-colors ${
+                voteStatus?.voteType === "downvote"
+                  ? "text-red-500"
+                  : "text-gray-400 hover:text-red-500"
+              } ${voting ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               keyboard_arrow_down
             </button>
@@ -204,6 +253,19 @@ function SideCard({ deal }: { deal: Deal }) {
             </button>
           </Link>
         </div>
+
+        {/* Sign In Prompt */}
+        {showSignIn && (
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800/30">
+            <p className="text-xs text-blue-900 dark:text-blue-200 mb-2">Sign in to vote</p>
+            <button
+              onClick={() => signInWithGoogle()}
+              className="w-full py-1.5 bg-blue-600 text-white text-xs font-bold rounded hover:bg-blue-700 transition-colors"
+            >
+              Sign In with Google
+            </button>
+          </div>
+        )}
       </div>
     </motion.div>
   );
