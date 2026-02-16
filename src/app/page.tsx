@@ -10,7 +10,7 @@ import { CommentsSection } from "@/components/deals/CommentsSection";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 
-function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean; onCommentClick?: () => void }) {
+function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = false, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean; whiteText?: boolean; onCommentClick?: () => void }) {
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
   const [voting, setVoting] = useState(false);
@@ -82,10 +82,10 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, onCommentClic
   const displayUpvotes = upvotes + (voteStatus?.voteType === "upvote" ? 1 : 0);
   const displayDownvotes = downvotes + (voteStatus?.voteType === "downvote" ? 1 : 0);
 
-  const textColor = darkBg ? "#fff" : "#666";
+  const textColor = whiteText ? "#fff" : (darkBg ? "#fff" : "#666");
   const activeUpColor = darkBg ? "#FFB84D" : "#FF4500";
   const activeDownColor = darkBg ? "#FF6B6B" : "#ef4444";
-  const inactiveColor = darkBg ? "#fff" : "#666";
+  const inactiveColor = whiteText ? "#fff" : (darkBg ? "#fff" : "#666");
   const borderColor = darkBg ? "rgba(255,255,255,0.1)" : "border-[#EBEBEB]/60";
 
   return (
@@ -559,7 +559,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$185</span>
                     <span className="text-sm text-white/60 line-through mb-1">$275</span>
                   </div>
-                  <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={0} onCommentClick={() => toggleComments("seiko-watch")} />
+                  <VoteButtons dealId="seiko-watch" upvotes={1200} downvotes={0} whiteText={true} onCommentClick={() => toggleComments("seiko-watch")} />
                   <CommentsSection dealId="seiko-watch" isOpen={openComments.has("seiko-watch")} onToggle={(open) => toggleComments("seiko-watch")} />
                 </div>
               </div>
@@ -579,7 +579,7 @@ export default function Home() {
                 <div className="text-sm font-medium opacity-90">Clearance Items</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("nike-25off")} />
+                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("nike-25off")} />
                 <CommentsSection dealId="nike-25off" darkBg={true} isOpen={openComments.has("nike-25off")} onToggle={(open) => toggleComments("nike-25off")} />
               </div>
             </div>
@@ -601,7 +601,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$599</span>
                     <span className="text-sm text-white/60 line-through mb-1">$750</span>
                   </div>
-                  <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} onCommentClick={() => toggleComments("espresso-machine")} />
+                  <VoteButtons dealId="espresso-machine" upvotes={8500} downvotes={0} whiteText={true} onCommentClick={() => toggleComments("espresso-machine")} />
                   <CommentsSection dealId="espresso-machine" isOpen={openComments.has("espresso-machine")} onToggle={(open) => toggleComments("espresso-machine")} />
                 </div>
               </div>
@@ -620,7 +620,7 @@ export default function Home() {
                 <div style={{fontSize: "24px", fontWeight: "900", lineHeight: 1.2, letterSpacing: "-0.02em", marginBottom: "8px", color: "#fff"}}>3 Months<br/>Free Trial</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("spotify-premium")} />
+                <VoteButtons dealId="spotify-premium" upvotes={856} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("spotify-premium")} />
                 <CommentsSection dealId="spotify-premium" darkBg={true} isOpen={openComments.has("spotify-premium")} onToggle={(open) => toggleComments("spotify-premium")} />
               </div>
             </div>
@@ -644,7 +644,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$89.99</span>
                     <span className="text-sm text-white/60 line-through mb-1">$130</span>
                   </div>
-                  <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} onCommentClick={() => toggleComments("nike-air-max")} />
+                  <VoteButtons dealId="nike-air-max" upvotes={12000} downvotes={0} whiteText={true} onCommentClick={() => toggleComments("nike-air-max")} />
                   <CommentsSection dealId="nike-air-max" isOpen={openComments.has("nike-air-max")} onToggle={(open) => toggleComments("nike-air-max")} />
                 </div>
               </div>
@@ -664,7 +664,7 @@ export default function Home() {
                 <div style={{fontSize: "16px", fontWeight: "700", letterSpacing: "-0.01em", color: "#fff"}}>OFF FIRST ORDER</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("uber-eats-15off")} />
+                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("uber-eats-15off")} />
                 <CommentsSection dealId="uber-eats-15off" darkBg={true} isOpen={openComments.has("uber-eats-15off")} onToggle={(open) => toggleComments("uber-eats-15off")} />
               </div>
             </div>
@@ -686,7 +686,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$34</span>
                     <span className="text-sm text-white/60 line-through mb-1">$45</span>
                   </div>
-                  <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} onCommentClick={() => toggleComments("amazon-fresh-20off")} />
+                  <VoteButtons dealId="amazon-fresh-20off" upvotes={3200} downvotes={0} whiteText={true} onCommentClick={() => toggleComments("amazon-fresh-20off")} />
                   <CommentsSection dealId="amazon-fresh-20off" isOpen={openComments.has("amazon-fresh-20off")} onToggle={(open) => toggleComments("amazon-fresh-20off")} />
                 </div>
               </div>
@@ -709,7 +709,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$119</span>
                     <span className="text-sm text-white/60 line-through mb-1">$199</span>
                   </div>
-                  <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} onCommentClick={() => toggleComments("best-buy-wireless")} />
+                  <VoteButtons dealId="best-buy-wireless" upvotes={5800} downvotes={0} whiteText={true} onCommentClick={() => toggleComments("best-buy-wireless")} />
                   <CommentsSection dealId="best-buy-wireless" isOpen={openComments.has("best-buy-wireless")} onToggle={(open) => toggleComments("best-buy-wireless")} />
                 </div>
               </div>
@@ -729,7 +729,7 @@ export default function Home() {
                 <div style={{fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff"}}>Flash Sale - 2h left</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("gap-50off")} />
+                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("gap-50off")} />
                 <CommentsSection dealId="gap-50off" darkBg={true} isOpen={openComments.has("gap-50off")} onToggle={(open) => toggleComments("gap-50off")} />
               </div>
             </div>
@@ -753,7 +753,7 @@ export default function Home() {
                     <span className="text-xl font-extrabold text-white">$49</span>
                     <span className="text-sm text-white/60 line-through mb-1">$79</span>
                   </div>
-                  <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} onCommentClick={() => toggleComments("target-home")} />
+                  <VoteButtons dealId="target-home" upvotes={6400} downvotes={0} whiteText={true} onCommentClick={() => toggleComments("target-home")} />
                   <CommentsSection dealId="target-home" isOpen={openComments.has("target-home")} onToggle={(open) => toggleComments("target-home")} />
                 </div>
               </div>
@@ -773,7 +773,7 @@ export default function Home() {
                 <div style={{fontSize: "14px", fontWeight: "500", opacity: 0.9, color: "#fff"}}>Select brands</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} onCommentClick={() => toggleComments("sephora-beauty")} />
+                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} whiteText={true} onCommentClick={() => toggleComments("sephora-beauty")} />
                 <CommentsSection dealId="sephora-beauty" darkBg={true} isOpen={openComments.has("sephora-beauty")} onToggle={(open) => toggleComments("sephora-beauty")} />
               </div>
             </div>
