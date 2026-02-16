@@ -381,7 +381,7 @@ export default function Home() {
             {/* Card 7: Amazon Fresh */}
             <div className="masonry-item relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB]">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Organic Grocery Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1543391033-f8c931aa9ef1?w=400&h=500&fit=crop" />
+                <img alt="Organic Grocery Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1488459716781-8f52f7e3e3f1?w=400&h=500&fit=crop" />
                 <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-[#1A1A1A] text-xs font-bold shadow-sm border border-white/50">-25%</div>
                 <div className="absolute bottom-4 left-4 z-20 bg-black/80 backdrop-blur-md text-white px-3 py-2 rounded-xl border border-white/10 flex flex-col items-start leading-none">
                   <span className="text-xs opacity-70 line-through mb-0.5">$45</span>
@@ -401,7 +401,7 @@ export default function Home() {
             {/* Card 8: Best Buy Tech */}
             <div className="masonry-item relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB]">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Wireless Headphones" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=500&fit=crop" />
+                <img alt="Wireless Headphones" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1487215078519-e21cc028cb29?w=400&h=500&fit=crop" />
                 <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-[#1A1A1A] text-xs font-bold shadow-sm border border-white/50">-40%</div>
                 <div className="absolute bottom-4 left-4 z-20 bg-black/80 backdrop-blur-md text-white px-3 py-2 rounded-xl border border-white/10 flex flex-col items-start leading-none">
                   <span className="text-xs opacity-70 line-through mb-0.5">$199</span>
@@ -480,7 +480,7 @@ export default function Home() {
             {/* Card 12: Whole Foods */}
             <div className="masonry-item relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB]">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Organic Health Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=500&fit=crop" />
+                <img alt="Organic Health Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1559056199-641a0ac8b3f4?w=400&h=500&fit=crop" />
                 <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-green-500 text-white text-xs font-bold shadow-sm">Prime Day</div>
                 <div className="absolute bottom-4 left-4 z-20 bg-white/95 backdrop-blur-xl text-[#1A1A1A] px-3 py-2 rounded-xl shadow-lg border border-white/50 flex flex-col items-start leading-none">
                   <span className="text-xs text-[#666666] line-through mb-0.5">$35</span>
@@ -672,7 +672,7 @@ export default function Home() {
             {/* Mobile Card 7: Amazon Fresh */}
             <div className="masonry-item relative group rounded-2xl overflow-hidden bg-white shadow-card">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Organic Grocery Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1543391033-f8c931aa9ef1?w=400&h=500&fit=crop" />
+                <img alt="Organic Grocery Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1488459716781-8f52f7e3e3f1?w=400&h=500&fit=crop" />
                 <button className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg active:scale-90">
                   <span className="material-symbols-outlined text-[18px]">ios_share</span>
                 </button>
@@ -695,7 +695,7 @@ export default function Home() {
             {/* Mobile Card 8: Best Buy Tech */}
             <div className="masonry-item relative group rounded-2xl overflow-hidden bg-white shadow-card">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Wireless Headphones" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=500&fit=crop" />
+                <img alt="Wireless Headphones" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1487215078519-e21cc028cb29?w=400&h=500&fit=crop" />
                 <button className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg active:scale-90">
                   <span className="material-symbols-outlined text-[18px]">ios_share</span>
                 </button>
@@ -781,7 +781,7 @@ export default function Home() {
             {/* Mobile Card 12: Whole Foods */}
             <div className="masonry-item relative group rounded-2xl overflow-hidden bg-white shadow-card">
               <div className="relative w-full aspect-[3/4]">
-                <img alt="Organic Health Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=500&fit=crop" />
+                <img alt="Organic Health Bundle" className="absolute inset-0 w-full h-full object-cover" src="https://images.unsplash.com/photo-1559056199-641a0ac8b3f4?w=400&h=500&fit=crop" />
                 <button className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shadow-lg active:scale-90">
                   <span className="material-symbols-outlined text-[18px]">ios_share</span>
                 </button>
