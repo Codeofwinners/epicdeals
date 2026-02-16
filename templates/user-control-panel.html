@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pro Interaction Dashboard V3</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#306ee8",
+                        "background-light": "#f8f9fa",
+                        "background-dark": "#111621",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+                    boxShadow: {
+                        'soft': '0 8px 30px -4px rgba(48, 110, 232, 0.06)',
+                        'glow': '0 0 15px rgba(48, 110, 232, 0.3)',
+                        'card': '0 2px 10px rgba(0,0,0,0.02)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-100 min-h-screen antialiased selection:bg-primary/30">
+<div class="max-w-md mx-auto min-h-screen relative pb-28 bg-background-light dark:bg-background-dark overflow-hidden shadow-2xl border-x border-slate-200 dark:border-slate-800">
+<header class="px-6 pt-12 pb-4 flex justify-between items-center sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md">
+<div>
+<h1 class="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">Pro Dashboard</h1>
+<p class="text-sm font-medium text-slate-400 mt-0.5">Manage interactions &amp; history</p>
+</div>
+<div class="relative group cursor-pointer">
+<div class="absolute -inset-0.5 bg-gradient-to-r from-primary to-blue-400 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-200"></div>
+<img alt="User Profile Picture" class="relative w-10 h-10 rounded-full border-2 border-white dark:border-slate-800 object-cover shadow-sm" data-alt="Young woman smiling portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBX24OonihP5ClYKfBl3xoNGvGdzpx3XLY05oWnDwRpIGB4jBOtOvpOWbGzlNRCciqeFlw_5YPQRqb9Tl_A3A2Zp2Xepb2NYq3JYWM2f719n3Ciuyv1KcB7RriUL-HZ8I-iUpDRYIsLsYW7_cGSS4jDkLWicoXmVPfFZ_IepA6vXRphfW1BBvZtfv8NlmWkWsam_RsS27sRgap1uq2urN8fuT17gfcDl-jWAQpYkRmxBU_BP2BzUiGkvEcxVzb0ED8nIUqUtd4WIn0"/>
+<div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white dark:border-slate-800 rounded-full"></div>
+</div>
+</header>
+<div class="px-6 space-y-4 mb-6 sticky top-[92px] z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md pb-4 border-b border-slate-200 dark:border-slate-800">
+<div class="relative">
+<span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-icons-round text-slate-400">search</span>
+</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-sm focus:ring-primary focus:border-primary shadow-sm" placeholder="Search my history..." type="text"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center">
+<span class="material-icons-round text-slate-400 hover:text-primary transition-colors cursor-pointer">tune</span>
+</button>
+</div>
+<div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-bold whitespace-nowrap shadow-md">
+<span class="material-icons-round text-xs">filter_list</span> All Status
+                </button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold whitespace-nowrap hover:bg-slate-50 dark:hover:bg-slate-700">
+                    Store
+                    <span class="material-icons-round text-xs">expand_more</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold whitespace-nowrap hover:bg-slate-50 dark:hover:bg-slate-700">
+                    Price Range
+                    <span class="material-icons-round text-xs">expand_more</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold whitespace-nowrap hover:bg-slate-50 dark:hover:bg-slate-700">
+                    Date
+                </button>
+</div>
+</div>
+<main class="px-6 space-y-8">
+<section>
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        Active Engagements
+                        <span class="text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">12</span>
+</h2>
+<button class="text-xs font-bold text-primary flex items-center gap-1 hover:bg-blue-50 dark:hover:bg-primary/10 px-2 py-1 rounded transition-colors">
+<span class="material-icons-round text-sm">checklist</span> Batch Actions
+                    </button>
+</div>
+<div class="space-y-3">
+<div class="group bg-surface-light dark:bg-slate-800 rounded-xl p-3 shadow-card border border-slate-200 dark:border-slate-700/60 relative hover:border-primary/50 transition-all">
+<div class="flex gap-3">
+<div class="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700">
+<img alt="Sony PS5" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3D5zc6FtltC6qIiA_OUA04KWUa23qoBpnP_4UiTvgJyCzNhy0ve_dkpMm8c8nebH3PnTZmbJ-MrPqBsPk2WqJ6pu0oxhrXI1iECYgfnHcX9c90Lsu1MIvW2Mp5N_ljQTz-U1CeG6IS5NX5GYQnme0V1Zr39S24TEbDk_LAjLgwtdJ08FFiszcTIWB94EmjBK3mJdrVxsL5ZhHBlWoyr7rkVQ5eB-NDcAxi4Jk5E8I4tNECeUoa6xYHOTMC233zxi-wHNhy7wSwd0"/>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-slate-900 dark:text-white text-sm truncate pr-2">Sony PS5 Bundle</h3>
+<div class="flex items-center gap-1.5">
+<span class="text-xs line-through text-slate-400">$559</span>
+<span class="text-primary font-bold text-sm">$499</span>
+</div>
+</div>
+<div class="flex justify-between items-end mt-1">
+<div class="flex flex-col gap-0.5">
+<div class="flex items-center gap-1 text-[10px] font-medium text-orange-500 bg-orange-50 dark:bg-orange-900/20 px-1.5 py-0.5 rounded w-fit">
+<span class="material-icons-round text-[10px]">timer</span>
+                                            Exp: 04h 22m
+                                        </div>
+<div class="text-[10px] text-slate-500 dark:text-slate-400">BestBuy • 2h ago</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1.5 rounded-full bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-primary transition-colors" title="Share Deal">
+<span class="material-icons-round text-sm">share</span>
+</button>
+<button class="p-1.5 rounded-full bg-slate-50 dark:bg-slate-700 text-green-500 hover:bg-red-50 hover:text-red-500 transition-colors" title="Remove Vote">
+<span class="material-icons-round text-sm">thumb_up</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="group bg-surface-light dark:bg-slate-800 rounded-xl p-3 shadow-card border border-slate-200 dark:border-slate-700/60 relative hover:border-primary/50 transition-all">
+<div class="flex gap-3">
+<div class="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700">
+<img alt="Nike Air Max" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBOGUMrvzFTdw9fa8jJH2FdRiEr3tas-uqT3GhP2xoa1NV-aOcG5St9ICR3Hfj-gT5KMa28vUB3hjopGhLfwL17fh3MunEiDHx5tUeWpAuRg-CYyFcC8yV89NxOP3Mj1wEtz6vLUkbpJwr7yjMKHViBuPVGFci9sRqs1emd2CEjSNNEktB54iSXvME5oTFJOQhY0op7FoGzBqS4kP6Ytp2jgC_RL_Julm4mtZQH7NjlhpKQ6y3ro_LKwFwqXNJeIPd0XnRS2pf4IQE"/>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-slate-900 dark:text-white text-sm truncate pr-2">Nike Air Max 90</h3>
+<div class="flex items-center gap-1.5">
+<span class="text-xs line-through text-slate-400">$130</span>
+<span class="text-primary font-bold text-sm">$89</span>
+</div>
+</div>
+<div class="flex justify-between items-end mt-1">
+<div class="flex flex-col gap-0.5">
+<div class="flex items-center gap-1 text-[10px] font-medium text-red-500 bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded w-fit">
+<span class="material-icons-round text-[10px]">timer</span>
+                                            Exp: 15m 30s
+                                        </div>
+<div class="text-[10px] text-slate-500 dark:text-slate-400">Nike Store • 5h ago</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1.5 rounded-full bg-slate-50 dark:bg-slate-700 text-slate-400 hover:text-primary transition-colors" title="Share Deal">
+<span class="material-icons-round text-sm">share</span>
+</button>
+<button class="p-1.5 rounded-full bg-slate-50 dark:bg-slate-700 text-green-500 hover:bg-red-50 hover:text-red-500 transition-colors" title="Remove Vote">
+<span class="material-icons-round text-sm">thumb_up</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="group bg-surface-light dark:bg-slate-800 rounded-xl p-3 shadow-card border border-slate-200 dark:border-slate-700/60 relative hover:border-primary/50 transition-all opacity-75">
+<div class="flex gap-3">
+<div class="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700">
+<img alt="Dell Laptop" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8gYGJ1LJlHHlYIBEUQXMCEsAyumDWplHj4oMt4UhvwKzlMUF99ceMSCJVo7soRjylXl7-AC1yzC62K9dkUNDTjMo-6Ic4IkmQ_Qab7Yv7S-LcJXIJqi52YEhikZ4nCM3ncZ7AQtzy4zQVU-8ZgdRKNNBcVGsfACictOBex20WyYxrSF50w77XqcsvN4qq7INO6xuR-zycbJK9CnIdgCemG4bIMJLm12g0UdERn05rtg9BYEZhtx_nrdTP9Lya938B9fD5HIa2XuA"/>
+<div class="absolute inset-0 bg-slate-900/10 dark:bg-slate-900/40"></div>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+<div class="flex justify-between items-start">
+<h3 class="font-bold text-slate-700 dark:text-slate-300 text-sm truncate pr-2">Dell XPS 13</h3>
+<div class="flex items-center gap-1.5">
+<span class="text-xs line-through text-slate-400">$1299</span>
+<span class="text-slate-500 font-bold text-sm">$999</span>
+</div>
+</div>
+<div class="flex justify-between items-end mt-1">
+<div class="flex flex-col gap-0.5">
+<div class="flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded w-fit">
+<span class="material-icons-round text-[10px]">timer_off</span>
+                                            Expired
+                                        </div>
+<div class="text-[10px] text-slate-500 dark:text-slate-400">Dell • 2d ago</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1.5 rounded-full bg-slate-50 dark:bg-slate-700 text-slate-300 hover:text-primary transition-colors" title="Share Deal">
+<span class="material-icons-round text-sm">share</span>
+</button>
+<button class="p-1.5 rounded-full bg-slate-50 dark:bg-slate-700 text-green-500 hover:bg-red-50 hover:text-red-500 transition-colors" title="Remove Vote">
+<span class="material-icons-round text-sm">thumb_up</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section>
+<div class="flex justify-between items-baseline mb-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+<h2 class="text-lg font-bold text-slate-900 dark:text-white">Recent Comments</h2>
+<div class="flex gap-2">
+<button class="text-[10px] font-bold text-slate-500 border border-slate-200 dark:border-slate-700 dark:text-slate-400 px-2 py-1 rounded hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">Select Multiple</button>
+</div>
+</div>
+<div class="space-y-3">
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+<div class="flex items-center gap-3 mb-2">
+<input class="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<h4 class="text-xs font-bold text-slate-900 dark:text-white truncate">Re: Dell XPS 13 Laptop 2023</h4>
+</div>
+<span class="text-[10px] text-slate-400">10m ago</span>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed ml-7 mb-2 border-l-2 border-slate-100 dark:border-slate-700 pl-3">
+                            "Honestly for this price point, the build quality is unmatched. Does anyone know if the RAM is soldered?"
+                        </p>
+<div class="flex justify-end gap-3 ml-7">
+<button class="text-[10px] font-bold text-slate-400 hover:text-primary transition-colors">Edit</button>
+<button class="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors">Delete</button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm opacity-80">
+<div class="flex items-center gap-3 mb-2">
+<input class="rounded border-slate-300 text-primary focus:ring-primary h-4 w-4" type="checkbox"/>
+<div class="flex-1 min-w-0">
+<h4 class="text-xs font-bold text-slate-900 dark:text-white truncate">Re: Samsung Odyssey G9</h4>
+</div>
+<span class="text-[10px] text-slate-400">1d ago</span>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed ml-7 mb-2 border-l-2 border-slate-100 dark:border-slate-700 pl-3">
+                            "Waiting for the OLED version to drop in price."
+                        </p>
+<div class="flex justify-end gap-3 ml-7">
+<button class="text-[10px] font-bold text-slate-400 hover:text-primary transition-colors">Edit</button>
+<button class="text-[10px] font-bold text-slate-400 hover:text-red-500 transition-colors">Delete</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="absolute bottom-0 w-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 pb-safe pt-2 px-6 shadow-[0_-5px_30px_-5px_rgba(0,0,0,0.03)] z-30">
+<div class="flex justify-between items-center h-16 pb-2">
+<a class="flex flex-col items-center justify-center w-12 text-slate-400 hover:text-primary transition-colors group" href="#">
+<span class="material-icons-round text-2xl group-hover:-translate-y-0.5 transition-transform">home</span>
+<span class="text-[10px] font-bold mt-1 opacity-0 group-hover:opacity-100 transition-opacity absolute -bottom-2">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center w-12 text-slate-400 hover:text-primary transition-colors group" href="#">
+<span class="material-icons-round text-2xl group-hover:-translate-y-0.5 transition-transform">search</span>
+</a>
+<div class="relative -top-8">
+<button class="w-16 h-16 bg-primary rounded-full shadow-glow flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all ring-4 ring-white dark:ring-slate-900">
+<span class="material-icons-round text-3xl">add</span>
+</button>
+</div>
+<a class="flex flex-col items-center justify-center w-12 text-primary group" href="#">
+<span class="material-icons-round text-2xl group-hover:-translate-y-0.5 transition-transform">dashboard</span>
+<span class="text-[10px] font-bold mt-1 text-primary">Hub</span>
+</a>
+<a class="flex flex-col items-center justify-center w-12 text-slate-400 hover:text-primary transition-colors group" href="#">
+<span class="material-icons-round text-2xl group-hover:-translate-y-0.5 transition-transform">person</span>
+</a>
+</div>
+</nav>
+<div class="h-6 w-full bg-transparent"></div>
+</div>
+
+</body></html>

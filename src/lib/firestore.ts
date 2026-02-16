@@ -415,6 +415,24 @@ export async function getBestComment(dealId: string): Promise<Comment | null> {
   return comments.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ?? null;
 }
 
+/** Delete a comment (only by author or moderator) */
+export async function deleteComment(commentId: string): Promise<void> {
+  if (!commentId) throw new Error("Comment ID required");
+  await deleteDoc(doc(db, "comments", commentId));
+}
+
+/** Edit a comment (only by author) */
+export async function editComment(commentId: string, newContent: string): Promise<void> {
+  if (!commentId) throw new Error("Comment ID required");
+  if (!newContent?.trim()) throw new Error("Comment content required");
+  if (newContent.length > 1000) throw new Error("Comment must be under 1000 characters");
+
+  await updateDoc(doc(db, "comments", commentId), {
+    content: newContent,
+    updatedAt: Timestamp.now(),
+  });
+}
+
 // ─── User Profile Management ────────────────────────────────────
 export interface UserProfile {
   id: string;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { addComment, onDealComments } from "@/lib/firestore";
+import { addComment, onDealComments, deleteComment, editComment } from "@/lib/firestore";
 import type { Comment } from "@/types/deals";
 
 interface CommentsSectionProps {
@@ -17,6 +17,8 @@ export function CommentsSection({ dealId, darkBg = false }: CommentsSectionProps
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
 
   // Real-time listener for comments
   useEffect(() => {
@@ -65,6 +67,38 @@ export function CommentsSection({ dealId, darkBg = false }: CommentsSectionProps
       setError("Failed to post comment");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm("Delete this comment?")) return;
+
+    try {
+      await deleteComment(commentId);
+    } catch (err: any) {
+      console.error("Error deleting comment:", err);
+      alert("Failed to delete comment");
+    }
+  };
+
+  const handleEditComment = async (commentId: string) => {
+    if (!editText.trim()) {
+      setError("Comment cannot be empty");
+      return;
+    }
+
+    if (editText.length > 1000) {
+      setError("Comment must be under 1000 characters");
+      return;
+    }
+
+    try {
+      await editComment(commentId, editText);
+      setEditingId(null);
+      setEditText("");
+    } catch (err: any) {
+      console.error("Error editing comment:", err);
+      setError("Failed to edit comment");
     }
   };
 
@@ -168,55 +202,157 @@ export function CommentsSection({ dealId, darkBg = false }: CommentsSectionProps
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {comments.slice(0, 5).map((comment) => (
-            <div
-              key={comment.id}
-              style={{
-                padding: "10px 12px",
-                backgroundColor: bgColor,
-                borderRadius: "8px",
-                border: `1px solid ${borderColor}`,
-              }}
-            >
-              <div style={{ display: "flex", gap: "8px" }}>
-                {comment.user && (comment.user as any).avatar && (
-                  <img
-                    src={(comment.user as any).avatar}
-                    alt={comment.user.username}
+            <div key={comment.id}>
+              {editingId === comment.id ? (
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    backgroundColor: bgColor,
+                    borderRadius: "8px",
+                    border: `1px solid ${borderColor}`,
+                  }}
+                >
+                  <textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
                     style={{
-                      width: "28px",
-                      height: "28px",
-                      borderRadius: "50%",
-                      flexShrink: 0,
+                      width: "100%",
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      border: `1px solid ${borderColor}`,
+                      backgroundColor: inputBgColor,
+                      color: textColor,
+                      fontSize: "12px",
+                      fontFamily: "inherit",
+                      minHeight: "50px",
+                      resize: "vertical",
+                      boxSizing: "border-box",
                     }}
                   />
-                )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: "600", color: textColor }}>
-                      {comment.user.username}
-                    </span>
-                    <span style={{ fontSize: "11px", color: secondaryTextColor }}>
-                      {new Date(comment.createdAt).toLocaleDateString()}
-                    </span>
+                  <div style={{ display: "flex", gap: "8px", marginTop: "8px", justifyContent: "flex-end" }}>
+                    <button
+                      onClick={() => {
+                        setEditingId(null);
+                        setEditText("");
+                      }}
+                      style={{
+                        padding: "4px 12px",
+                        backgroundColor: "#ccc",
+                        color: "#000",
+                        border: "none",
+                        borderRadius: "4px",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleEditComment(comment.id)}
+                      style={{
+                        padding: "4px 12px",
+                        backgroundColor: "#0EA5E9",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "4px",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Save
+                    </button>
                   </div>
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      color: textColor,
-                      margin: 0,
-                      wordBreak: "break-word",
-                      lineHeight: "1.4",
-                    }}
-                  >
-                    {comment.content}
-                  </p>
-                  {comment.upvotes > 0 && (
-                    <div style={{ marginTop: "6px", fontSize: "11px", color: "#0EA5E9" }}>
-                      👍 {comment.upvotes} {comment.upvotes === 1 ? "person" : "people"} found this helpful
-                    </div>
-                  )}
                 </div>
-              </div>
+              ) : (
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    backgroundColor: bgColor,
+                    borderRadius: "8px",
+                    border: `1px solid ${borderColor}`,
+                  }}
+                >
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    {comment.user && (comment.user as any).avatar && (
+                      <img
+                        src={(comment.user as any).avatar}
+                        alt={comment.user.username}
+                        style={{
+                          width: "28px",
+                          height: "28px",
+                          borderRadius: "50%",
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px", justifyContent: "space-between" }}>
+                        <div>
+                          <span style={{ fontSize: "12px", fontWeight: "600", color: textColor }}>
+                            {comment.user.username}
+                          </span>
+                          <span style={{ fontSize: "11px", color: secondaryTextColor, marginLeft: "8px" }}>
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {user?.uid === comment.user.id && (
+                          <div style={{ display: "flex", gap: "4px" }}>
+                            <button
+                              onClick={() => {
+                                setEditingId(comment.id);
+                                setEditText(comment.content);
+                              }}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "#0EA5E9",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                padding: "0 4px",
+                              }}
+                              title="Edit"
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => handleDeleteComment(comment.id)}
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "#ef4444",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                padding: "0 4px",
+                              }}
+                              title="Delete"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <p
+                        style={{
+                          fontSize: "12px",
+                          color: textColor,
+                          margin: 0,
+                          wordBreak: "break-word",
+                          lineHeight: "1.4",
+                        }}
+                      >
+                        {comment.content}
+                      </p>
+                      {comment.upvotes > 0 && (
+                        <div style={{ marginTop: "6px", fontSize: "11px", color: "#0EA5E9" }}>
+                          👍 {comment.upvotes} {comment.upvotes === 1 ? "person" : "people"} found this helpful
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
           {comments.length > 5 && (
