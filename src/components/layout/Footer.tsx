@@ -1,167 +1,187 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
-import { useAllStores, useAllCategories } from "@/hooks/useFirestore";
 
-const footerLinks = {
-  resources: [
-    { label: "All Deals", href: "/deals" },
-    { label: "All Stores", href: "/stores" },
-    { label: "Categories", href: "/categories" },
-    { label: "Submit a Deal", href: "/submit" },
-  ],
-  legal: [
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
-  ],
-};
-
-const socialLinks = [
-  { label: "Twitter / X", href: "https://twitter.com" },
-  { label: "Instagram", href: "https://instagram.com" },
-  { label: "TikTok", href: "https://tiktok.com" },
-  { label: "Reddit", href: "https://reddit.com" },
-];
-
-export default function Footer() {
-  const { data: storesData } = useAllStores();
-  const { data: categoriesData } = useAllCategories();
-
-  const categories = categoriesData ?? [];
-  const topFooterStores = [...(storesData ?? [])]
-    .sort((a, b) => b.activeDeals - a.activeDeals)
-    .slice(0, 8);
+export function Footer() {
+  const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-white rounded-t-3xl mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-8">
-        {/* ── Top section: Brand + grid ──────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-8">
-          {/* Brand column */}
-          <div className="lg:col-span-1">
-            <Link href="/" className="inline-flex items-baseline">
-              <span className="text-xl font-black text-white tracking-tight">
-                Legit
-              </span>
-              <span className="text-xl font-black text-emerald-400">.</span>
-              <span className="text-xl font-black bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent tracking-tight">
-                Discount
-              </span>
-            </Link>
-            <p className="mt-3 text-sm text-gray-400 leading-relaxed max-w-xs">
-              Every deal AI-verified, community-validated. Real savings you can
-              trust.
-            </p>
-            <div className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-xs font-semibold text-emerald-400">
-                Powered by AI
-              </span>
-            </div>
-          </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
 
-          {/* Categories */}
-          <div>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-              Categories
-            </h3>
-            <ul className="space-y-2.5">
-              {categories.slice(0, 8).map((cat) => (
-                <li key={cat.id}>
-                  <Link
-                    href={`/categories/${cat.slug}`}
-                    className="text-sm text-gray-300 hover:text-white transition-colors duration-200"
-                  >
-                    <span className="mr-1.5">{cat.icon}</span>
-                    {cat.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+        .footer-brand {
+          font-family: 'Outfit', sans-serif;
+          font-weight: 800;
+          letter-spacing: -0.025em;
+        }
 
-          {/* Popular Stores */}
-          <div>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-              Popular Stores
-            </h3>
-            <ul className="space-y-2.5">
-              {topFooterStores.map((store) => (
-                <li key={store.id}>
-                  <Link
-                    href={`/stores/${store.slug}`}
-                    className="text-sm text-gray-300 hover:text-white transition-colors duration-200"
-                  >
-                    {store.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+        .footer-accent {
+          background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
 
-          {/* Resources */}
-          <div>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-              Resources
-            </h3>
-            <ul className="space-y-2.5">
-              {footerLinks.resources.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-gray-300 hover:text-white transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+        .footer-link {
+          transition: all 0.3s ease;
+        }
 
-          {/* Legal */}
-          <div>
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">
-              Legal
-            </h3>
-            <ul className="space-y-2.5">
-              {footerLinks.legal.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-gray-300 hover:text-white transition-colors duration-200"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        .footer-link:hover {
+          color: #0EA5E9;
+          transform: translateX(2px);
+        }
 
-        {/* ── Divider ────────────────────────────────────────── */}
-        <div className="border-t border-gray-800 mt-12 pt-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-medium text-gray-500 hover:text-gray-300 transition-colors duration-200"
-                >
-                  {social.label}
+        .footer-divider {
+          background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
+        }
+      `}</style>
+
+      {/* DESKTOP FOOTER */}
+      <footer className="hidden md:block bg-gradient-to-b from-white via-gray-50 to-white border-t border-gray-200/40 backdrop-blur-md">
+        <div className="px-8 py-16">
+          {/* Main Footer Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+            {/* Brand Column */}
+            <div className="col-span-1">
+              <div className="flex flex-col gap-3 mb-6">
+                <div className="footer-brand text-2xl leading-none">
+                  <span className="text-black">legit.</span>
+                  <span className="footer-accent">discount</span>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  AI-verified deals and community-validated savings. Real discounts, no dead codes.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <a href="#" className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[18px] text-gray-600">facebook</span>
                 </a>
-              ))}
+                <a href="#" className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[18px] text-gray-600">twitter</span>
+                </a>
+                <a href="#" className="w-10 h-10 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[18px] text-gray-600">mail</span>
+                </a>
+              </div>
             </div>
-            <p className="text-xs text-gray-500">
-              &copy; {new Date().getFullYear()} Legit.Discount. All rights
-              reserved.
-            </p>
+
+            {/* Deals Column */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">Deals</h3>
+              <ul className="space-y-3">
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Daily Hits</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Trending Now</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Best Sellers</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Expiring Soon</Link></li>
+              </ul>
+            </div>
+
+            {/* Categories Column */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">Categories</h3>
+              <ul className="space-y-3">
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Fashion</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Electronics</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Home & Garden</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Beauty & Health</Link></li>
+              </ul>
+            </div>
+
+            {/* Company Column */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">Company</h3>
+              <ul className="space-y-3">
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">About</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Submit Deal</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Blog</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Contact</Link></li>
+              </ul>
+            </div>
+
+            {/* Legal Column */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wider">Legal</h3>
+              <ul className="space-y-3">
+                <li><Link href="/privacy" className="text-sm text-gray-600 footer-link hover:text-blue-600">Privacy</Link></li>
+                <li><Link href="/terms" className="text-sm text-gray-600 footer-link hover:text-blue-600">Terms</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Cookies</Link></li>
+                <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Disclaimer</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Footer Divider */}
+          <div className="footer-divider h-px my-8"></div>
+
+          {/* Bottom Section */}
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <div>
+              <p>&copy; {currentYear} Legit.Discount. All rights reserved. | Made with <span className="text-blue-500">✓</span></p>
+            </div>
+            <div className="flex gap-6">
+              <a href="#" className="hover:text-blue-600 transition-colors">Status</a>
+              <a href="#" className="hover:text-blue-600 transition-colors">API</a>
+              <a href="#" className="hover:text-blue-600 transition-colors">GitHub</a>
+            </div>
           </div>
         </div>
-      </div>
-    </footer>
+      </footer>
+
+      {/* MOBILE FOOTER */}
+      <footer className="md:hidden bg-gradient-to-b from-white via-gray-50 to-white border-t border-gray-200/40">
+        <div className="px-4 py-12">
+          {/* Brand */}
+          <div className="mb-8">
+            <div className="footer-brand text-xl leading-none mb-3">
+              <span className="text-black">legit.</span>
+              <span className="footer-accent">discount</span>
+            </div>
+            <p className="text-xs text-gray-600 leading-relaxed mb-4">
+              AI-verified deals and community-validated savings.
+            </p>
+            <div className="flex gap-3">
+              <a href="#" className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
+                <span className="material-symbols-outlined text-[16px] text-gray-600">facebook</span>
+              </a>
+              <a href="#" className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
+                <span className="material-symbols-outlined text-[16px] text-gray-600">twitter</span>
+              </a>
+              <a href="#" className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
+                <span className="material-symbols-outlined text-[16px] text-gray-600">mail</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Links Grid */}
+          <div className="grid grid-cols-2 gap-6 mb-8">
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3 text-xs uppercase tracking-wider">Browse</h3>
+              <ul className="space-y-2">
+                <li><Link href="/" className="text-xs text-gray-600 footer-link">Daily Hits</Link></li>
+                <li><Link href="/" className="text-xs text-gray-600 footer-link">Trending</Link></li>
+                <li><Link href="/" className="text-xs text-gray-600 footer-link">Categories</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3 text-xs uppercase tracking-wider">Company</h3>
+              <ul className="space-y-2">
+                <li><Link href="/" className="text-xs text-gray-600 footer-link">About</Link></li>
+                <li><Link href="/privacy" className="text-xs text-gray-600 footer-link">Privacy</Link></li>
+                <li><Link href="/terms" className="text-xs text-gray-600 footer-link">Terms</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Footer Divider */}
+          <div className="footer-divider h-px my-6"></div>
+
+          {/* Bottom */}
+          <div className="text-center text-xs text-gray-600">
+            <p>&copy; {currentYear} Legit.Discount | Made with <span className="text-blue-500">✓</span></p>
+          </div>
+        </div>
+      </footer>
+    </>
   );
 }
