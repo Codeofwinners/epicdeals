@@ -3,7 +3,7 @@ import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import type { Analytics } from "firebase/analytics";
 
-const firebaseConfig = {
+const firebaseConfig: any = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
@@ -11,8 +11,13 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+// Only include measurementId if it's valid (not the broken "n\n" from env vars)
+const measurementId = process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID;
+if (measurementId && measurementId.length > 2 && !measurementId.includes("n\n")) {
+  firebaseConfig.measurementId = measurementId;
+}
 
 let app: any;
 let db: any;
