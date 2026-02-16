@@ -7,7 +7,7 @@ import { upvoteDeal, downvoteDeal, getVoteStatus } from "@/lib/firestore";
 import { db } from "@/lib/firebase";
 import { seedDeals } from "@/lib/seedDeals";
 
-function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: number; downvotes: number }) {
+function VoteButtons({ dealId, upvotes, downvotes, darkBg = false }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean }) {
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
   const [voting, setVoting] = useState(false);
@@ -79,29 +79,50 @@ function VoteButtons({ dealId, upvotes, downvotes }: { dealId: string; upvotes: 
   const displayUpvotes = upvotes + (voteStatus?.voteType === "upvote" ? 1 : 0);
   const displayDownvotes = downvotes + (voteStatus?.voteType === "downvote" ? 1 : 0);
 
+  const textColor = darkBg ? "#fff" : "#666";
+  const activeUpColor = darkBg ? "#FFB84D" : "#FF4500";
+  const activeDownColor = darkBg ? "#FF6B6B" : "#ef4444";
+  const inactiveColor = darkBg ? "rgba(255,255,255,0.7)" : "#666";
+  const borderColor = darkBg ? "rgba(255,255,255,0.1)" : "border-[#EBEBEB]/60";
+
   return (
     <div className="flex flex-col gap-2">
       {error && <div style={{color: "red", fontSize: "12px"}}>{error}</div>}
-      <div className="flex items-center justify-between pt-2 border-t border-[#EBEBEB]/60">
+      <div className="flex items-center justify-between pt-2" style={{borderTop: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#EBEBEB"}`}}>
         <div className="flex items-center gap-3">
           <button
             onClick={() => handleVote("up")}
             disabled={voting}
-            className="flex items-center gap-1 text-xs font-bold hover:text-[#FF4500] transition-colors cursor-pointer"
-            style={{color: voteStatus?.voteType === "upvote" ? "#FF4500" : "#666", opacity: voting ? 0.5 : 1}}
+            className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer"
+            style={{
+              color: voteStatus?.voteType === "upvote" ? activeUpColor : inactiveColor,
+              opacity: voting ? 0.5 : 1,
+              display: "flex",
+              alignItems: "center",
+              gap: "4px"
+            }}
           >
             <span className="material-symbols-outlined text-[16px]" style={{fontVariationSettings: "'FILL' 1"}}>arrow_upward</span> {(displayUpvotes/1000).toFixed(1)}k
           </button>
           <button
             onClick={() => handleVote("down")}
             disabled={voting}
-            className="flex items-center gap-1 text-xs font-bold hover:text-red-500 transition-colors cursor-pointer"
-            style={{color: voteStatus?.voteType === "downvote" ? "#ef4444" : "#666", opacity: voting ? 0.5 : 1}}
+            className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer"
+            style={{
+              color: voteStatus?.voteType === "downvote" ? activeDownColor : inactiveColor,
+              opacity: voting ? 0.5 : 1,
+              display: "flex",
+              alignItems: "center",
+              gap: "4px"
+            }}
           >
             <span className="material-symbols-outlined text-[16px]">arrow_downward</span> {(displayDownvotes/1000).toFixed(1)}k
           </button>
+          <button style={{color: inactiveColor}} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
+            <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
+          </button>
         </div>
-        <button className="w-8 h-8 rounded-full flex items-center justify-center text-[#666666] hover:bg-gray-50 hover:text-[#1A1A1A] transition-colors cursor-pointer">
+        <button style={{color: inactiveColor}} className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer hover:opacity-80" title="Save deal">
           <span className="material-symbols-outlined text-[20px]">bookmark</span>
         </button>
       </div>
@@ -371,7 +392,7 @@ export default function Home() {
                     <p className="text-[12px] leading-snug text-white/70">Confirmed working on outlet items too. Just grabbed VaporMax for $90.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} />
+                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} />
               </div>
             </div>
 
@@ -491,7 +512,7 @@ export default function Home() {
                     <p className="text-[12px] leading-snug text-white/70">Works for existing accounts if you haven't ordered in 30 days! Tested in NYC.</p>
                   </div>
                 </div>
-                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} />
+                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} />
               </div>
             </div>
 
@@ -549,7 +570,7 @@ export default function Home() {
                   <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2">Gap & Old Navy</h2>
                   <div className="text-5xl font-black tracking-tighter leading-[0.85] text-white break-words">EXTRA<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-rose-200">50%</span><br/>OFF</div>
                 </div>
-                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} />
+                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} />
               </div>
             </div>
 
@@ -586,7 +607,7 @@ export default function Home() {
                   <h2 className="text-4xl font-black tracking-tighter leading-[0.9] text-white mb-2">Beauty<br/>Sale</h2>
                   <p className="text-sm text-white/80">Up to 50% off select brands</p>
                 </div>
-                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} />
+                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} />
               </div>
             </div>
 
@@ -807,7 +828,7 @@ export default function Home() {
                 <div className="text-sm font-medium opacity-90">Clearance Items</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} />
+                <VoteButtons dealId="nike-25off" upvotes={2100} downvotes={0} darkBg={true} />
               </div>
             </div>
 
@@ -888,7 +909,7 @@ export default function Home() {
                 <div className="text-xl font-bold tracking-tight">OFF FIRST ORDER</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} />
+                <VoteButtons dealId="uber-eats-15off" upvotes={440} downvotes={0} darkBg={true} />
               </div>
             </div>
 
@@ -950,7 +971,7 @@ export default function Home() {
                 <div className="text-sm font-medium opacity-90">Flash Sale - 2h left</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} />
+                <VoteButtons dealId="gap-50off" upvotes={1900} downvotes={0} darkBg={true} />
               </div>
             </div>
 
@@ -992,7 +1013,7 @@ export default function Home() {
                 <div className="text-sm font-medium opacity-90">Select brands</div>
               </div>
               <div className="pt-3 border-t border-white/10">
-                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} />
+                <VoteButtons dealId="sephora-beauty" upvotes={2300} downvotes={0} darkBg={true} />
               </div>
             </div>
 
