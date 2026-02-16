@@ -121,7 +121,7 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, onCommentClic
           >
             <span className="material-symbols-outlined text-[16px]">arrow_downward</span> {(displayDownvotes/1000).toFixed(1)}k
           </button>
-          <button onClick={onCommentClick} style={{color: inactiveColor}} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
+          <button onClick={() => onCommentClick?.()} style={{color: inactiveColor}} className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80" title="View comments">
             <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
           </button>
         </div>
