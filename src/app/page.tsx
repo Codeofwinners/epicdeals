@@ -360,19 +360,25 @@ export default function Home() {
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { min-height: 100vh; background-color: #F4F4F2; }
+        body {
+          min-height: 100vh;
+          background-color: #0D0C0A;
+          background-image:
+            repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.018) 18px, rgba(255,255,255,0.018) 19px),
+            repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(255,255,255,0.018) 18px, rgba(255,255,255,0.018) 19px);
+        }
         .masonry-grid { column-count: 2; column-gap: 10px; }
         @media (min-width: 768px) { .masonry-grid { column-count: 4; column-gap: 20px; } }
         .masonry-item { break-inside: avoid; margin-bottom: 10px; }
         @media (min-width: 768px) { .masonry-item { margin-bottom: 20px; } }
-        .deal-card { box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.07); transition: box-shadow 0.2s, transform 0.2s; }
-        .deal-card:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.12); transform: translateY(-1px); }
+        .deal-card { box-shadow: 0 2px 8px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.3); transition: box-shadow 0.2s, transform 0.2s; }
+        .deal-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 20px 48px rgba(0,0,0,0.4); transform: translateY(-2px); }
         @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
         .verified-strip { background: linear-gradient(90deg, #059669, #10b981, #34d399, #10b981, #059669); background-size: 300% auto; animation: shimmer 4s linear infinite; }
       `}</style>
 
       {/* DESKTOP */}
-      <div className="hidden md:block bg-white text-black font-display min-h-screen antialiased">
+      <div className="hidden md:block bg-transparent text-white font-display min-h-screen antialiased">
         <Header />
         <main className="px-6 py-6 max-w-7xl mx-auto">
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
@@ -391,23 +397,14 @@ export default function Home() {
           )}
         </main>
 
-        <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-black/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 z-50">
-          <div className="flex justify-between items-center px-1">
-            <a className="flex flex-col items-center justify-center p-2 rounded-xl text-white" href="#"><span className="material-symbols-outlined text-[24px]">home</span><span className="text-[10px] font-bold mt-1">Feed</span></a>
-            <a className="flex flex-col items-center justify-center p-2 rounded-xl text-white/50" href="#"><span className="material-symbols-outlined text-[24px]">trending_up</span><span className="text-[10px] font-medium mt-1">Trends</span></a>
-            <button className="w-12 h-12 bg-[#FF4500] rounded-full flex items-center justify-center text-white"><span className="material-symbols-outlined text-[24px]">add</span></button>
-            <a className="flex flex-col items-center justify-center p-2 rounded-xl text-white/50" href="#"><span className="material-symbols-outlined text-[24px]">bookmark</span><span className="text-[10px] font-medium mt-1">Saves</span></a>
-            <a className="flex flex-col items-center justify-center p-2 rounded-xl text-white/50" href="#"><span className="material-symbols-outlined text-[24px]">person</span><span className="text-[10px] font-medium mt-1">Me</span></a>
-          </div>
-        </nav>
       </div>
 
       {/* MOBILE */}
-      <div className="md:hidden bg-white text-black font-display min-h-screen antialiased">
+      <div className="md:hidden bg-transparent text-white font-display min-h-screen antialiased">
         <Header />
         <main className="px-3 pt-2 pb-8">
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
-          <h2 className="text-base font-black tracking-tight mb-3 text-[#1A1A1A]">
+          <h2 className="text-base font-black tracking-tight mb-3 text-white/70">
             {timeRange === "last-24h" ? "Daily Hits" : timeRange === "last-7d" ? "Weekly Legends" : timeRange === "last-30d" ? "Monthly Best" : "All-Time Best"}
           </h2>
           {loading ? (

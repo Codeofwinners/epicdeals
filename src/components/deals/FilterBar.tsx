@@ -22,64 +22,25 @@ const SORT_OPTIONS: { label: string; value: SortCategory; icon: string }[] = [
     { label: "Discussed", value: "most-commented", icon: "forum" },
 ];
 
-function Pill({
-    icon,
-    label,
-    isActive,
-    onClick,
-    size = "md",
-}: {
-    icon: string;
-    label: string;
-    isActive: boolean;
-    onClick: () => void;
-    size?: "sm" | "md";
-}) {
-    const py = size === "sm" ? "6px" : "8px";
-    const px = size === "sm" ? "10px" : "12px";
-    const iconSize = size === "sm" ? "13px" : "15px";
-    const textSize = size === "sm" ? "9px" : "10px";
-
+function Pill({ icon, label, isActive, onClick }: { icon: string; label: string; isActive: boolean; onClick: () => void }) {
     return (
         <button
             onClick={onClick}
             style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                paddingTop: py,
-                paddingBottom: py,
-                paddingLeft: px,
-                paddingRight: px,
-                borderRadius: "12px",
-                backgroundColor: isActive ? "#111827" : "transparent",
-                border: isActive ? "1px solid #111827" : "1px solid transparent",
-                cursor: "pointer",
-                flexShrink: 0,
+                display: "flex", alignItems: "center", gap: "5px",
+                padding: "7px 12px",
+                borderRadius: "10px",
+                backgroundColor: isActive ? "#FFFFFF" : "transparent",
+                border: isActive ? "1px solid rgba(255,255,255,0.9)" : "1px solid transparent",
+                cursor: "pointer", flexShrink: 0,
                 transition: "background-color 0.15s, border-color 0.15s",
                 outline: "none",
             }}
         >
-            <span
-                className="material-symbols-outlined"
-                style={{
-                    fontSize: iconSize,
-                    color: isActive ? "#ffffff" : "#9ca3af",
-                    lineHeight: 1,
-                }}
-            >
+            <span className="material-symbols-outlined" style={{ fontSize: "13px", color: isActive ? "#0D0C0A" : "rgba(255,255,255,0.35)", lineHeight: 1 }}>
                 {icon}
             </span>
-            <span
-                style={{
-                    fontSize: textSize,
-                    fontWeight: 900,
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                    color: isActive ? "#ffffff" : "#9ca3af",
-                    lineHeight: 1,
-                }}
-            >
+            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: isActive ? "#0D0C0A" : "rgba(255,255,255,0.35)", lineHeight: 1 }}>
                 {label}
             </span>
         </button>
@@ -91,48 +52,21 @@ export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: Filter
         <div
             className="no-scrollbar"
             style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "2px",
+                display: "flex", alignItems: "center", gap: "2px",
                 overflowX: "auto",
-                paddingBottom: "16px",
-                marginBottom: "20px",
-                borderBottom: "1px solid #EBEBEB",
-                msOverflowStyle: "none",
-                scrollbarWidth: "none",
+                paddingBottom: "16px", marginBottom: "20px",
+                borderBottom: "1px solid rgba(255,255,255,0.07)",
+                msOverflowStyle: "none", scrollbarWidth: "none",
             }}
         >
-            {/* Time Range */}
             {TIME_OPTIONS.map((opt) => (
-                <Pill
-                    key={opt.value}
-                    icon={opt.icon}
-                    label={opt.label}
-                    isActive={timeRange === opt.value}
-                    onClick={() => setTimeRange(opt.value)}
-                />
+                <Pill key={opt.value} icon={opt.icon} label={opt.label} isActive={timeRange === opt.value} onClick={() => setTimeRange(opt.value)} />
             ))}
 
-            {/* Divider */}
-            <div
-                style={{
-                    width: "1px",
-                    height: "18px",
-                    backgroundColor: "#e5e7eb",
-                    flexShrink: 0,
-                    margin: "0 6px",
-                }}
-            />
+            <div style={{ width: "1px", height: "16px", backgroundColor: "rgba(255,255,255,0.1)", flexShrink: 0, margin: "0 6px" }} />
 
-            {/* Sort By */}
             {SORT_OPTIONS.map((opt) => (
-                <Pill
-                    key={opt.value}
-                    icon={opt.icon}
-                    label={opt.label}
-                    isActive={sortBy === opt.value}
-                    onClick={() => setSortBy(opt.value)}
-                />
+                <Pill key={opt.value} icon={opt.icon} label={opt.label} isActive={sortBy === opt.value} onClick={() => setSortBy(opt.value)} />
             ))}
         </div>
     );
