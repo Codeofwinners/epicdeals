@@ -35,8 +35,13 @@ export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: Filter
                             <button
                                 key={opt.value}
                                 onClick={() => setTimeRange(opt.value)}
-                                className={`px-2 py-1.5 md:px-5 md:py-2.5 rounded-xl text-[10px] md:text-xs font-black transition-all duration-300 min-w-[50px] md:min-w-[70px] uppercase tracking-wider ${isActive ? "bg-gray-900 text-white shadow-md border border-gray-800" : "bg-transparent text-gray-500 hover:text-black hover:bg-gray-100/50"
-                                    }`}
+                                style={{
+                                    backgroundColor: isActive ? "#111827" : "transparent",
+                                    color: isActive ? "#ffffff" : "#6b7280",
+                                    boxShadow: isActive ? "0 4px 6px -1px rgba(0, 0, 0, 0.1)" : "none",
+                                    border: isActive ? "1px solid #1f2937" : "1px solid transparent",
+                                }}
+                                className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl text-[10px] md:text-xs font-black transition-all duration-300 min-w-[50px] md:min-w-[70px] uppercase tracking-wider`}
                             >
                                 {opt.label}
                             </button>
@@ -54,12 +59,13 @@ export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: Filter
                         <button
                             key={opt.value}
                             onClick={() => setSortBy(opt.value)}
-                            className={`flex items-center gap-1 md:gap-1.5 px-2.5 py-1.5 md:px-3 md:py-2 rounded-xl text-[10px] md:text-[11px] font-black whitespace-nowrap transition-all duration-300 ${isActive
-                                ? "text-black bg-gray-100 md:bg-gray-100"
-                                : "text-gray-500 hover:text-black hover:bg-gray-50/50"
-                                }`}
+                            style={{
+                                backgroundColor: isActive ? "#f3f4f6" : "transparent",
+                                color: isActive ? "#000000" : "#6b7280",
+                            }}
+                            className={`flex items-center gap-1 md:gap-1.5 px-3 py-2 md:px-3 md:py-2 rounded-xl text-[10px] md:text-[11px] font-black whitespace-nowrap transition-all duration-300 hover:text-black`}
                         >
-                            <span className={`material-symbols-outlined text-[14px] md:text-[16px] ${isActive ? "text-blue-500" : "text-gray-400"}`}>{opt.icon}</span>
+                            <span className={`material-symbols-outlined text-[14px] md:text-[16px]`} style={{ color: isActive ? "#3b82f6" : "#9ca3af" }}>{opt.icon}</span>
                             <span className="uppercase tracking-tight">{opt.label}</span>
                         </button>
                     );
