@@ -13,13 +13,13 @@ export function Header() {
       <header className="hidden md:block sticky top-0 z-50 bg-white border-b border-[#EBEBEB]">
         <div className="px-8 py-4">
           <div className="flex items-center justify-between gap-8">
-            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity">
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity">
               <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.03em", fontSize: "26px", lineHeight: 1 }}>
                 <span style={{ color: "#0A0A0A" }}>legit.</span>
-                <span style={{ color: "#AAAAAA" }}>discount</span>
+                <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>discount</span>
               </div>
-              <div style={{ width: "20px", height: "20px", borderRadius: "6px", backgroundColor: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "12px", color: "#fff", fontVariationSettings: "'FILL' 1" }}>verified</span>
+              <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "13px", color: "#fff", fontVariationSettings: "'FILL' 1" }}>check</span>
               </div>
             </Link>
 
@@ -56,10 +56,10 @@ export function Header() {
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
               <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.03em", fontSize: "20px", lineHeight: 1 }}>
                 <span style={{ color: "#0A0A0A" }}>legit.</span>
-                <span style={{ color: "#AAAAAA" }}>discount</span>
+                <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>discount</span>
               </div>
-              <div style={{ width: "17px", height: "17px", borderRadius: "5px", backgroundColor: "#0A0A0A", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "11px", color: "#fff", fontVariationSettings: "'FILL' 1" }}>verified</span>
+              <div style={{ width: "19px", height: "19px", borderRadius: "50%", background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "11px", color: "#fff", fontVariationSettings: "'FILL' 1" }}>check</span>
               </div>
             </Link>
             <AuthButton />
