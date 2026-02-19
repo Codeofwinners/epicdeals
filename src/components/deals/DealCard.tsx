@@ -28,39 +28,57 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(hr / 24)}d`;
 }
 // Robust Image Component with Fallback
-function DealImage({ src, alt, className }: { src: string; alt: string; className: string }) {
+function DealImage({ src, alt, deal }: { src: string; alt: string; deal?: Deal }) {
   const [error, setError] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  // Generate a consistent gradient based on the title length
-  const getGradient = () => {
-    const gradients = [
-      "from-blue-600 to-indigo-700",
-      "from-emerald-600 to-teal-700",
-      "from-orange-500 to-red-600",
-      "from-purple-600 to-indigo-600",
-      "from-pink-500 to-rose-600"
+  const getFallbackImage = () => {
+    if (!deal) {
+      return "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800&auto=format&fit=crop";
+    }
+    if (deal.category?.slug === 'electronics' || deal.title.toLowerCase().includes('headphone')) {
+      return "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=800&auto=format&fit=crop";
+    }
+    if (deal.category?.slug === 'fashion' || deal.store?.name.includes('Navy')) {
+      return "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=800&auto=format&fit=crop";
+    }
+    if (deal.category?.slug === 'food') {
+      return "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop";
+    }
+    const fallbacks = [
+      "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop"
     ];
-    const index = alt.length % gradients.length;
-    return gradients[index];
+    return fallbacks[deal.title.length % fallbacks.length];
   };
 
-  if (error || !src) {
-    return (
-      <div className={`absolute inset-0 w-full h-full bg-gradient-to-br ${getGradient()} ${className}`}>
-        <div className="absolute inset-0 bg-black/20" />
-      </div>
-    );
-  }
+  const hasValidImage = (url: string | undefined | null) => {
+    if (!url) return false;
+    const t = url.trim();
+    if (t === "" || t === "null" || t === "undefined" || t.length < 5) return false;
+    return true;
+  };
+
+  const displayImage = error || !hasValidImage(src) ? getFallbackImage() : src;
 
   return (
-    <img
-      alt={alt}
-      className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}
-      src={src}
-      onLoad={() => setLoaded(true)}
-      onError={() => setError(true)}
-    />
+    <div className="absolute inset-0 w-full h-full bg-gray-50">
+      <img
+        alt={alt}
+        className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ${loaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'} group-hover:scale-110`}
+        src={displayImage}
+        onLoad={() => setLoaded(true)}
+        onError={(e) => {
+          if (!error) setError(true);
+          const fallback = getFallbackImage();
+          if (e.currentTarget.src !== fallback) {
+            e.currentTarget.src = fallback;
+          }
+        }}
+      />
+      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+    </div>
   );
 }
 
@@ -85,8 +103,8 @@ export function DealCard({ deal, variant = "featured" }: DealCardProps) {
       <div className="relative w-full h-full">
         <DealImage
           alt={deal.title}
-          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           src={deal.imageUrl || ""}
+          deal={deal}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent z-10"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10"></div>

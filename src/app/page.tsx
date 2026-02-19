@@ -231,12 +231,29 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
     return fallbacks[deal.title.length % fallbacks.length];
   };
 
-  const displayImage = deal.imageUrl || getFallbackImage(deal);
+  const hasValidImage = (url: string | undefined | null) => {
+    if (!url) return false;
+    const t = url.trim();
+    if (t === "" || t === "null" || t === "undefined" || t.length < 5) return false;
+    return true;
+  };
+
+  const displayImage = hasValidImage(deal.imageUrl) ? deal.imageUrl : getFallbackImage(deal);
 
   return (
     <div className="relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB] text-black flex flex-col h-full">
       <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-50">
-        <img alt={deal.title} className="absolute inset-0 w-full h-full object-cover transition-transform hover:scale-105 duration-700" src={displayImage} />
+        <img
+          alt={deal.title}
+          className="absolute inset-0 w-full h-full object-cover transition-transform hover:scale-105 duration-700"
+          src={displayImage}
+          onError={(e) => {
+            const fallback = getFallbackImage(deal);
+            if (e.currentTarget.src !== fallback) {
+              e.currentTarget.src = fallback;
+            }
+          }}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
         <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
       </div>
