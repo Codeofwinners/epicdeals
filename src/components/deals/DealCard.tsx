@@ -27,6 +27,42 @@ function timeAgo(dateStr: string) {
   if (hr < 24) return `${hr}h`;
   return `${Math.floor(hr / 24)}d`;
 }
+// Robust Image Component with Fallback
+function DealImage({ src, alt, className }: { src: string; alt: string; className: string }) {
+  const [error, setError] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  // Generate a consistent gradient based on the title length
+  const getGradient = () => {
+    const gradients = [
+      "from-blue-600 to-indigo-700",
+      "from-emerald-600 to-teal-700",
+      "from-orange-500 to-red-600",
+      "from-purple-600 to-indigo-600",
+      "from-pink-500 to-rose-600"
+    ];
+    const index = alt.length % gradients.length;
+    return gradients[index];
+  };
+
+  if (error || !src) {
+    return (
+      <div className={`absolute inset-0 w-full h-full bg-gradient-to-br ${getGradient()} ${className}`}>
+        <div className="absolute inset-0 bg-black/20" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      alt={alt}
+      className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}
+      src={src}
+      onLoad={() => setLoaded(true)}
+      onError={() => setError(true)}
+    />
+  );
+}
 
 interface DealCardProps {
   deal: Deal;
@@ -46,13 +82,15 @@ export function DealCard({ deal, variant = "featured" }: DealCardProps) {
       transition={{ duration: 0.5 }}
       className="col-span-12 lg:col-span-8 group relative overflow-hidden rounded-[1.5rem] bg-surface-light dark:bg-surface-dark shadow-soft hover:shadow-hover transition-all duration-300 h-[450px] border border-gray-100 dark:border-white/5"
     >
-      {/* Background Image Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent z-10"></div>
-      <img
-        alt={deal.title}
-        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-        src={deal.imageUrl || "https://via.placeholder.com/1200x450"}
-      />
+      <div className="relative w-full h-full">
+        <DealImage
+          alt={deal.title}
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          src={deal.imageUrl || ""}
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10"></div>
+      </div>
 
       {/* Content */}
       <div className="relative z-20 h-full flex flex-col justify-between p-8">
@@ -190,7 +228,7 @@ function SideCard({ deal }: { deal: Deal }) {
           <h3 className="text-xl font-bold !text-black dark:!text-white mb-2 leading-tight">
             {deal.title}
           </h3>
-          <HelpfulComment dealId={deal.id} />
+          {deal.commentCount > 0 && <HelpfulComment dealId={deal.id} />}
         </div>
 
         {/* Vote & Action */}
@@ -204,6 +242,7 @@ function SideCard({ deal }: { deal: Deal }) {
                 ? "text-green-500"
                 : "text-gray-400 hover:text-green-500"
                 } ${voting ? "opacity-50 cursor-not-allowed" : ""}`}
+              style={{ outline: "none" }}
             >
               keyboard_arrow_up
             </button>
@@ -216,6 +255,7 @@ function SideCard({ deal }: { deal: Deal }) {
                 ? "text-red-500"
                 : "text-gray-400 hover:text-red-500"
                 } ${voting ? "opacity-50 cursor-not-allowed" : ""}`}
+              style={{ outline: "none" }}
             >
               keyboard_arrow_down
             </button>
@@ -282,7 +322,7 @@ function GridCard({ deal }: { deal: Deal }) {
 
         {/* Comment & Vote */}
         <div className="mt-auto pt-4 border-t border-gray-100 dark:border-white/5 flex flex-col gap-3">
-          <CompactComment dealId={deal.id} />
+          {deal.commentCount > 0 && <CompactComment dealId={deal.id} />}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
               <span className="material-icons-outlined text-xs text-gray-400">thumb_up</span>

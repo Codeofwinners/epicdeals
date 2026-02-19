@@ -44,6 +44,7 @@ export interface Deal {
   slug: string;
   title: string;
   description: string;
+  discount: string;
   code?: string;
   store: Store;
   category: Category;
@@ -57,6 +58,8 @@ export interface Deal {
   workedYes: number;
   workedNo: number;
   commentCount: number;
+  netVotes: number;
+  viewCount: number;
   usedLastHour: number;
   status: DealStatus;
   source: DealSource;

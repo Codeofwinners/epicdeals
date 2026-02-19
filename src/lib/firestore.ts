@@ -143,6 +143,90 @@ export async function getDealsByCategory(
     .slice(0, limit);
 }
 
+/** Unified filtered query for the dynamic feed */
+export type TimeRange = "last-24h" | "last-7d" | "last-30d" | "all-time";
+export type SortCategory = "most-voted" | "most-commented" | "most-viewed";
+
+export async function getFilteredDeals(options: {
+  timeRange: TimeRange;
+  sortBy: SortCategory;
+  limit?: number;
+}): Promise<Deal[]> {
+  const { timeRange, sortBy, limit = 40 } = options;
+
+  try {
+    // Attempt the optimized Firestore query with composite index
+    let q = query(dealsCol);
+
+    // Time Filter
+    let cutoff: Timestamp | null = null;
+    if (timeRange !== "all-time") {
+      const now = Date.now();
+      const ranges = {
+        "last-24h": 24 * 3600000,
+        "last-7d": 7 * 24 * 3600000,
+        "last-30d": 30 * 24 * 3600000,
+      };
+      // @ts-ignore
+      cutoff = Timestamp.fromMillis(now - ranges[timeRange]);
+      q = query(q, where("createdAt", ">=", cutoff));
+    }
+
+    const sortFields = {
+      "most-voted": "netVotes",
+      "most-commented": "commentCount",
+      "most-viewed": "viewCount",
+    };
+
+    q = query(
+      q,
+      orderBy(sortFields[sortBy], "desc"),
+      firestoreLimit(limit)
+    );
+
+    const snap = await getDocs(q);
+    return snap.docs
+      .map((d) => docToDeal(d as any))
+      .filter((d) => d.status !== "expired");
+  } catch (error: any) {
+    console.warn("Firestore index missing or query failed, falling back to in-memory filter:", error.message);
+
+    // Fallback: Fetch latest deals and filter/sort in memory
+    // This ensures the site works even without complex indexes configured
+    try {
+      const snap = await getDocs(query(dealsCol, orderBy("createdAt", "desc"), firestoreLimit(100)));
+      let deals = snap.docs.map(d => docToDeal(d as any));
+
+      // In-memory Time Filter
+      if (timeRange !== "all-time") {
+        const now = Date.now();
+        const ranges = {
+          "last-24h": 24 * 3600000,
+          "last-7d": 7 * 24 * 3600000,
+          "last-30d": 30 * 24 * 3600000,
+        };
+        // @ts-ignore
+        const cutoffMs = now - ranges[timeRange];
+        deals = deals.filter(d => new Date(d.createdAt).getTime() >= cutoffMs);
+      }
+
+      // In-memory Sort
+      const sortFields = {
+        "most-voted": "netVotes",
+        "most-commented": "commentCount",
+        "most-viewed": "viewCount",
+      };
+      const field = sortFields[sortBy];
+      deals.sort((a: any, b: any) => (b[field] || 0) - (a[field] || 0));
+
+      return deals.filter(d => d.status !== "expired").slice(0, options.limit || 20);
+    } catch (fallbackError) {
+      console.error("Critical error fetching deals:", fallbackError);
+      return [];
+    }
+  }
+}
+
 /** Most Confirmed: highest workedYes ≥50 */
 export async function getMostConfirmed(limit = 8): Promise<Deal[]> {
   const q = query(
@@ -627,6 +711,115 @@ export async function downvoteDeal(userId: string, dealId: string): Promise<bool
     return !downvoteSnap.exists(); // Return true if downvote was added
   } catch (error) {
     console.error("Error downvoting deal:", error);
+    throw error;
+  }
+}
+
+/** Check if user has voted on a comment */
+export async function getCommentVoteStatus(userId: string, commentId: string): Promise<VoteStatus> {
+  if (!db) return { hasVoted: false, voteType: null };
+
+  try {
+    const upvoteRef = doc(db, "votes", userId, "commentUpvotes", commentId);
+    const downvoteRef = doc(db, "votes", userId, "commentDownvotes", commentId);
+
+    const [upvoteSnap, downvoteSnap] = await Promise.all([
+      getDoc(upvoteRef),
+      getDoc(downvoteRef),
+    ]);
+
+    if (upvoteSnap.exists()) return { hasVoted: true, voteType: "upvote" };
+    if (downvoteSnap.exists()) return { hasVoted: true, voteType: "downvote" };
+
+    return { hasVoted: false, voteType: null };
+  } catch (error) {
+    console.error("Error checking comment vote status:", error);
+    return { hasVoted: false, voteType: null };
+  }
+}
+
+/** Upvote a comment (toggle) */
+export async function upvoteComment(userId: string, commentId: string): Promise<boolean> {
+  if (!db) throw new Error("Firebase not initialized");
+
+  const upvoteRef = doc(db, "votes", userId, "commentUpvotes", commentId);
+  const downvoteRef = doc(db, "votes", userId, "commentDownvotes", commentId);
+  const commentRef = doc(db, "comments", commentId);
+
+  try {
+    const [upvoteSnap, downvoteSnap, commentSnap] = await Promise.all([
+      getDoc(upvoteRef),
+      getDoc(downvoteRef),
+      getDoc(commentRef),
+    ]);
+
+    if (!commentSnap.exists()) throw new Error("Comment not found");
+
+    let voteChange = 0;
+
+    if (upvoteSnap.exists()) {
+      await deleteDoc(upvoteRef);
+      voteChange = -1;
+    } else {
+      await setDoc(upvoteRef, { votedAt: Timestamp.now() });
+      voteChange = 1;
+
+      if (downvoteSnap.exists()) {
+        await deleteDoc(downvoteRef);
+        voteChange = 2;
+      }
+    }
+
+    await updateDoc(commentRef, {
+      upvotes: (commentSnap.data().upvotes || 0) + voteChange,
+    });
+
+    return !upvoteSnap.exists();
+  } catch (error) {
+    console.error("Error upvoting comment:", error);
+    throw error;
+  }
+}
+
+/** Downvote a comment (toggle) */
+export async function downvoteComment(userId: string, commentId: string): Promise<boolean> {
+  if (!db) throw new Error("Firebase not initialized");
+
+  const upvoteRef = doc(db, "votes", userId, "commentUpvotes", commentId);
+  const downvoteRef = doc(db, "votes", userId, "commentDownvotes", commentId);
+  const commentRef = doc(db, "comments", commentId);
+
+  try {
+    const [upvoteSnap, downvoteSnap, commentSnap] = await Promise.all([
+      getDoc(upvoteRef),
+      getDoc(downvoteRef),
+      getDoc(commentRef),
+    ]);
+
+    if (!commentSnap.exists()) throw new Error("Comment not found");
+
+    let voteChange = 0;
+
+    if (downvoteSnap.exists()) {
+      await deleteDoc(downvoteRef);
+      voteChange = 1;
+    } else {
+      await setDoc(downvoteRef, { votedAt: Timestamp.now() });
+      voteChange = -1;
+
+      if (upvoteSnap.exists()) {
+        await deleteDoc(upvoteRef);
+        voteChange = -2;
+      }
+    }
+
+    await updateDoc(commentRef, {
+      upvotes: (commentSnap.data().upvotes || 0) + voteChange,
+    });
+
+    return !downvoteSnap.exists();
+  } catch (error) {
+    console.error("Error downvoting comment:", error);
     throw error;
   }
 }

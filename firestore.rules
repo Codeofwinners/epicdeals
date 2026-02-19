@@ -56,8 +56,11 @@ service cloud.firestore {
                        request.resource.data.text.size() > 0 &&
                        request.resource.data.text.size() <= 1000 &&
                        request.resource.data.createdAt is timestamp;
-      allow update: if request.auth != null &&
-                       (request.auth.uid == resource.data.userId || isModerator());
+      allow update: if request.auth != null && (
+                       (request.auth.uid == resource.data.userId || isModerator()) ||
+                       // Anyone can update upvotes (for voting system)
+                       (request.resource.data.keys().size() == 1 && 'upvotes' in request.resource.data.keys())
+                       );
       allow delete: if request.auth != null &&
                        (request.auth.uid == resource.data.userId || isModerator());
     }
@@ -74,6 +77,18 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow create, delete: if request.auth != null && request.auth.uid == userId;
       allow update: if false; // Votes are write-once, delete and recreate
+    }
+
+    match /votes/{userId}/commentUpvotes/{commentId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, delete: if request.auth != null && request.auth.uid == userId;
+      allow update: if false;
+    }
+
+    match /votes/{userId}/commentDownvotes/{commentId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow create, delete: if request.auth != null && request.auth.uid == userId;
+      allow update: if false;
     }
 
     // ────── SAVED DEALS ──────

@@ -63,7 +63,7 @@ const s = (id: string): Store => stores.find((x) => x.id === id)!;
 const c = (id: string): Category => categories.find((x) => x.id === id)!;
 
 // ─── Deals ───────────────────────────────────────────────────────
-const rawDeals: Omit<Deal, "slug">[] = [
+const rawDeals = [
   // ── HOT RIGHT NOW (high velocity, trending) ──────────────────
   {
     id: "deal-1",
@@ -1059,10 +1059,13 @@ const rawDeals: Omit<Deal, "slug">[] = [
   },
 ];
 
-export const deals: Deal[] = rawDeals.map((d) => ({
+export const deals: Deal[] = (rawDeals as any[]).map((d) => ({
   ...d,
   slug: generateDealSlug(d.title, d.store.slug),
-}));
+  discount: d.savingsAmount || "",
+  netVotes: (d.upvotes || 0) - (d.downvotes || 0),
+  viewCount: (d.usedLastHour || 0) * 10,
+} as Deal));
 
 // ─── Section Helpers ─────────────────────────────────────────────
 

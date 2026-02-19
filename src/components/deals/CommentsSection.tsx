@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { addComment, onDealComments, deleteComment, editComment } from "@/lib/firestore";
+import { addComment, onDealComments, deleteComment, editComment, upvoteComment, downvoteComment, getCommentVoteStatus } from "@/lib/firestore";
 import { signInWithGoogle } from "@/lib/auth";
 import type { Comment } from "@/types/deals";
 
@@ -194,6 +194,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                   minHeight: "60px",
                   resize: "vertical",
                   boxSizing: "border-box",
+                  outline: "none",
                 }}
               />
               <div
@@ -221,6 +222,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                     fontWeight: "600",
                     cursor: commentText.trim() ? "pointer" : "not-allowed",
                     opacity: submitting ? 0.7 : 1,
+                    outline: "none",
                   }}
                 >
                   {submitting ? "Posting..." : "Post"}
@@ -289,6 +291,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                       minHeight: "50px",
                       resize: "vertical",
                       boxSizing: "border-box",
+                      outline: "none",
                     }}
                   />
                   <div style={{ display: "flex", gap: "8px", marginTop: "8px", justifyContent: "flex-end" }}>
@@ -306,6 +309,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                         fontSize: "11px",
                         fontWeight: "600",
                         cursor: "pointer",
+                        outline: "none",
                       }}
                     >
                       Cancel
@@ -321,6 +325,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                         fontSize: "11px",
                         fontWeight: "600",
                         cursor: "pointer",
+                        outline: "none",
                       }}
                     >
                       Save
@@ -334,7 +339,6 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                     backgroundColor: bgColor,
                     borderRadius: "8px",
                     border: `1px solid ${borderColor}`,
-                    ...(user?.uid === comment.user.id && { borderColor: "#0EA5E9", borderWidth: "2px" }),
                   }}
                 >
                   <div style={{ display: "flex", gap: "8px" }}>
@@ -375,6 +379,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                                 cursor: "pointer",
                                 fontSize: "12px",
                                 padding: "0 4px",
+                                outline: "none",
                               }}
                               title="Edit"
                             >
@@ -389,6 +394,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                                 cursor: "pointer",
                                 fontSize: "12px",
                                 padding: "0 4px",
+                                outline: "none",
                               }}
                               title="Delete"
                             >
@@ -408,11 +414,9 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                       >
                         {comment.content}
                       </p>
-                      {comment.upvotes > 0 && (
-                        <div style={{ marginTop: "6px", fontSize: "11px", color: "#0EA5E9" }}>
-                          👍 {comment.upvotes} {comment.upvotes === 1 ? "person" : "people"} found this helpful
-                        </div>
-                      )}
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "8px" }}>
+                        <CommentVoting commentId={comment.id} initialUpvotes={comment.upvotes} />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -426,6 +430,88 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function CommentVoting({ commentId, initialUpvotes }: { commentId: string; initialUpvotes: number }) {
+  const { user } = useAuth();
+  const [voteStatus, setVoteStatus] = useState<any>(null);
+  const [upvotes, setUpvotes] = useState(initialUpvotes);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user?.uid) {
+      getCommentVoteStatus(user.uid, commentId).then(setVoteStatus);
+    }
+  }, [user?.uid, commentId]);
+
+  const handleVote = async (type: "up" | "down") => {
+    if (!user) {
+      alert("Sign in to vote");
+      return;
+    }
+    setLoading(true);
+    try {
+      if (type === "up") {
+        await upvoteComment(user.uid, commentId);
+      } else {
+        await downvoteComment(user.uid, commentId);
+      }
+      const newStatus = await getCommentVoteStatus(user.uid, commentId);
+      setVoteStatus(newStatus);
+    } catch (error) {
+      console.error("Comment voting error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setUpvotes(initialUpvotes);
+  }, [initialUpvotes]);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "2px", backgroundColor: "rgba(0,0,0,0.03)", padding: "2px 6px", borderRadius: "6px" }}>
+        <button
+          onClick={() => handleVote("up")}
+          disabled={loading}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: loading ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            padding: "2px",
+            color: voteStatus?.voteType === "upvote" ? "#0EA5E9" : "#a1a1aa",
+            outline: "none",
+          }}
+          title="Found this helpful"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: "18px", fontVariationSettings: voteStatus?.voteType === "upvote" ? "'FILL' 1" : "" }}>thumb_up</span>
+        </button>
+        <span style={{ fontSize: "11px", fontWeight: "700", color: "#71717a", minWidth: "12px", textAlign: "center" }}>
+          {upvotes}
+        </span>
+        <button
+          onClick={() => handleVote("down")}
+          disabled={loading}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: loading ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            padding: "2px",
+            color: voteStatus?.voteType === "downvote" ? "#ef4444" : "#a1a1aa",
+            outline: "none",
+          }}
+          title="Not helpful"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: "18px", fontVariationSettings: voteStatus?.voteType === "downvote" ? "'FILL' 1" : "" }}>thumb_down</span>
+        </button>
+      </div>
     </div>
   );
 }
