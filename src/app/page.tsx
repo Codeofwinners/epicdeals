@@ -362,10 +362,10 @@ export default function Home() {
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body {
           min-height: 100vh;
-          background-color: #0D0C0A;
+          background-color: #FAF7F2;
           background-image:
-            repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.018) 18px, rgba(255,255,255,0.018) 19px),
-            repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(255,255,255,0.018) 18px, rgba(255,255,255,0.018) 19px);
+            repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(0,0,0,0.025) 18px, rgba(0,0,0,0.025) 19px),
+            repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(0,0,0,0.025) 18px, rgba(0,0,0,0.025) 19px);
         }
         .masonry-grid { column-count: 2; column-gap: 10px; }
         @media (min-width: 768px) { .masonry-grid { column-count: 4; column-gap: 20px; } }
@@ -378,7 +378,7 @@ export default function Home() {
       `}</style>
 
       {/* DESKTOP */}
-      <div className="hidden md:block bg-transparent text-white font-display min-h-screen antialiased">
+      <div className="hidden md:block bg-transparent text-black font-display min-h-screen antialiased">
         <Header />
         <main className="px-6 py-6 max-w-7xl mx-auto">
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
@@ -400,11 +400,11 @@ export default function Home() {
       </div>
 
       {/* MOBILE */}
-      <div className="md:hidden bg-transparent text-white font-display min-h-screen antialiased">
+      <div className="md:hidden bg-transparent text-black font-display min-h-screen antialiased">
         <Header />
         <main className="px-3 pt-2 pb-8">
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
-          <h2 className="text-base font-black tracking-tight mb-3 text-white/70">
+          <h2 className="text-base font-black tracking-tight mb-3 text-[#1A1A1A]">
             {timeRange === "last-24h" ? "Daily Hits" : timeRange === "last-7d" ? "Weekly Legends" : timeRange === "last-30d" ? "Monthly Best" : "All-Time Best"}
           </h2>
           {loading ? (

@@ -30,17 +30,17 @@ function Pill({ icon, label, isActive, onClick }: { icon: string; label: string;
                 display: "flex", alignItems: "center", gap: "5px",
                 padding: "7px 12px",
                 borderRadius: "10px",
-                backgroundColor: isActive ? "#FFFFFF" : "transparent",
-                border: isActive ? "1px solid rgba(255,255,255,0.9)" : "1px solid transparent",
+                backgroundColor: isActive ? "#0A0A0A" : "transparent",
+                border: isActive ? "1px solid #0A0A0A" : "1px solid transparent",
                 cursor: "pointer", flexShrink: 0,
                 transition: "background-color 0.15s, border-color 0.15s",
                 outline: "none",
             }}
         >
-            <span className="material-symbols-outlined" style={{ fontSize: "13px", color: isActive ? "#0D0C0A" : "rgba(255,255,255,0.35)", lineHeight: 1 }}>
+            <span className="material-symbols-outlined" style={{ fontSize: "13px", color: isActive ? "#FFFFFF" : "#AAAAAA", lineHeight: 1 }}>
                 {icon}
             </span>
-            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: isActive ? "#0D0C0A" : "rgba(255,255,255,0.35)", lineHeight: 1 }}>
+            <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: isActive ? "#FFFFFF" : "#AAAAAA", lineHeight: 1 }}>
                 {label}
             </span>
         </button>
@@ -55,7 +55,7 @@ export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: Filter
                 display: "flex", alignItems: "center", gap: "2px",
                 overflowX: "auto",
                 paddingBottom: "16px", marginBottom: "20px",
-                borderBottom: "1px solid rgba(255,255,255,0.07)",
+                borderBottom: "1px solid #E8E8E8",
                 msOverflowStyle: "none", scrollbarWidth: "none",
             }}
         >
@@ -63,7 +63,7 @@ export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: Filter
                 <Pill key={opt.value} icon={opt.icon} label={opt.label} isActive={timeRange === opt.value} onClick={() => setTimeRange(opt.value)} />
             ))}
 
-            <div style={{ width: "1px", height: "16px", backgroundColor: "rgba(255,255,255,0.1)", flexShrink: 0, margin: "0 6px" }} />
+            <div style={{ width: "1px", height: "16px", backgroundColor: "#E0E0E0", flexShrink: 0, margin: "0 6px" }} />
 
             {SORT_OPTIONS.map((opt) => (
                 <Pill key={opt.value} icon={opt.icon} label={opt.label} isActive={sortBy === opt.value} onClick={() => setSortBy(opt.value)} />
