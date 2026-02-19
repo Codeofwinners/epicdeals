@@ -12,84 +12,105 @@ import { useBestComment } from "@/hooks/useFirestore";
 import { FilterBar } from "@/components/deals/FilterBar";
 import type { Deal } from "@/types/deals";
 
+function fmtCount(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return String(n);
+}
+
 function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = false, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean; whiteText?: boolean; onCommentClick?: () => void }) {
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
   const [voting, setVoting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!db) return;
-    if (user?.uid) {
-      getVoteStatus(user.uid, dealId)
-        .then(setVoteStatus)
-        .catch(err => {
-          console.error("Error loading vote status:", err);
-          setError("Error: " + err.message);
-        });
-    }
+    if (!db || !user?.uid) return;
+    getVoteStatus(user.uid, dealId).then(setVoteStatus).catch(console.error);
   }, [user?.uid, dealId]);
 
   const handleVote = async (type: "up" | "down") => {
-    if (!user) {
-      alert("Sign in to vote");
-      return;
-    }
+    if (!user) { alert("Sign in to vote"); return; }
     if (!db) return;
-
-    setError(null);
     setVoting(true);
     try {
-      if (type === "up") {
-        await upvoteDeal(user.uid, dealId);
-      } else {
-        await downvoteDeal(user.uid, dealId);
-      }
-      const newStatus = await getVoteStatus(user.uid, dealId);
-      setVoteStatus(newStatus);
-    } catch (error: any) {
-      console.error("Vote error:", error);
-      setError("ERROR: " + (error?.message || "Failed to vote"));
+      if (type === "up") await upvoteDeal(user.uid, dealId);
+      else await downvoteDeal(user.uid, dealId);
+      setVoteStatus(await getVoteStatus(user.uid, dealId));
+    } catch (e: any) {
+      console.error("Vote error:", e);
       alert("Vote failed");
     } finally {
       setVoting(false);
     }
   };
 
-  const displayUpvotes = upvotes + (voteStatus?.voteType === "upvote" ? 1 : 0) - (voteStatus?.voteType === "downvote" ? 0 : 0); // Simplified for now as it's netVotes from Firebase usually
   const netDisplay = upvotes + (voteStatus?.voteType === "upvote" ? 1 : 0) + (voteStatus?.voteType === "downvote" ? -1 : 0);
-
-  const inactiveColor = whiteText ? "#fff" : (darkBg ? "#fff" : "#666");
-  const activeUpColor = darkBg ? "#FFB84D" : "#FF4500";
+  const isUpvoted = voteStatus?.voteType === "upvote";
+  const border = darkBg ? "rgba(255,255,255,0.08)" : "#F0F0F0";
+  const iconColor = darkBg ? "rgba(255,255,255,0.45)" : "#AAAAAA";
 
   return (
-    <div className={`flex items-center justify-between pt-2 ${whiteText ? "text-white" : ""}`} style={{ borderTop: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#EBEBEB"}`, color: inactiveColor }}>
-      <div className="flex items-center gap-3">
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "10px", borderTop: `1px solid ${border}` }}>
+      {/* Left: upvote pill + comment */}
+      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+
+        {/* Upvote pill */}
         <button
           onClick={() => handleVote("up")}
           disabled={voting}
-          className="flex items-center gap-1 font-bold text-xs transition-colors cursor-pointer hover:opacity-80 bg-transparent border-none p-0 outline-none"
-          style={{ color: voteStatus?.voteType === "upvote" ? activeUpColor : inactiveColor, opacity: voting ? 0.5 : 1 }}
           title="Upvote"
+          style={{
+            display: "flex", alignItems: "center", gap: "4px",
+            padding: "5px 10px 5px 7px",
+            borderRadius: "99px",
+            backgroundColor: isUpvoted ? (darkBg ? "#FF4500" : "#FF4500") : (darkBg ? "rgba(255,255,255,0.07)" : "#F3F3F3"),
+            border: `1px solid ${isUpvoted ? "#FF4500" : (darkBg ? "rgba(255,255,255,0.1)" : "#E8E8E8")}`,
+            cursor: voting ? "wait" : "pointer",
+            opacity: voting ? 0.6 : 1,
+            transition: "all 0.15s ease",
+            outline: "none",
+          }}
         >
-          <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }}>arrow_upward</span>
-          {(netDisplay / 1000).toFixed(1)}k
+          <span className="material-symbols-outlined" style={{
+            fontSize: "13px",
+            color: isUpvoted ? "#fff" : iconColor,
+            fontVariationSettings: isUpvoted ? "'FILL' 1" : "'FILL' 0",
+            lineHeight: 1,
+          }}>arrow_upward</span>
+          <span style={{
+            fontSize: "11px", fontWeight: 700, lineHeight: 1,
+            color: isUpvoted ? "#fff" : (darkBg ? "rgba(255,255,255,0.65)" : "#555"),
+            letterSpacing: "0.01em",
+          }}>{fmtCount(netDisplay)}</span>
         </button>
+
+        {/* Comment button */}
         <button
           onClick={() => onCommentClick?.()}
-          className="flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer hover:opacity-80 bg-transparent border-none p-0 outline-none"
-          style={{ color: inactiveColor }}
-          title="View comments"
+          title="Comments"
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            width: "30px", height: "30px", borderRadius: "50%",
+            backgroundColor: darkBg ? "rgba(255,255,255,0.07)" : "#F3F3F3",
+            border: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#E8E8E8"}`,
+            cursor: "pointer", outline: "none",
+          }}
         >
-          <span className="material-symbols-outlined text-[14px]">chat_bubble</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "13px", color: iconColor, lineHeight: 1 }}>chat_bubble</span>
         </button>
       </div>
+
+      {/* Right: save */}
       <button
-        className="w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer hover:opacity-80 bg-transparent border-none p-0 outline-none"
-        style={{ color: inactiveColor }}
-        title="Save deal"
+        title="Save"
+        style={{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          width: "30px", height: "30px", borderRadius: "50%",
+          backgroundColor: darkBg ? "rgba(255,255,255,0.07)" : "#F3F3F3",
+          border: `1px solid ${darkBg ? "rgba(255,255,255,0.1)" : "#E8E8E8"}`,
+          cursor: "pointer", outline: "none",
+        }}
       >
-        <span className="material-symbols-outlined text-[18px]">bookmark</span>
+        <span className="material-symbols-outlined" style={{ fontSize: "14px", color: iconColor, lineHeight: 1 }}>bookmark</span>
       </button>
     </div>
   );
@@ -311,13 +332,13 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
         <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
       </div>
-      <div className="p-3.5 flex flex-col flex-grow">
-        <div className="flex items-center justify-between gap-1 mb-1.5">
-          <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#888888] truncate">{deal.store.name}</span>
+      <div className="p-4 flex flex-col flex-grow">
+        <div className="flex items-center justify-between gap-1 mb-2">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#AAAAAA] truncate">{deal.store.name}</span>
           <ExpiryBadge expiresAt={deal.expiresAt} />
         </div>
 
-        <h3 className="font-bold text-[13px] leading-snug text-[#1A1A1A] mb-3 line-clamp-2">{deal.title}</h3>
+        <h3 className="font-semibold text-[13px] leading-[1.35] text-[#1A1A1A] mb-3 line-clamp-2">{deal.title}</h3>
         <div className="mt-auto">
           <TopComment dealId={deal.id} />
           <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} onCommentClick={toggleComments} />
