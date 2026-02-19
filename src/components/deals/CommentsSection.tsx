@@ -270,10 +270,8 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
               {editingId === comment.id ? (
                 <div
                   style={{
-                    padding: "10px 12px",
-                    backgroundColor: bgColor,
-                    borderRadius: "8px",
-                    border: `1px solid ${borderColor}`,
+                    padding: "10px 0",
+                    borderBottom: `1px solid ${borderColor}`,
                   }}
                 >
                   <textarea
@@ -335,10 +333,8 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
               ) : (
                 <div
                   style={{
-                    padding: "10px 12px",
-                    backgroundColor: bgColor,
-                    borderRadius: "8px",
-                    border: `1px solid ${borderColor}`,
+                    padding: "10px 0",
+                    borderBottom: `1px solid ${borderColor}`,
                   }}
                 >
                   <div style={{ display: "flex", gap: "8px" }}>

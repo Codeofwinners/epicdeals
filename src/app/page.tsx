@@ -117,17 +117,17 @@ function DarkComment({ dealId }: { dealId: string }) {
   if (loading || !comment) return null;
 
   return (
-    <div className="mb-4 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex items-start gap-3 shadow-xl text-white">
-      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 flex items-center justify-center text-white text-[11px] font-black border border-white/20">
+    <div className="mb-3 pb-3 border-b border-white/20 flex items-start gap-3 w-full text-white">
+      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 flex items-center justify-center text-white text-[9px] font-black shadow-sm">
         {comment.user.username[0].toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[11px] font-black text-white/90 tracking-wider uppercase mb-1 flex items-center gap-1.5 overflow-hidden">
+        <p className="text-[10px] font-black text-white tracking-wider uppercase mb-1 flex items-center gap-1.5 overflow-hidden">
           {comment.user.username}
           <span className="w-1 h-1 rounded-full bg-white/30"></span>
-          <span className="text-[9px] text-white/50 normal-case font-medium">Insight</span>
+          <span className="text-[9px] text-white/70 normal-case font-medium">Insight</span>
         </p>
-        <p className="text-[13px] text-white/80 leading-snug line-clamp-2 tracking-tight italic">"{comment.content}"</p>
+        <p className="text-[13px] text-white/90 leading-snug line-clamp-2 italic font-medium">"{comment.content}"</p>
       </div>
     </div>
   );
@@ -213,15 +213,34 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
     );
   }
 
+  const getGradient = (title: string) => {
+    const gradients = [
+      "from-blue-600 to-indigo-700",
+      "from-emerald-600 to-teal-700",
+      "from-orange-500 to-red-600",
+      "from-purple-600 to-indigo-600",
+      "from-pink-500 to-rose-600"
+    ];
+    const index = title.length % gradients.length;
+    return gradients[index];
+  };
+
   return (
     <div className="relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB] text-black flex flex-col h-full">
-      {deal.imageUrl && (
-        <div className="relative w-full aspect-[4/3] bg-gray-50 overflow-hidden">
+      <div className={`relative w-full aspect-[4/3] overflow-hidden ${!deal.imageUrl ? `bg-gradient-to-br ${getGradient(deal.title)}` : "bg-gray-50"}`}>
+        {deal.imageUrl && (
           <img alt={deal.title} className="absolute inset-0 w-full h-full object-cover transition-transform hover:scale-105 duration-700" src={deal.imageUrl} />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-          <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
-        </div>
-      )}
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+        <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
+        {!deal.imageUrl && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-4xl font-black text-white drop-shadow-md px-6 text-center leading-none transform -rotate-2">
+              {deal.savingsAmount}
+            </div>
+          </div>
+        )}
+      </div>
       <div className="p-5 flex flex-col flex-grow">
         <div className="flex items-center gap-1.5 mb-3">
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#888888]">{deal.store.name}</span>
@@ -229,9 +248,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
             <span className="material-symbols-outlined text-[14px] text-blue-500" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
           )}
         </div>
-        {!deal.imageUrl && (
-          <div className="text-3xl font-black mb-3 text-[#1A1A1A] tracking-tighter leading-none">{deal.savingsAmount}</div>
-        )}
+
         <h3 className="font-bold text-lg leading-snug text-[#1A1A1A] mb-4 line-clamp-2">{deal.title}</h3>
         <div className="mt-auto pt-2">
           <TopComment dealId={deal.id} />
