@@ -61,8 +61,8 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = f
           disabled={voting}
           style={{ display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: 0, cursor: voting ? "wait" : "pointer", opacity: voting ? 0.4 : 1, outline: "none" }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: "14px", lineHeight: 1, color: isUpvoted ? activeColor : restColor, fontVariationSettings: "'FILL' 1" }}>arrow_upward</span>
-          <span style={{ fontSize: "11px", fontWeight: isUpvoted ? 800 : 500, color: isUpvoted ? activeColor : restColor, letterSpacing: "0.01em", lineHeight: 1 }}>{fmtCount(netDisplay)}</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "12px", lineHeight: 1, color: isUpvoted ? activeColor : "#CCCCCC", fontVariationSettings: "'FILL' 1" }}>arrow_upward</span>
+          <span style={{ fontSize: "12px", fontWeight: 700, color: isUpvoted ? activeColor : "#888", letterSpacing: "-0.01em", lineHeight: 1 }}>{fmtCount(netDisplay)}</span>
         </button>
 
         {/* Comment: bare icon */}
@@ -157,14 +157,13 @@ function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: b
 
 function VerifiedBadge({ dark = false }: { dark?: boolean }) {
   return (
-    <div style={{
+    <div className="verified-strip" style={{
       display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
-      backgroundColor: "#10b981",
-      margin: "8px -16px -12px -16px",
-      padding: "8px 16px",
+      margin: "8px -12px -12px -12px",
+      padding: "7px 12px",
     }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "12px", color: "#fff", fontVariationSettings: "'FILL' 1", lineHeight: 1 }}>verified</span>
-      <span style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.07em", textTransform: "uppercase", color: "#fff", lineHeight: 1 }}>
+      <span className="material-symbols-outlined" style={{ fontSize: "11px", color: "#fff", fontVariationSettings: "'FILL' 1", lineHeight: 1 }}>verified</span>
+      <span style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "#fff", lineHeight: 1 }}>
         Verified by Legit.discount
       </span>
     </div>
@@ -275,29 +274,43 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
   const displayImage = hasValidImage(deal.imageUrl) ? deal.imageUrl : getFallbackImage(deal);
 
   return (
-    <div className="relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB] text-black flex flex-col h-full">
-      <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-50">
+    <div className="deal-card relative group rounded-2xl overflow-hidden bg-white border border-[#E4E4E4] text-black flex flex-col h-full">
+      {/* Image */}
+      <div className="relative w-full aspect-[4/3] overflow-hidden bg-[#F0F0F0]">
         <img
           alt={deal.title}
-          className="absolute inset-0 w-full h-full object-cover transition-transform hover:scale-105 duration-700"
+          className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 duration-700"
           src={displayImage}
           onError={(e) => {
             const fallback = getFallbackImage(deal);
-            if (e.currentTarget.src !== fallback) {
-              e.currentTarget.src = fallback;
-            }
+            if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-        <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/5 to-transparent" />
+        {/* Discount chip — frosted dark */}
+        <div style={{
+          position: "absolute", top: "10px", left: "10px", zIndex: 20,
+          display: "inline-flex", alignItems: "center",
+          backgroundColor: "rgba(0,0,0,0.72)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          borderRadius: "8px",
+          padding: "4px 8px",
+          border: "1px solid rgba(255,255,255,0.12)",
+        }}>
+          <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>−{deal.discount}</span>
+        </div>
       </div>
-      <div className="pt-4 px-4 pb-3 flex flex-col flex-grow">
-        <div className="flex items-center justify-between gap-1 mb-2">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-[#AAAAAA] truncate">{deal.store.name}</span>
+
+      {/* Body */}
+      <div className="pt-3 px-3 pb-3 flex flex-col flex-grow">
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
           <ExpiryBadge expiresAt={deal.expiresAt} />
         </div>
 
-        <h3 className="font-semibold text-[13px] leading-[1.35] text-[#1A1A1A] mb-3 line-clamp-2">{deal.title}</h3>
+        <h3 style={{ fontWeight: 800, fontSize: "13px", lineHeight: 1.3, color: "#0A0A0A", marginBottom: "12px" }} className="line-clamp-2">{deal.title}</h3>
+
         <div className="mt-auto">
           <TopComment dealId={deal.id} />
           <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} onCommentClick={toggleComments} />
@@ -347,11 +360,15 @@ export default function Home() {
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { min-height: 100vh; background-color: #F9F9F7; }
+        body { min-height: 100vh; background-color: #F4F4F2; }
         .masonry-grid { column-count: 2; column-gap: 10px; }
         @media (min-width: 768px) { .masonry-grid { column-count: 4; column-gap: 20px; } }
         .masonry-item { break-inside: avoid; margin-bottom: 10px; }
         @media (min-width: 768px) { .masonry-item { margin-bottom: 20px; } }
+        .deal-card { box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 6px 20px rgba(0,0,0,0.07); transition: box-shadow 0.2s, transform 0.2s; }
+        .deal-card:hover { box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.12); transform: translateY(-1px); }
+        @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
+        .verified-strip { background: linear-gradient(90deg, #059669, #10b981, #34d399, #10b981, #059669); background-size: 300% auto; animation: shimmer 4s linear infinite; }
       `}</style>
 
       {/* DESKTOP */}
