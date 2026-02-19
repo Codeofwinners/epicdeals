@@ -157,13 +157,9 @@ function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: b
 
 function VerifiedBadge({ dark = false }: { dark?: boolean }) {
   return (
-    <div className="verified-strip" style={{
-      display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
-      margin: "8px -12px -12px -12px",
-      padding: "7px 12px",
-    }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "11px", color: "#fff", fontVariationSettings: "'FILL' 1", lineHeight: 1 }}>verified</span>
-      <span style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "#fff", lineHeight: 1 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "4px", paddingTop: "7px", marginTop: "1px" }}>
+      <span className="material-symbols-outlined" style={{ fontSize: "11px", color: "#10b981", fontVariationSettings: "'FILL' 1", lineHeight: 1 }}>verified</span>
+      <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#10b981", lineHeight: 1 }}>
         Verified by Legit.discount
       </span>
     </div>
