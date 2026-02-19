@@ -160,6 +160,7 @@ function VerifiedBadge({ dark = false }: { dark?: boolean }) {
     <div style={{
       display: "flex",
       alignItems: "center",
+      justifyContent: "center",
       gap: "4px",
       paddingTop: "6px",
       marginTop: "2px",
