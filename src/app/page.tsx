@@ -213,33 +213,32 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
     );
   }
 
-  const getGradient = (title: string) => {
-    const gradients = [
-      "from-blue-600 to-indigo-700",
-      "from-emerald-600 to-teal-700",
-      "from-orange-500 to-red-600",
-      "from-purple-600 to-indigo-600",
-      "from-pink-500 to-rose-600"
+  const getFallbackImage = (deal: Deal) => {
+    if (deal.category?.slug === 'electronics' || deal.title.toLowerCase().includes('headphone')) {
+      return "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=800&auto=format&fit=crop";
+    }
+    if (deal.category?.slug === 'fashion' || deal.store?.name.includes('Navy')) {
+      return "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=800&auto=format&fit=crop";
+    }
+    if (deal.category?.slug === 'food') {
+      return "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop";
+    }
+    const fallbacks = [
+      "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1607082349566-187342175e2f?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=800&auto=format&fit=crop"
     ];
-    const index = title.length % gradients.length;
-    return gradients[index];
+    return fallbacks[deal.title.length % fallbacks.length];
   };
+
+  const displayImage = deal.imageUrl || getFallbackImage(deal);
 
   return (
     <div className="relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB] text-black flex flex-col h-full">
-      <div className={`relative w-full aspect-[4/3] overflow-hidden ${!deal.imageUrl ? `bg-gradient-to-br ${getGradient(deal.title)}` : "bg-gray-50"}`}>
-        {deal.imageUrl && (
-          <img alt={deal.title} className="absolute inset-0 w-full h-full object-cover transition-transform hover:scale-105 duration-700" src={deal.imageUrl} />
-        )}
+      <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-50">
+        <img alt={deal.title} className="absolute inset-0 w-full h-full object-cover transition-transform hover:scale-105 duration-700" src={displayImage} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
         <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
-        {!deal.imageUrl && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-4xl font-black text-white drop-shadow-md px-6 text-center leading-none transform -rotate-2">
-              {deal.savingsAmount}
-            </div>
-          </div>
-        )}
       </div>
       <div className="p-5 flex flex-col flex-grow">
         <div className="flex items-center gap-1.5 mb-3">

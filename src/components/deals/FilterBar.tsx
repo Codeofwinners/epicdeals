@@ -62,12 +62,12 @@ export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: Filter
                         <button
                             key={opt.value}
                             onClick={() => setSortBy(opt.value)}
-                            className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-[11px] font-black whitespace-nowrap transition-all duration-300 border ${isActive
-                                ? "bg-black text-white border-black shadow-[0_8px_16px_rgba(0,0,0,0.12)] scale-[1.02]"
-                                : "bg-white text-gray-600 border-gray-200/50 hover:border-gray-400 hover:bg-gray-50"
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-black whitespace-nowrap transition-all duration-300 ${isActive
+                                ? "text-black bg-gray-100"
+                                : "text-gray-500 hover:text-black hover:bg-gray-50/50"
                                 }`}
                         >
-                            <span className={`material-symbols-outlined text-[18px] ${isActive ? "text-blue-400" : "text-gray-400"}`}>{opt.icon}</span>
+                            <span className={`material-symbols-outlined text-[16px] ${isActive ? "text-blue-500" : "text-gray-400"}`}>{opt.icon}</span>
                             <span className="uppercase tracking-tight">{opt.label}</span>
                         </button>
                     );

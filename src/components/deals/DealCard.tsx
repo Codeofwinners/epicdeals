@@ -372,8 +372,8 @@ function TopComment({ dealId, variant }: { dealId: string; variant: "featured" |
 
   if (variant === "featured") {
     return (
-      <div className="hidden md:block bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 max-w-xs">
-        <div className="flex items-center justify-between mb-2 pb-2 border-b border-white/10">
+      <div className="hidden md:block p-3 max-w-xs text-white">
+        <div className="flex items-center justify-between mb-2 pb-2 border-b border-white/20">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500 flex items-center justify-center text-[10px] text-white font-bold">
               {comment.user.username[0].toUpperCase()}
@@ -398,7 +398,7 @@ function HelpfulComment({ dealId }: { dealId: string }) {
   return (
     <div className="border-t border-gray-100 dark:border-white/5 pt-3 mt-3">
       <div className="flex items-start gap-2.5">
-        <div className="w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 shrink-0 flex items-center justify-center text-[10px] text-orange-600 dark:text-orange-400 font-bold border border-orange-200 dark:border-orange-800/30">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 shrink-0 flex items-center justify-center text-[10px] text-white font-bold border-none shadow-sm">
           {comment.user.username[0].toUpperCase()}
         </div>
         <div>
