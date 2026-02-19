@@ -130,15 +130,6 @@ export function Header() {
             </div>
           </div>
 
-          {/* Bottom row: Tabs */}
-          <div className="flex items-center gap-8">
-            {/* Tabs Navigation */}
-            <div className="flex gap-8">
-              <Link href="/" className="nav-tab active text-sm text-gray-700">Daily Hits</Link>
-              <Link href="/" className="nav-tab text-sm text-gray-500 hover:text-gray-700">Weekly Legends</Link>
-              <Link href="/" className="nav-tab text-sm text-gray-500 hover:text-gray-700">All-Time Best</Link>
-            </div>
-          </div>
         </div>
       </header>
 
@@ -175,47 +166,6 @@ export function Header() {
             </button>
           </div>
 
-          {/* Mobile Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2 mb-2 border-b border-gray-200/50">
-            {[
-              { label: 'Daily Hits', id: 'daily' },
-              { label: 'Weekly Legends', id: 'weekly' },
-              { label: 'All-Time Best', id: 'alltime' }
-            ].map((tab, i) => (
-              <Link
-                key={tab.id}
-                href="/"
-                className={`nav-tab flex-shrink-0 px-3 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                  i === 0 ? 'text-blue-600 active' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {tab.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* Mobile Sort & Filter */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1">
-            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider flex-shrink-0">Sort:</span>
-            {[
-              { icon: 'local_fire_department', label: 'Hot', accent: true },
-              { icon: 'trending_up', label: 'Rising' },
-              { icon: 'new_releases', label: 'New' },
-              { icon: 'chat', label: 'Discussed' }
-            ].map((item, i) => (
-              <button
-                key={i}
-                className={`sort-btn flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold transition-all active:scale-90 ${
-                  item.accent
-                    ? 'bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-600 border border-blue-200/50'
-                    : 'bg-white text-gray-700 border border-gray-200/50'
-                }`}
-              >
-                <span className="material-symbols-outlined text-[13px]">{item.icon}</span>
-                <span className="hidden sm:inline">{item.label}</span>
-              </button>
-            ))}
-          </div>
         </div>
       </header>
     </>
