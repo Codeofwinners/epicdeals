@@ -46,81 +46,37 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = f
   const netDisplay = upvotes + (voteStatus?.voteType === "upvote" ? 1 : 0) + (voteStatus?.voteType === "downvote" ? -1 : 0);
   const isUpvoted = voteStatus?.voteType === "upvote";
 
-  // Light card colors
   const dividerColor = darkBg ? "rgba(255,255,255,0.08)" : "#EFEFEF";
-  const iconRest     = darkBg ? "rgba(255,255,255,0.35)" : "#BBBBBB";
-  const iconBg       = darkBg ? "rgba(255,255,255,0.06)" : "#FFFFFF";
-  const iconBorder   = darkBg ? "rgba(255,255,255,0.1)"  : "#E8E8E8";
 
-  // Active upvote: black on light cards, white on dark cards
-  const pillActiveBg     = darkBg ? "#FFFFFF"   : "#0A0A0A";
-  const pillActiveBorder = darkBg ? "#FFFFFF"   : "#0A0A0A";
-  const pillActiveText   = darkBg ? "#0A0A0A"   : "#FFFFFF";
-  const pillInactiveBg   = iconBg;
-  const pillInactiveBorder = iconBorder;
-  const pillInactiveText = darkBg ? "rgba(255,255,255,0.5)" : "#999999";
+  const restColor  = darkBg ? "rgba(255,255,255,0.3)" : "#C0C0C0";
+  const activeColor = darkBg ? "#FFFFFF" : "#0A0A0A";
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "10px", borderTop: `1px solid ${dividerColor}` }}>
-      {/* Left: upvote pill + comment */}
-      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
 
-        {/* Upvote pill — black when active, white when not */}
+        {/* Upvote: arrow + count, bold black when active */}
         <button
           onClick={() => handleVote("up")}
           disabled={voting}
-          title="Upvote"
-          style={{
-            display: "flex", alignItems: "center", gap: "4px",
-            padding: "5px 10px 5px 8px",
-            borderRadius: "99px",
-            backgroundColor: isUpvoted ? pillActiveBg : pillInactiveBg,
-            border: `1px solid ${isUpvoted ? pillActiveBorder : pillInactiveBorder}`,
-            cursor: voting ? "wait" : "pointer",
-            opacity: voting ? 0.5 : 1,
-            transition: "background-color 0.12s, border-color 0.12s",
-            outline: "none",
-          }}
+          style={{ display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: 0, cursor: voting ? "wait" : "pointer", opacity: voting ? 0.4 : 1, outline: "none" }}
         >
-          <span className="material-symbols-outlined" style={{
-            fontSize: "12px", lineHeight: 1,
-            color: isUpvoted ? pillActiveText : iconRest,
-            fontVariationSettings: "'FILL' 1",
-          }}>arrow_upward</span>
-          <span style={{
-            fontSize: "11px", fontWeight: 700, lineHeight: 1, letterSpacing: "0.01em",
-            color: isUpvoted ? pillActiveText : pillInactiveText,
-          }}>{fmtCount(netDisplay)}</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "14px", lineHeight: 1, color: isUpvoted ? activeColor : restColor, fontVariationSettings: "'FILL' 1" }}>arrow_upward</span>
+          <span style={{ fontSize: "11px", fontWeight: isUpvoted ? 800 : 500, color: isUpvoted ? activeColor : restColor, letterSpacing: "0.01em", lineHeight: 1 }}>{fmtCount(netDisplay)}</span>
         </button>
 
-        {/* Comment — circle icon button */}
+        {/* Comment: bare icon */}
         <button
           onClick={() => onCommentClick?.()}
-          title="Comments"
-          style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            width: "28px", height: "28px", borderRadius: "50%",
-            backgroundColor: iconBg,
-            border: `1px solid ${iconBorder}`,
-            cursor: "pointer", outline: "none",
-          }}
+          style={{ display: "flex", alignItems: "center", background: "none", border: "none", padding: 0, cursor: "pointer", outline: "none" }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: "12px", color: iconRest, lineHeight: 1 }}>chat_bubble</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "14px", color: restColor, lineHeight: 1 }}>chat_bubble</span>
         </button>
       </div>
 
-      {/* Right: save */}
-      <button
-        title="Save"
-        style={{
-          display: "flex", alignItems: "center", justifyContent: "center",
-          width: "28px", height: "28px", borderRadius: "50%",
-          backgroundColor: iconBg,
-          border: `1px solid ${iconBorder}`,
-          cursor: "pointer", outline: "none",
-        }}
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: "13px", color: iconRest, lineHeight: 1 }}>bookmark</span>
+      {/* Save: bare icon */}
+      <button style={{ display: "flex", alignItems: "center", background: "none", border: "none", padding: 0, cursor: "pointer", outline: "none" }}>
+        <span className="material-symbols-outlined" style={{ fontSize: "14px", color: restColor, lineHeight: 1 }}>bookmark</span>
       </button>
     </div>
   );
