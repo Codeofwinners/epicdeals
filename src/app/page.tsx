@@ -100,13 +100,15 @@ function TopComment({ dealId, customBg, customBorder, textStyle }: { dealId: str
   if (loading || !comment) return null;
 
   return (
-    <div className={`mb-3 pb-3 border-b ${customBorder || "border-[#F0F0F0]"} flex items-start gap-3 w-full`}>
-      <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex-shrink-0 flex items-center justify-center text-white text-[9px] font-bold shadow-sm">
-        {comment.user.username[0].toUpperCase()}
+    <div className={`mb-3 pb-3 border-b ${customBorder || "border-[#F0F0F0]"} flex flex-col gap-2 w-full`}>
+      <div className="flex items-center gap-2 w-full">
+        <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex-shrink-0 flex items-center justify-center text-white text-[8px] font-bold shadow-sm">
+          {comment.user.username[0].toUpperCase()}
+        </div>
+        <p className={`text-[10px] uppercase tracking-wider font-extrabold truncate ${textStyle || "text-[#1A1A1A]"}`}>{comment.user.username}</p>
       </div>
-      <div className="flex-1">
-        <p className={`text-[10px] uppercase tracking-wider font-extrabold mb-1 ${textStyle || "text-[#1A1A1A]"}`}>{comment.user.username}</p>
-        <p className={`text-[13px] leading-snug line-clamp-2 font-medium ${textStyle ? "text-white/90" : "text-[#555555]"}`}>"{comment.content}"</p>
+      <div className="flex-1 w-full">
+        <p className={`text-[13px] leading-snug line-clamp-3 font-medium ${textStyle ? "text-white/90" : "text-[#555555]"}`}>"{comment.content}"</p>
       </div>
     </div>
   );
@@ -117,18 +119,18 @@ function DarkComment({ dealId }: { dealId: string }) {
   if (loading || !comment) return null;
 
   return (
-    <div className="mb-3 pb-3 border-b border-white/20 flex items-start gap-3 w-full text-white">
-      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 flex items-center justify-center text-white text-[9px] font-black shadow-sm">
-        {comment.user.username[0].toUpperCase()}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-black text-white tracking-wider uppercase mb-1 flex items-center gap-1.5 overflow-hidden">
+    <div className="mb-3 pb-3 border-b border-white/20 flex flex-col gap-2 w-full text-white">
+      <div className="flex items-center gap-2 w-full">
+        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 flex items-center justify-center text-white text-[8px] font-black shadow-sm">
+          {comment.user.username[0].toUpperCase()}
+        </div>
+        <p className="text-[10px] font-black text-white tracking-wider uppercase flex items-center gap-1.5 overflow-hidden">
           {comment.user.username}
           <span className="w-1 h-1 rounded-full bg-white/30"></span>
           <span className="text-[9px] text-white/70 normal-case font-medium">Insight</span>
         </p>
-        <p className="text-[13px] text-white/90 leading-snug line-clamp-2 italic font-medium">"{comment.content}"</p>
       </div>
+      <p className="text-[13px] text-white/90 leading-snug line-clamp-3 italic font-medium">"{comment.content}"</p>
     </div>
   );
 }

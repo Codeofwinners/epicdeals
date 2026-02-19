@@ -415,12 +415,17 @@ function HelpfulComment({ dealId }: { dealId: string }) {
 
   return (
     <div className="border-t border-gray-100 dark:border-white/5 pt-3 mt-3">
-      <div className="flex items-start gap-2.5">
-        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 shrink-0 flex items-center justify-center text-[10px] text-white font-bold border-none shadow-sm">
-          {comment.user.username[0].toUpperCase()}
+      <div className="flex flex-col gap-2 w-full">
+        <div className="flex items-center gap-2">
+          <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 shrink-0 flex items-center justify-center text-[8px] text-white font-bold border-none shadow-sm">
+            {comment.user.username[0].toUpperCase()}
+          </div>
+          <span className="text-[10px] uppercase font-extrabold tracking-wider text-gray-700 dark:text-gray-300">
+            {comment.user.username}
+          </span>
         </div>
-        <div>
-          <p className="text-xs text-gray-700 dark:text-gray-300 font-medium line-clamp-2">
+        <div className="w-full">
+          <p className="text-xs text-gray-700 dark:text-gray-300 font-medium line-clamp-3 leading-snug">
             "{comment.content}"
           </p>
         </div>
@@ -434,14 +439,18 @@ function CompactComment({ dealId }: { dealId: string }) {
   if (loading || !comment) return null;
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex -space-x-2">
-        <div className="w-5 h-5 rounded-full border-2 border-white dark:border-surface-dark bg-gradient-to-br from-blue-400 to-purple-500"></div>
-        <div className="w-5 h-5 rounded-full border-2 border-white dark:border-surface-dark bg-gradient-to-br from-green-400 to-blue-500"></div>
+    <div className="flex flex-col gap-1.5 w-full">
+      <div className="flex items-center gap-2">
+        <div className="w-4 h-4 rounded-full border border-white dark:border-surface-dark bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-[6px] text-white font-bold shadow-sm">
+          {comment.user.username[0].toUpperCase()}
+        </div>
+        <span className="text-[9px] uppercase font-bold tracking-wider text-gray-500">
+          {comment.user.username}
+        </span>
       </div>
-      <span className="text-xs text-gray-700 dark:text-gray-300 line-clamp-1">
+      <p className="text-xs text-gray-700 dark:text-gray-300 line-clamp-2 leading-relaxed">
         "{comment.content}"
-      </span>
+      </p>
     </div>
   );
 }
