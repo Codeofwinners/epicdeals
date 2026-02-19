@@ -358,7 +358,9 @@ export default function Home() {
         <Header />
         <main className="px-3 py-3">
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
-          <h2 className="text-xl font-black tracking-tight mb-4 text-[#1A1A1A]">Legendary Weekly</h2>
+          <h2 className="text-xl font-black tracking-tight mb-4 text-[#1A1A1A]">
+            {timeRange === "last-24h" ? "Daily Hits" : timeRange === "last-7d" ? "Weekly Legends" : timeRange === "last-30d" ? "Monthly Best" : "All-Time Best"}
+          </h2>
           {loading ? (
             <div className="flex items-center justify-center p-10">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>

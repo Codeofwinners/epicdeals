@@ -1,6 +1,5 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
 import { TimeRange, SortCategory } from "@/lib/firestore";
 
 interface FilterBarProps {
@@ -10,11 +9,11 @@ interface FilterBarProps {
     setSortBy: (val: SortCategory) => void;
 }
 
-const TIME_OPTIONS: { label: string; value: TimeRange }[] = [
-    { label: "24h", value: "last-24h" },
-    { label: "Week", value: "last-7d" },
-    { label: "Month", value: "last-30d" },
-    { label: "All Time", value: "all-time" },
+const TIME_OPTIONS: { label: string; value: TimeRange; icon: string }[] = [
+    { label: "24h", value: "last-24h", icon: "schedule" },
+    { label: "Week", value: "last-7d", icon: "calendar_view_week" },
+    { label: "Month", value: "last-30d", icon: "calendar_month" },
+    { label: "All", value: "all-time", icon: "all_inclusive" },
 ];
 
 const SORT_OPTIONS: { label: string; value: SortCategory; icon: string }[] = [
@@ -23,55 +22,118 @@ const SORT_OPTIONS: { label: string; value: SortCategory; icon: string }[] = [
     { label: "Discussed", value: "most-commented", icon: "forum" },
 ];
 
+function Pill({
+    icon,
+    label,
+    isActive,
+    onClick,
+    size = "md",
+}: {
+    icon: string;
+    label: string;
+    isActive: boolean;
+    onClick: () => void;
+    size?: "sm" | "md";
+}) {
+    const py = size === "sm" ? "6px" : "8px";
+    const px = size === "sm" ? "10px" : "12px";
+    const iconSize = size === "sm" ? "13px" : "15px";
+    const textSize = size === "sm" ? "9px" : "10px";
+
+    return (
+        <button
+            onClick={onClick}
+            style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                paddingTop: py,
+                paddingBottom: py,
+                paddingLeft: px,
+                paddingRight: px,
+                borderRadius: "12px",
+                backgroundColor: isActive ? "#111827" : "transparent",
+                border: isActive ? "1px solid #111827" : "1px solid transparent",
+                cursor: "pointer",
+                flexShrink: 0,
+                transition: "background-color 0.15s, border-color 0.15s",
+                outline: "none",
+            }}
+        >
+            <span
+                className="material-symbols-outlined"
+                style={{
+                    fontSize: iconSize,
+                    color: isActive ? "#ffffff" : "#9ca3af",
+                    lineHeight: 1,
+                }}
+            >
+                {icon}
+            </span>
+            <span
+                style={{
+                    fontSize: textSize,
+                    fontWeight: 900,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: isActive ? "#ffffff" : "#9ca3af",
+                    lineHeight: 1,
+                }}
+            >
+                {label}
+            </span>
+        </button>
+    );
+}
+
 export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: FilterBarProps) {
     return (
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 z-20 bg-transparent pt-2 pb-6 px-1 border-b border-[#EBEBEB]">
-            {/* Time Segmented Control */}
-            <div className="relative flex items-center justify-start overflow-x-auto no-scrollbar pb-2 lg:pb-0 -mx-1 px-1">
-                <div className="flex gap-1">
-                    {TIME_OPTIONS.map((opt) => {
-                        const isActive = timeRange === opt.value;
-                        return (
-                            <button
-                                key={opt.value}
-                                onClick={() => setTimeRange(opt.value)}
-                                style={{
-                                    backgroundColor: isActive ? "#111827" : "transparent",
-                                    color: isActive ? "#ffffff" : "#6b7280",
-                                    boxShadow: isActive ? "0 4px 6px -1px rgba(0, 0, 0, 0.1)" : "none",
-                                    border: isActive ? "1px solid #1f2937" : "1px solid transparent",
-                                }}
-                                className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl text-[10px] md:text-xs font-black transition-all duration-300 min-w-[50px] md:min-w-[70px] uppercase tracking-wider`}
-                            >
-                                {opt.label}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
+        <div
+            className="no-scrollbar"
+            style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "2px",
+                overflowX: "auto",
+                paddingBottom: "16px",
+                marginBottom: "20px",
+                borderBottom: "1px solid #EBEBEB",
+                msOverflowStyle: "none",
+                scrollbarWidth: "none",
+            }}
+        >
+            {/* Time Range */}
+            {TIME_OPTIONS.map((opt) => (
+                <Pill
+                    key={opt.value}
+                    icon={opt.icon}
+                    label={opt.label}
+                    isActive={timeRange === opt.value}
+                    onClick={() => setTimeRange(opt.value)}
+                />
+            ))}
 
-            {/* Sort Options Pills */}
-            <div className="flex items-center gap-1 md:gap-2 overflow-x-auto no-scrollbar py-1 px-1 -mx-1">
-                <span className="hidden md:inline-block text-[10px] font-black uppercase tracking-widest text-[#888888] mr-2 flex-shrink-0">Sort By</span>
-                {SORT_OPTIONS.map((opt) => {
-                    const isActive = sortBy === opt.value;
-                    return (
-                        <button
-                            key={opt.value}
-                            onClick={() => setSortBy(opt.value)}
-                            style={{
-                                backgroundColor: isActive ? "#f3f4f6" : "transparent",
-                                color: isActive ? "#000000" : "#6b7280",
-                            }}
-                            className={`flex items-center gap-1 md:gap-1.5 px-3 py-2 md:px-3 md:py-2 rounded-xl text-[10px] md:text-[11px] font-black whitespace-nowrap transition-all duration-300 hover:text-black`}
-                        >
-                            <span className={`material-symbols-outlined text-[14px] md:text-[16px]`} style={{ color: isActive ? "#3b82f6" : "#9ca3af" }}>{opt.icon}</span>
-                            <span className="uppercase tracking-tight">{opt.label}</span>
-                        </button>
-                    );
-                })}
-            </div>
+            {/* Divider */}
+            <div
+                style={{
+                    width: "1px",
+                    height: "18px",
+                    backgroundColor: "#e5e7eb",
+                    flexShrink: 0,
+                    margin: "0 6px",
+                }}
+            />
 
+            {/* Sort By */}
+            {SORT_OPTIONS.map((opt) => (
+                <Pill
+                    key={opt.value}
+                    icon={opt.icon}
+                    label={opt.label}
+                    isActive={sortBy === opt.value}
+                    onClick={() => setSortBy(opt.value)}
+                />
+            ))}
         </div>
     );
 }
