@@ -18,9 +18,9 @@ const TIME_OPTIONS: { label: string; value: TimeRange }[] = [
 ];
 
 const SORT_OPTIONS: { label: string; value: SortCategory; icon: string }[] = [
-    { label: "Most Voted", value: "most-voted", icon: "trending_up" },
-    { label: "Most Viewed", value: "most-viewed", icon: "visibility" },
-    { label: "Most Discussed", value: "most-commented", icon: "forum" },
+    { label: "Voted", value: "most-voted", icon: "trending_up" },
+    { label: "Viewed", value: "most-viewed", icon: "visibility" },
+    { label: "Discussed", value: "most-commented", icon: "forum" },
 ];
 
 export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: FilterBarProps) {
@@ -35,7 +35,7 @@ export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: Filter
                             <button
                                 key={opt.value}
                                 onClick={() => setTimeRange(opt.value)}
-                                className={`px-3 py-1.5 md:px-5 md:py-2.5 rounded-xl text-[10px] md:text-xs font-black transition-all duration-300 min-w-[60px] md:min-w-[70px] uppercase tracking-wider ${isActive ? "bg-black text-white shadow-md" : "bg-transparent text-gray-500 hover:text-black hover:bg-gray-100/50"
+                                className={`px-2 py-1.5 md:px-5 md:py-2.5 rounded-xl text-[10px] md:text-xs font-black transition-all duration-300 min-w-[50px] md:min-w-[70px] uppercase tracking-wider ${isActive ? "bg-gray-900 text-white shadow-md border border-gray-800" : "bg-transparent text-gray-500 hover:text-black hover:bg-gray-100/50"
                                     }`}
                             >
                                 {opt.label}

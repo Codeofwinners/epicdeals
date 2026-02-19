@@ -164,34 +164,37 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
       {/* Comment Form */}
       {user ? (
         <form onSubmit={handleSubmitComment} style={{ marginBottom: "16px" }}>
-          <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "8px" }}>
             {user.photoURL && (
-              <img
-                src={user.photoURL}
-                alt={user.displayName || "User"}
-                style={{
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                  flexShrink: 0,
-                }}
-              />
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <img
+                  src={user.photoURL}
+                  alt={user.displayName || "User"}
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ fontSize: "12px", fontWeight: "600", color: textColor }}>{user.displayName || "You"}</span>
+              </div>
             )}
-            <div style={{ flex: 1 }}>
+            <div style={{ width: "100%" }}>
               <textarea
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Share your thoughts..."
                 style={{
                   width: "100%",
-                  padding: "8px 12px",
+                  padding: "10px 12px",
                   borderRadius: "8px",
                   border: `1px solid ${borderColor}`,
                   backgroundColor: inputBgColor,
                   color: textColor,
                   fontSize: "13px",
                   fontFamily: "inherit",
-                  minHeight: "60px",
+                  minHeight: "70px",
                   resize: "vertical",
                   boxSizing: "border-box",
                   outline: "none",
@@ -202,8 +205,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  marginTop: "6px",
-                  gap: "8px",
+                  marginTop: "8px",
                 }}
               >
                 <span style={{ fontSize: "11px", color: secondaryTextColor }}>
@@ -333,86 +335,94 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
               ) : (
                 <div
                   style={{
-                    padding: "10px 0",
+                    padding: "12px 0",
                     borderBottom: `1px solid ${borderColor}`,
                   }}
                 >
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    {comment.user && (comment.user as any).avatar && (
-                      <img
-                        src={(comment.user as any).avatar}
-                        alt={comment.user.username}
-                        style={{
-                          width: "28px",
-                          height: "28px",
-                          borderRadius: "50%",
-                          flexShrink: 0,
-                        }}
-                      />
-                    )}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px", justifyContent: "space-between" }}>
-                        <div>
-                          <span style={{ fontSize: "12px", fontWeight: "600", color: textColor }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
+
+                    {/* Header Row: Avatar, Username, Date, Edit/Delete Actions */}
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px", width: "100%" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {comment.user && (comment.user as any).avatar && (
+                          <img
+                            src={(comment.user as any).avatar}
+                            alt={comment.user.username}
+                            style={{
+                              width: "24px",
+                              height: "24px",
+                              borderRadius: "50%",
+                              flexShrink: 0,
+                            }}
+                          />
+                        )}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                          <span style={{ fontSize: "12px", fontWeight: "600", color: textColor, display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px", lineHeight: "1.2" }}>
                             {comment.user.username}
-                            {user?.uid === comment.user.id && <span style={{ fontSize: "10px", color: "#0EA5E9", marginLeft: "6px" }}>(You)</span>}
+                            {user?.uid === comment.user.id && <span style={{ fontSize: "9px", color: "#0EA5E9", padding: "1px 5px", borderRadius: "8px", backgroundColor: "rgba(14, 165, 233, 0.1)" }}>You</span>}
                           </span>
-                          <span style={{ fontSize: "11px", color: secondaryTextColor, marginLeft: "8px" }}>
+                          <span style={{ fontSize: "10px", color: secondaryTextColor, lineHeight: "1" }}>
                             {new Date(comment.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        {user?.uid === comment.user.id && (
-                          <div style={{ display: "flex", gap: "4px" }}>
-                            <button
-                              onClick={() => {
-                                setEditingId(comment.id);
-                                setEditText(comment.content);
-                              }}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                color: "#0EA5E9",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                padding: "0 4px",
-                                outline: "none",
-                              }}
-                              title="Edit"
-                            >
-                              ✏️
-                            </button>
-                            <button
-                              onClick={() => handleDeleteComment(comment.id)}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                color: "#ef4444",
-                                cursor: "pointer",
-                                fontSize: "12px",
-                                padding: "0 4px",
-                                outline: "none",
-                              }}
-                              title="Delete"
-                            >
-                              🗑️
-                            </button>
-                          </div>
-                        )}
                       </div>
-                      <p
-                        style={{
-                          fontSize: "12px",
-                          color: textColor,
-                          margin: 0,
-                          wordBreak: "break-word",
-                          lineHeight: "1.4",
-                        }}
-                      >
-                        {comment.content}
-                      </p>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "8px" }}>
-                        <CommentVoting commentId={comment.id} initialUpvotes={comment.upvotes} />
-                      </div>
+
+                      {/* Actions aligned right */}
+                      {user?.uid === comment.user.id && (
+                        <div style={{ display: "flex", gap: "12px", paddingTop: "2px" }}>
+                          <button
+                            onClick={() => {
+                              setEditingId(comment.id);
+                              setEditText(comment.content);
+                            }}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: "#0EA5E9",
+                              cursor: "pointer",
+                              fontSize: "13px",
+                              padding: 0,
+                              outline: "none",
+                            }}
+                            title="Edit"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDeleteComment(comment.id)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: "#ef4444",
+                              cursor: "pointer",
+                              fontSize: "13px",
+                              padding: 0,
+                              outline: "none",
+                            }}
+                            title="Delete"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content Row: Full width */}
+                    <p
+                      style={{
+                        fontSize: "13px",
+                        color: textColor,
+                        margin: 0,
+                        wordBreak: "break-word",
+                        lineHeight: "1.5",
+                      }}
+                    >
+                      {comment.content}
+                    </p>
+
+                    {/* Footer Row: Voting */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "4px" }}>
+                      <CommentVoting commentId={comment.id} initialUpvotes={comment.upvotes} />
                     </div>
                   </div>
                 </div>
