@@ -170,24 +170,25 @@ function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: b
 
 function VerifiedBadge({ dark = false }: { dark?: boolean }) {
   return (
-    <span style={{
-      display: "inline-flex",
+    <div style={{
+      display: "flex",
       alignItems: "center",
-      gap: "3px",
-      fontSize: "9px",
-      fontWeight: 800,
-      letterSpacing: "0.05em",
-      textTransform: "uppercase",
-      backgroundColor: dark ? "rgba(16,185,129,0.15)" : "#f0fdf4",
-      color: "#10b981",
-      border: "1px solid rgba(16,185,129,0.3)",
-      borderRadius: "6px",
-      padding: "3px 6px",
-      lineHeight: 1,
+      gap: "4px",
+      paddingTop: "8px",
+      marginTop: "6px",
+      borderTop: dark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #f0f0f0",
     }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "11px", fontVariationSettings: "'FILL' 1" }}>verified</span>
-      Verified by Legit.discount
-    </span>
+      <span className="material-symbols-outlined" style={{ fontSize: "12px", color: "#10b981", fontVariationSettings: "'FILL' 1" }}>verified</span>
+      <span style={{
+        fontSize: "9px",
+        fontWeight: 700,
+        letterSpacing: "0.05em",
+        textTransform: "uppercase",
+        color: "#10b981",
+      }}>
+        Verified by Legit.discount
+      </span>
+    </div>
   );
 }
 
@@ -312,20 +313,16 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
       </div>
       <div className="p-5 flex flex-col flex-grow">
-        <div className="flex items-center justify-between gap-1.5 mb-2">
+        <div className="flex items-center justify-between gap-1.5 mb-3">
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#888888]">{deal.store.name}</span>
           <ExpiryBadge expiresAt={deal.expiresAt} />
         </div>
-        {deal.isVerified && (
-          <div className="mb-2">
-            <VerifiedBadge />
-          </div>
-        )}
 
         <h3 className="font-bold text-lg leading-snug text-[#1A1A1A] mb-4 line-clamp-2">{deal.title}</h3>
         <div className="mt-auto pt-2">
           <TopComment dealId={deal.id} />
           <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} onCommentClick={toggleComments} />
+          {deal.isVerified && <VerifiedBadge />}
           <CommentsSection dealId={deal.id} isOpen={isOpen} onToggle={toggleComments} />
         </div>
       </div>
