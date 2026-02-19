@@ -95,18 +95,18 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = f
   );
 }
 
-function TopComment({ dealId, customBg, customBorder }: { dealId: string; customBg?: string; customBorder?: string }) {
+function TopComment({ dealId, customBg, customBorder, textStyle }: { dealId: string; customBg?: string; customBorder?: string; textStyle?: string }) {
   const { data: comment, loading } = useBestComment(dealId);
   if (loading || !comment) return null;
 
   return (
-    <div className={`mb-4 p-3 rounded-2xl border ${customBg || "bg-[#F3F3F1]"} ${customBorder || "border-[#EBEBEB]"} flex items-start gap-2.5 shadow-sm`}>
-      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#FFB84D] to-[#FF4500] flex-shrink-0 flex items-center justify-center text-white text-[10px] font-bold border-2 border-white">
+    <div className={`mb-3 pb-3 border-b ${customBorder || "border-[#F0F0F0]"} flex items-start gap-3 w-full`}>
+      <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex-shrink-0 flex items-center justify-center text-white text-[9px] font-bold shadow-sm">
         {comment.user.username[0].toUpperCase()}
       </div>
-      <div>
-        <p className="text-[11px] font-bold text-[#1A1A1A] mb-0.5">{comment.user.username}</p>
-        <p className="text-[12px] text-[#666666] leading-relaxed line-clamp-2 italic font-medium">"{comment.content}"</p>
+      <div className="flex-1">
+        <p className={`text-[10px] uppercase tracking-wider font-extrabold mb-1 ${textStyle || "text-[#1A1A1A]"}`}>{comment.user.username}</p>
+        <p className={`text-[13px] leading-snug line-clamp-2 font-medium ${textStyle ? "text-white/90" : "text-[#555555]"}`}>"{comment.content}"</p>
       </div>
     </div>
   );
@@ -183,7 +183,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
             <h2 className="text-4xl font-black tracking-tighter leading-[0.9] text-white mb-4">3 Months<br />Premium <span className="text-black/30">Free</span></h2>
             <p className="text-sm text-white/90 font-bold leading-relaxed">{deal.description}</p>
           </div>
-          <TopComment dealId={deal.id} customBg="bg-black/20" customBorder="border-white/10 shadow-xl" />
+          <TopComment dealId={deal.id} customBorder="border-white/20" textStyle="text-white" />
           <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} whiteText={true} darkBg={true} onCommentClick={toggleComments} />
           <CommentsSection dealId={deal.id} darkBg={true} isOpen={isOpen} onToggle={toggleComments} />
         </div>
@@ -214,26 +214,30 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
   }
 
   return (
-    <div className="relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB] text-black">
-      <div className="relative w-full aspect-[3/4] bg-gray-100">
-        <img alt={deal.title} className="absolute inset-0 w-full h-full object-cover" src={deal.imageUrl} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-        <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md text-[#1A1A1A] text-xs font-bold shadow-sm border border-white/50">-{deal.discount}</div>
-        <div className="absolute bottom-4 left-4 z-20 bg-black/80 backdrop-blur-md text-white px-3 py-2 rounded-xl border border-white/10 flex flex-col items-start leading-none">
-          <span className="text-lg font-bold">{deal.savingsAmount}</span>
+    <div className="relative group rounded-3xl overflow-hidden bg-white shadow-card hover:shadow-card-hover transition-all duration-300 border border-[#EBEBEB] text-black flex flex-col h-full">
+      {deal.imageUrl && (
+        <div className="relative w-full aspect-[4/3] bg-gray-50 overflow-hidden">
+          <img alt={deal.title} className="absolute inset-0 w-full h-full object-cover transition-transform hover:scale-105 duration-700" src={deal.imageUrl} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+          <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
         </div>
-      </div>
-      <div className="p-4 pt-3">
-        <div className="flex items-center gap-1.5 mb-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#666666]">{deal.store.name}</span>
+      )}
+      <div className="p-5 flex flex-col flex-grow">
+        <div className="flex items-center gap-1.5 mb-3">
+          <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#888888]">{deal.store.name}</span>
           {deal.isVerified && (
-            <span className="material-symbols-outlined text-[12px] text-blue-500" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
+            <span className="material-symbols-outlined text-[14px] text-blue-500" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
           )}
         </div>
-        <h3 className="font-bold text-base leading-snug text-[#1A1A1A] mb-3 line-clamp-2">{deal.title}</h3>
-        <TopComment dealId={deal.id} />
-        <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} onCommentClick={toggleComments} />
-        <CommentsSection dealId={deal.id} isOpen={isOpen} onToggle={toggleComments} />
+        {!deal.imageUrl && (
+          <div className="text-3xl font-black mb-3 text-[#1A1A1A] tracking-tighter leading-none">{deal.savingsAmount}</div>
+        )}
+        <h3 className="font-bold text-lg leading-snug text-[#1A1A1A] mb-4 line-clamp-2">{deal.title}</h3>
+        <div className="mt-auto pt-2">
+          <TopComment dealId={deal.id} />
+          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} onCommentClick={toggleComments} />
+          <CommentsSection dealId={deal.id} isOpen={isOpen} onToggle={toggleComments} />
+        </div>
       </div>
     </div>
   );

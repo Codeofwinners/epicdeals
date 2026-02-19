@@ -25,10 +25,10 @@ const SORT_OPTIONS: { label: string; value: SortCategory; icon: string }[] = [
 
 export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: FilterBarProps) {
     return (
-        <div className="flex flex-col gap-5 mb-10 sticky top-[100px] md:top-[160px] z-30 bg-[#F9F9F7]/95 backdrop-blur-xl pt-4 pb-6 px-1 transition-all duration-300">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 z-20 bg-transparent pt-2 pb-6 px-1 border-b border-[#EBEBEB]">
             {/* Time Segmented Control */}
-            <div className="relative flex items-center justify-center md:justify-start">
-                <div className="flex bg-gray-200/40 p-1 rounded-2xl border border-gray-200/50 relative">
+            <div className="relative flex items-center justify-start overflow-x-auto no-scrollbar pb-2 lg:pb-0 -mx-1 px-1">
+                <div className="flex bg-[#EFEFEF] p-1 rounded-2xl border border-[#E5E5E5] relative">
                     {TIME_OPTIONS.map((opt) => {
                         const isActive = timeRange === opt.value;
                         return (
@@ -54,8 +54,8 @@ export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: Filter
             </div>
 
             {/* Sort Options Pills */}
-            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1 px-1 -mx-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 mr-2 flex-shrink-0">Sort By</span>
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 px-1 -mx-1">
+                <span className="hidden md:inline-block text-[10px] font-black uppercase tracking-widest text-[#888888] mr-2 flex-shrink-0">Sort By</span>
                 {SORT_OPTIONS.map((opt) => {
                     const isActive = sortBy === opt.value;
                     return (
@@ -74,8 +74,6 @@ export function FilterBar({ timeRange, setTimeRange, sortBy, setSortBy }: Filter
                 })}
             </div>
 
-            {/* Subtle Divider */}
-            <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
         </div>
     );
 }
