@@ -135,6 +135,62 @@ function DarkComment({ dealId }: { dealId: string }) {
   );
 }
 
+function formatExpiry(expiresAt: string | undefined): { label: string; urgent: boolean } | null {
+  if (!expiresAt) return null;
+  const exp = new Date(expiresAt);
+  const now = new Date();
+  const diffDays = Math.ceil((exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return null;
+  if (diffDays === 0) return { label: "Expires today", urgent: true };
+  if (diffDays === 1) return { label: "Expires tomorrow", urgent: true };
+  if (diffDays <= 5) return { label: `Expires in ${diffDays}d`, urgent: true };
+  return { label: `Exp. ${exp.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`, urgent: false };
+}
+
+function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: boolean }) {
+  const expiry = formatExpiry(expiresAt);
+  if (!expiry) return null;
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "3px",
+      fontSize: "9px",
+      fontWeight: 700,
+      letterSpacing: "0.04em",
+      textTransform: "uppercase",
+      color: expiry.urgent ? "#f97316" : (dark ? "rgba(255,255,255,0.5)" : "#9ca3af"),
+      lineHeight: 1,
+    }}>
+      <span className="material-symbols-outlined" style={{ fontSize: "11px" }}>schedule</span>
+      {expiry.label}
+    </span>
+  );
+}
+
+function VerifiedBadge({ dark = false }: { dark?: boolean }) {
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "3px",
+      fontSize: "9px",
+      fontWeight: 800,
+      letterSpacing: "0.05em",
+      textTransform: "uppercase",
+      backgroundColor: dark ? "rgba(16,185,129,0.15)" : "#f0fdf4",
+      color: "#10b981",
+      border: "1px solid rgba(16,185,129,0.3)",
+      borderRadius: "6px",
+      padding: "3px 6px",
+      lineHeight: 1,
+    }}>
+      <span className="material-symbols-outlined" style={{ fontSize: "11px", fontVariationSettings: "'FILL' 1" }}>verified</span>
+      Verified by Legit.discount
+    </span>
+  );
+}
+
 function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen: boolean, toggleComments: () => void }) {
   const isNike = deal.store?.id === "nike";
   const isSpotify = deal.store?.id === "spotify";
@@ -147,12 +203,8 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-600 rounded-full blur-[80px] opacity-30 pointer-events-none"></div>
         <div className="p-6 relative z-10 flex flex-col h-full">
           <div className="flex justify-between items-start mb-6">
-            <span className="text-[10px] font-mono border border-white/20 px-2 py-1 rounded text-white/70 uppercase">NIKE25</span>
-            <div className="flex flex-col items-end">
-              <span className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-purple-400 mb-0.5">
-                <span className="material-symbols-outlined text-[11px]">schedule</span> Active
-              </span>
-            </div>
+            <span className="text-[10px] font-mono border border-white/20 px-2 py-1 rounded text-white/70 uppercase">{deal.code || "NIKE25"}</span>
+            <ExpiryBadge expiresAt={deal.expiresAt} dark={true} />
           </div>
           <div className="flex-grow flex flex-col justify-center mb-6">
             <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2">{deal.store.name}</h2>
@@ -260,12 +312,15 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
       </div>
       <div className="p-5 flex flex-col flex-grow">
-        <div className="flex items-center gap-1.5 mb-3">
+        <div className="flex items-center justify-between gap-1.5 mb-2">
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#888888]">{deal.store.name}</span>
-          {deal.isVerified && (
-            <span className="material-symbols-outlined text-[14px] text-blue-500" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
-          )}
+          <ExpiryBadge expiresAt={deal.expiresAt} />
         </div>
+        {deal.isVerified && (
+          <div className="mb-2">
+            <VerifiedBadge />
+          </div>
+        )}
 
         <h3 className="font-bold text-lg leading-snug text-[#1A1A1A] mb-4 line-clamp-2">{deal.title}</h3>
         <div className="mt-auto pt-2">
