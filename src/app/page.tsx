@@ -354,7 +354,7 @@ export default function Home() {
       </div>
 
       {/* MOBILE */}
-      <div className="md:hidden bg-white text-black font-display min-h-screen antialiased pb-24">
+      <div className="md:hidden bg-white text-black font-display min-h-screen antialiased">
         <Header />
         <main className="px-3 py-3">
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
@@ -376,15 +376,6 @@ export default function Home() {
           )}
         </main>
 
-        <nav className="fixed bottom-6 left-6 right-6 bg-black/90 backdrop-blur-xl border border-white/10 rounded-full p-1.5 z-50">
-          <div className="flex justify-between items-center px-2">
-            <a className="flex items-center justify-center p-3 rounded-full bg-white text-black w-10 h-10" href="#"><span className="material-symbols-outlined text-[20px]">home</span></a>
-            <a className="flex items-center justify-center p-3 rounded-full text-white/50 w-10 h-10" href="#"><span className="material-symbols-outlined text-[20px]">explore</span></a>
-            <button className="w-10 h-10 bg-[#FF4500] rounded-full flex items-center justify-center text-white"><span className="material-symbols-outlined text-[20px]">add</span></button>
-            <a className="flex items-center justify-center p-3 rounded-full text-white/50 w-10 h-10" href="#"><span className="material-symbols-outlined text-[20px]">bookmark</span></a>
-            <a className="flex items-center justify-center p-3 rounded-full text-white/50 w-10 h-10" href="#"><span className="material-symbols-outlined text-[20px]">person</span></a>
-          </div>
-        </nav>
       </div>
       <Footer />
     </>
