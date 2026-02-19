@@ -367,8 +367,8 @@ export default function Home() {
         @media (min-width: 768px) { .masonry-grid { column-count: 4; column-gap: 20px; } }
         .masonry-item { break-inside: avoid; margin-bottom: 10px; }
         @media (min-width: 768px) { .masonry-item { margin-bottom: 20px; } }
-        .deal-card { box-shadow: 0 2px 8px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.3); transition: box-shadow 0.2s, transform 0.2s; }
-        .deal-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 20px 48px rgba(0,0,0,0.4); transform: translateY(-2px); }
+        .deal-card { transition: transform 0.2s; }
+        .deal-card:hover { transform: translateY(-1px); }
         @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
         .verified-strip { background: linear-gradient(90deg, #059669, #10b981, #34d399, #10b981, #059669); background-size: 300% auto; animation: shimmer 4s linear infinite; }
       `}</style>
