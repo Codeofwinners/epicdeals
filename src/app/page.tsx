@@ -174,9 +174,8 @@ function VerifiedBadge({ dark = false }: { dark?: boolean }) {
       display: "flex",
       alignItems: "center",
       gap: "4px",
-      paddingTop: "8px",
-      marginTop: "6px",
-      borderTop: dark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #f0f0f0",
+      paddingTop: "6px",
+      marginTop: "2px",
     }}>
       <span className="material-symbols-outlined" style={{ fontSize: "12px", color: "#10b981", fontVariationSettings: "'FILL' 1" }}>verified</span>
       <span style={{
@@ -312,14 +311,14 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
         <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
       </div>
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="flex items-center justify-between gap-1.5 mb-3">
-          <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#888888]">{deal.store.name}</span>
+      <div className="p-3.5 flex flex-col flex-grow">
+        <div className="flex items-center justify-between gap-1 mb-1.5">
+          <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#888888] truncate">{deal.store.name}</span>
           <ExpiryBadge expiresAt={deal.expiresAt} />
         </div>
 
-        <h3 className="font-bold text-lg leading-snug text-[#1A1A1A] mb-4 line-clamp-2">{deal.title}</h3>
-        <div className="mt-auto pt-2">
+        <h3 className="font-bold text-[13px] leading-snug text-[#1A1A1A] mb-3 line-clamp-2">{deal.title}</h3>
+        <div className="mt-auto">
           <TopComment dealId={deal.id} />
           <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} onCommentClick={toggleComments} />
           {deal.isVerified && <VerifiedBadge />}
@@ -369,15 +368,16 @@ export default function Home() {
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { min-height: 100vh; background-color: #F9F9F7; }
-        .masonry-grid { column-count: 2; column-gap: 12px; }
-        @media (min-width: 768px) { .masonry-grid { column-count: 4; column-gap: 16px; } }
-        .masonry-item { break-inside: avoid; margin-bottom: 16px; }
+        .masonry-grid { column-count: 2; column-gap: 10px; }
+        @media (min-width: 768px) { .masonry-grid { column-count: 4; column-gap: 20px; } }
+        .masonry-item { break-inside: avoid; margin-bottom: 10px; }
+        @media (min-width: 768px) { .masonry-item { margin-bottom: 20px; } }
       `}</style>
 
       {/* DESKTOP */}
       <div className="hidden md:block bg-white text-black font-display min-h-screen antialiased">
         <Header />
-        <main className="px-4 py-4 max-w-7xl mx-auto">
+        <main className="px-6 py-6 max-w-7xl mx-auto">
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
           {loading ? (
             <div className="flex items-center justify-center p-20">
@@ -408,9 +408,9 @@ export default function Home() {
       {/* MOBILE */}
       <div className="md:hidden bg-white text-black font-display min-h-screen antialiased">
         <Header />
-        <main className="px-3 py-3">
+        <main className="px-3 pt-2 pb-8">
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
-          <h2 className="text-xl font-black tracking-tight mb-4 text-[#1A1A1A]">
+          <h2 className="text-base font-black tracking-tight mb-3 text-[#1A1A1A]">
             {timeRange === "last-24h" ? "Daily Hits" : timeRange === "last-7d" ? "Weekly Legends" : timeRange === "last-30d" ? "Monthly Best" : "All-Time Best"}
           </h2>
           {loading ? (
