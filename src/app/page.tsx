@@ -162,8 +162,8 @@ function VerifiedBadge({ dark = false }: { dark?: boolean }) {
       alignItems: "center",
       justifyContent: "center",
       gap: "4px",
-      paddingTop: "6px",
-      marginTop: "2px",
+      paddingTop: "5px",
+      marginTop: "1px",
     }}>
       <span className="material-symbols-outlined" style={{ fontSize: "12px", color: "#10b981", fontVariationSettings: "'FILL' 1" }}>verified</span>
       <span style={{
@@ -299,7 +299,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
         <div className="absolute top-4 left-4 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-[#1A1A1A] text-[11px] uppercase tracking-wide font-bold shadow-sm">-{deal.discount}</div>
       </div>
-      <div className="p-4 flex flex-col flex-grow">
+      <div className="pt-4 px-4 pb-3 flex flex-col flex-grow">
         <div className="flex items-center justify-between gap-1 mb-2">
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#AAAAAA] truncate">{deal.store.name}</span>
           <ExpiryBadge expiresAt={deal.expiresAt} />
