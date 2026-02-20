@@ -13,6 +13,9 @@ import {
   limit as firestoreLimit,
   Timestamp,
   onSnapshot,
+  writeBatch,
+  increment,
+  getCountFromServer,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Deal, Store, Category, Comment } from "@/types/deals";
@@ -45,6 +48,7 @@ function docToDeal(d: ReturnType<typeof doc> extends never ? never : { id: strin
     category: data.category as Deal["category"],
     submittedBy: data.submittedBy as Deal["submittedBy"],
     tags: (data.tags as string[]) ?? [],
+    commentCount: (data.commentCount as number) ?? 0,
   } as Deal;
 }
 
@@ -426,14 +430,37 @@ export async function addComment(input: {
   content: string;
   user: { id: string; username: string; avatar: string; badges: string[] };
 }): Promise<string> {
-  const ref = await addDoc(commentsCol, {
+  if (!db) throw new Error("Firebase not initialized");
+  const batch = writeBatch(db);
+
+  // Create the comment doc with an auto-generated id
+  const commentRef = doc(commentsCol);
+  batch.set(commentRef, {
     dealId: input.dealId,
     content: input.content,
     user: input.user,
     upvotes: 0,
     createdAt: Timestamp.now(),
   });
-  return ref.id;
+
+  // Atomically increment the deal's commentCount
+  const dealRef = doc(db, "deals", input.dealId);
+  batch.update(dealRef, { commentCount: increment(1) });
+
+  await batch.commit();
+  return commentRef.id;
+}
+
+/** Get accurate comment count for a deal (uses aggregate count — no document reads) */
+export async function getCommentCount(dealId: string): Promise<number> {
+  if (!db || !dealId) return 0;
+  try {
+    const q = query(commentsCol, where("dealId", "==", dealId));
+    const snapshot = await getCountFromServer(q);
+    return snapshot.data().count;
+  } catch {
+    return 0;
+  }
 }
 
 /** Real-time listener for deal comments (sorts client-side to avoid composite index) */
@@ -501,8 +528,24 @@ export async function getBestComment(dealId: string): Promise<Comment | null> {
 
 /** Delete a comment (only by author or moderator) */
 export async function deleteComment(commentId: string): Promise<void> {
+  if (!db) throw new Error("Firebase not initialized");
   if (!commentId) throw new Error("Comment ID required");
-  await deleteDoc(doc(db, "comments", commentId));
+
+  const commentRef = doc(db, "comments", commentId);
+  const commentSnap = await getDoc(commentRef);
+  if (!commentSnap.exists()) throw new Error("Comment not found");
+
+  const dealId = commentSnap.data().dealId as string;
+  const batch = writeBatch(db);
+  batch.delete(commentRef);
+
+  // Atomically decrement the deal's commentCount (floor at 0)
+  if (dealId) {
+    const dealRef = doc(db, "deals", dealId);
+    batch.update(dealRef, { commentCount: increment(-1) });
+  }
+
+  await batch.commit();
 }
 
 /** Edit a comment (only by author) */

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { upvoteDeal, downvoteDeal, getVoteStatus, getFilteredDeals, type TimeRange, type SortCategory } from "@/lib/firestore";
+import { upvoteDeal, downvoteDeal, getVoteStatus, getFilteredDeals, getCommentCount, type TimeRange, type SortCategory } from "@/lib/firestore";
 import { db } from "@/lib/firebase";
 import { CommentsSection } from "@/components/deals/CommentsSection";
 import { Header } from "@/components/layout/Header";
@@ -48,21 +48,27 @@ function VoteButtons({ dealId, upvotes, downvotes, commentCount, darkBg = false,
 
   const dividerColor = darkBg ? "rgba(255,255,255,0.08)" : "#EFEFEF";
 
-  const restColor  = darkBg ? "rgba(255,255,255,0.3)" : "#C0C0C0";
-  const activeColor = darkBg ? "#FFFFFF" : "#0A0A0A";
+  const restColor   = darkBg ? "rgba(255,255,255,0.3)" : "#C0C0C0";
+  const activeGradient = "linear-gradient(135deg, #006039 0%, #16a34a 50%, #84cc16 100%)";
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "10px", borderTop: `1px solid ${dividerColor}` }}>
       <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
 
-        {/* Upvote: arrow + count, bold black when active */}
+        {/* Upvote: arrow + count, green gradient when active */}
         <button
           onClick={() => handleVote("up")}
           disabled={voting}
           style={{ display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: 0, cursor: voting ? "wait" : "pointer", opacity: voting ? 0.4 : 1, outline: "none" }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: "12px", lineHeight: 1, color: isUpvoted ? activeColor : "#CCCCCC", fontVariationSettings: "'FILL' 1" }}>arrow_upward</span>
-          <span style={{ fontSize: "12px", fontWeight: 700, color: isUpvoted ? activeColor : "#888", letterSpacing: "-0.01em", lineHeight: 1 }}>{fmtCount(netDisplay)}</span>
+          <span className="material-symbols-outlined" style={{
+            fontSize: "12px", lineHeight: 1, fontVariationSettings: "'FILL' 1",
+            ...(isUpvoted ? { background: activeGradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : { color: "#CCCCCC" }),
+          }}>arrow_upward</span>
+          <span style={{
+            fontSize: "12px", fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1,
+            ...(isUpvoted ? { background: activeGradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : { color: "#888" }),
+          }}>{fmtCount(netDisplay)}</span>
         </button>
 
         {/* Comment: bare icon + live count */}
@@ -229,6 +235,13 @@ function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: stri
 function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen: boolean, toggleComments: () => void }) {
   const [liveCommentCount, setLiveCommentCount] = useState(deal.commentCount || 0);
   const isNike = deal.store?.id === "nike";
+
+  // Fetch accurate count on mount in case Firestore field is stale
+  useEffect(() => {
+    getCommentCount(deal.id).then((count) => {
+      setLiveCommentCount(count);
+    });
+  }, [deal.id]);
   const isSpotify = deal.store?.id === "spotify";
   const isUber = deal.store?.id === "uber-eats";
 
