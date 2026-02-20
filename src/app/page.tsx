@@ -17,7 +17,7 @@ function fmtCount(n: number): string {
   return String(n);
 }
 
-function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = false, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; darkBg?: boolean; whiteText?: boolean; onCommentClick?: () => void }) {
+function VoteButtons({ dealId, upvotes, downvotes, commentCount, darkBg = false, whiteText = false, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; commentCount?: number; darkBg?: boolean; whiteText?: boolean; onCommentClick?: () => void }) {
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
   const [voting, setVoting] = useState(false);
@@ -65,12 +65,15 @@ function VoteButtons({ dealId, upvotes, downvotes, darkBg = false, whiteText = f
           <span style={{ fontSize: "12px", fontWeight: 700, color: isUpvoted ? activeColor : "#888", letterSpacing: "-0.01em", lineHeight: 1 }}>{fmtCount(netDisplay)}</span>
         </button>
 
-        {/* Comment: bare icon */}
+        {/* Comment: bare icon + live count */}
         <button
           onClick={() => onCommentClick?.()}
-          style={{ display: "flex", alignItems: "center", background: "none", border: "none", padding: 0, cursor: "pointer", outline: "none" }}
+          style={{ display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: 0, cursor: "pointer", outline: "none" }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: "14px", color: restColor, lineHeight: 1 }}>chat_bubble</span>
+          {commentCount !== undefined && commentCount > 0 && (
+            <span style={{ fontSize: "12px", fontWeight: 700, color: darkBg ? "rgba(255,255,255,0.4)" : "#888", letterSpacing: "-0.01em", lineHeight: 1 }}>{fmtCount(commentCount)}</span>
+          )}
         </button>
       </div>
 
@@ -178,12 +181,20 @@ function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: stri
   };
   const btnBg   = dark ? "#FFFFFF" : "#0A0A0A";
   const btnText = dark ? "#0A0A0A" : "#FFFFFF";
-  return (
-    <div style={{ display: "flex", gap: "5px", marginBottom: "10px" }}>
-      {code && (
+  const learnColor = dark ? "rgba(255,255,255,0.45)" : "#AAAAAA";
+
+  if (code) {
+    // Promo code: copy button (opens site on click) + "Learn more" text link top-right
+    return (
+      <div style={{ marginBottom: "10px" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "4px" }}>
+          <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer" style={{ fontSize: "10px", fontWeight: 600, color: learnColor, textDecoration: "none", letterSpacing: "0.02em" }}>
+            Learn more →
+          </a>
+        </div>
         <button onClick={copyCode} style={{
-          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px",
-          padding: "7px 8px",
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px",
+          padding: "8px",
           backgroundColor: dark ? "rgba(255,255,255,0.08)" : "#F5F5F5",
           border: `1px dashed ${dark ? "rgba(255,255,255,0.25)" : "#C8C8C8"}`,
           borderRadius: "8px", cursor: "pointer", outline: "none",
@@ -193,21 +204,30 @@ function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: stri
           </span>
           {!copied && <span className="material-symbols-outlined" style={{ fontSize: "11px", color: dark ? "rgba(255,255,255,0.35)" : "#BBBBBB", lineHeight: 1 }}>content_copy</span>}
         </button>
-      )}
+      </div>
+    );
+  }
+
+  // No code: "Get Deal" button + "Learn more" link side by side
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
       <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer" style={{
-        flex: code ? "0 0 auto" : 1,
-        display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
+        flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
         padding: "7px 12px", backgroundColor: btnBg, borderRadius: "8px",
         textDecoration: "none", whiteSpace: "nowrap",
       }}>
-        <span style={{ fontSize: "10px", fontWeight: 800, color: btnText, letterSpacing: "0.04em" }}>{code ? "Shop" : "Get Deal"}</span>
+        <span style={{ fontSize: "10px", fontWeight: 800, color: btnText, letterSpacing: "0.04em" }}>Get Deal</span>
         <span className="material-symbols-outlined" style={{ fontSize: "11px", color: btnText, lineHeight: 1 }}>arrow_forward</span>
+      </a>
+      <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer" style={{ fontSize: "10px", fontWeight: 600, color: learnColor, textDecoration: "none", whiteSpace: "nowrap", letterSpacing: "0.02em" }}>
+        Learn more
       </a>
     </div>
   );
 }
 
 function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen: boolean, toggleComments: () => void }) {
+  const [liveCommentCount, setLiveCommentCount] = useState(deal.commentCount || 0);
   const isNike = deal.store?.id === "nike";
   const isSpotify = deal.store?.id === "spotify";
   const isUber = deal.store?.id === "uber-eats";
@@ -231,10 +251,10 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
           <div className="mt-auto">
             <DarkComment dealId={deal.id} />
-            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} darkBg whiteText onCommentClick={toggleComments} />
+            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} darkBg whiteText onCommentClick={toggleComments} />
             {deal.isVerified && <VerifiedBadge dark />}
           </div>
-          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} />
+          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} onCountChange={setLiveCommentCount} />
         </div>
       </div>
     );
@@ -254,7 +274,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
           <div className="mt-auto">
             <TopComment dealId={deal.id} customBorder="border-white/20" textStyle="text-white" />
-            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} whiteText darkBg onCommentClick={toggleComments} />
+            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} whiteText darkBg onCommentClick={toggleComments} />
             {deal.isVerified && (
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", paddingTop: "8px", marginTop: "2px", borderTop: "1px solid rgba(255,255,255,0.2)" }}>
                 <span className="material-symbols-outlined" style={{ fontSize: "11px", color: "rgba(255,255,255,0.9)", fontVariationSettings: "'FILL' 1", lineHeight: 1 }}>verified</span>
@@ -262,7 +282,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
               </div>
             )}
           </div>
-          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} />
+          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} onCountChange={setLiveCommentCount} />
         </div>
       </div>
     );
@@ -282,10 +302,10 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
           <div className="mt-auto">
             <DarkComment dealId={deal.id} />
-            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} darkBg whiteText onCommentClick={toggleComments} />
+            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} darkBg whiteText onCommentClick={toggleComments} />
             {deal.isVerified && <VerifiedBadge dark />}
           </div>
-          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} />
+          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} onCountChange={setLiveCommentCount} />
         </div>
       </div>
     );
@@ -363,9 +383,9 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
 
         <div className="mt-auto">
           <TopComment dealId={deal.id} />
-          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} onCommentClick={toggleComments} />
+          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} onCommentClick={toggleComments} />
           {deal.isVerified && <VerifiedBadge />}
-          <CommentsSection dealId={deal.id} isOpen={isOpen} onToggle={toggleComments} />
+          <CommentsSection dealId={deal.id} isOpen={isOpen} onToggle={toggleComments} onCountChange={setLiveCommentCount} />
         </div>
       </div>
     </div>
