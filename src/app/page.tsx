@@ -156,10 +156,12 @@ function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: b
 }
 
 function VerifiedBadge({ dark = false }: { dark?: boolean }) {
+  const color = dark ? "#6ee7b7" : "#10b981";
+  const border = dark ? "rgba(110,231,183,0.2)" : "rgba(16,185,129,0.15)";
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", paddingTop: "7px", marginTop: "1px" }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "11px", color: "#10b981", fontVariationSettings: "'FILL' 1", lineHeight: 1 }}>verified</span>
-      <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#10b981", lineHeight: 1 }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", paddingTop: "8px", marginTop: "2px", borderTop: `1px solid ${border}` }}>
+      <span className="material-symbols-outlined" style={{ fontSize: "11px", color, fontVariationSettings: "'FILL' 1", lineHeight: 1 }}>verified</span>
+      <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color, lineHeight: 1 }}>
         Verified by Legit.discount
       </span>
     </div>
@@ -229,6 +231,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           <div className="mt-auto">
             <DarkComment dealId={deal.id} />
             <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} darkBg whiteText onCommentClick={toggleComments} />
+            {deal.isVerified && <VerifiedBadge dark />}
           </div>
           <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} />
         </div>
@@ -251,6 +254,12 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           <div className="mt-auto">
             <TopComment dealId={deal.id} customBorder="border-white/20" textStyle="text-white" />
             <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} whiteText darkBg onCommentClick={toggleComments} />
+            {deal.isVerified && (
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", paddingTop: "8px", marginTop: "2px", borderTop: "1px solid rgba(255,255,255,0.2)" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "11px", color: "rgba(255,255,255,0.9)", fontVariationSettings: "'FILL' 1", lineHeight: 1 }}>verified</span>
+                <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.9)", lineHeight: 1 }}>Verified by Legit.discount</span>
+              </div>
+            )}
           </div>
           <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} />
         </div>
@@ -273,6 +282,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           <div className="mt-auto">
             <DarkComment dealId={deal.id} />
             <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} darkBg whiteText onCommentClick={toggleComments} />
+            {deal.isVerified && <VerifiedBadge dark />}
           </div>
           <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} />
         </div>
@@ -332,7 +342,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           padding: "4px 8px",
           border: "1px solid rgba(255,255,255,0.12)",
         }}>
-          <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>−{deal.discount}</span>
+          <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>−{deal.discount.replace(/^[-−]/, "")}</span>
         </div>
       </div>
 
