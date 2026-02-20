@@ -342,7 +342,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           padding: "4px 8px",
           border: "1px solid rgba(255,255,255,0.12)",
         }}>
-          <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>−{deal.discount.replace(/^[-−]/, "")}</span>
+          <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>−{(deal.discount ?? "").replace(/^[-−]/, "")}</span>
         </div>
       </div>
 
