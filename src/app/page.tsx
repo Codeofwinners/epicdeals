@@ -172,6 +172,7 @@ function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: stri
   const [copied, setCopied] = useState(false);
   const copyCode = () => {
     navigator.clipboard.writeText(code!);
+    window.open(dealUrl || "#", "_blank", "noopener,noreferrer");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
