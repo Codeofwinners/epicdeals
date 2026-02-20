@@ -220,49 +220,79 @@ function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: stri
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-  const btnBg   = dark ? "#FFFFFF" : "#0A0A0A";
-  const btnText = dark ? "#0A0A0A" : "#FFFFFF";
-  const learnColor = dark ? "rgba(255,255,255,0.45)" : "#AAAAAA";
+  const btnBg    = dark ? "#FFFFFF" : "#0A0A0A";
+  const btnText  = dark ? "#0A0A0A" : "#FFFFFF";
+  const learnColor = dark ? "rgba(255,255,255,0.4)" : "#AAAAAA";
 
-  if (code) {
-    // Promo code: copy button (opens site on click) + "Learn more" text link top-right
-    return (
-      <div style={{ marginBottom: "10px" }}>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "4px" }}>
-          <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer" style={{ fontSize: "10px", fontWeight: 600, color: learnColor, textDecoration: "none", letterSpacing: "0.02em" }}>
-            Learn more →
-          </a>
-        </div>
+  // Both layouts: code button + "Learn more" always in ONE row — never cut off
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px" }}>
+      {code ? (
         <button onClick={copyCode} style={{
-          width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px",
+          flex: 1, minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px",
           padding: "8px",
           backgroundColor: dark ? "rgba(255,255,255,0.08)" : "#F5F5F5",
           border: `1px dashed ${dark ? "rgba(255,255,255,0.25)" : "#C8C8C8"}`,
-          borderRadius: "8px", cursor: "pointer", outline: "none",
+          borderRadius: "8px", cursor: "pointer", outline: "none", overflow: "hidden",
         }}>
-          <span style={{ fontFamily: "monospace", fontSize: "10px", fontWeight: 800, color: dark ? "#fff" : "#0A0A0A", letterSpacing: "0.05em" }}>
+          <span style={{ fontFamily: "monospace", fontSize: "10px", fontWeight: 800, color: dark ? "#fff" : "#0A0A0A", letterSpacing: "0.05em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {copied ? "COPIED ✓" : code}
           </span>
-          {!copied && <span className="material-symbols-outlined" style={{ fontSize: "11px", color: dark ? "rgba(255,255,255,0.35)" : "#BBBBBB", lineHeight: 1 }}>content_copy</span>}
+          {!copied && <span className="material-symbols-outlined" style={{ fontSize: "11px", color: dark ? "rgba(255,255,255,0.35)" : "#BBBBBB", lineHeight: 1, flexShrink: 0 }}>content_copy</span>}
         </button>
-      </div>
-    );
-  }
-
-  // No code: "Get Deal" button + "Learn more" link side by side
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
-      <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer" style={{
-        flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
-        padding: "7px 12px", backgroundColor: btnBg, borderRadius: "8px",
-        textDecoration: "none", whiteSpace: "nowrap",
-      }}>
-        <span style={{ fontSize: "10px", fontWeight: 800, color: btnText, letterSpacing: "0.04em" }}>Get Deal</span>
-        <span className="material-symbols-outlined" style={{ fontSize: "11px", color: btnText, lineHeight: 1 }}>arrow_forward</span>
-      </a>
-      <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer" style={{ fontSize: "10px", fontWeight: 600, color: learnColor, textDecoration: "none", whiteSpace: "nowrap", letterSpacing: "0.02em" }}>
+      ) : (
+        <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer" style={{
+          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
+          padding: "7px 10px", backgroundColor: btnBg, borderRadius: "8px", textDecoration: "none",
+        }}>
+          <span style={{ fontSize: "10px", fontWeight: 800, color: btnText, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>Get Deal</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "11px", color: btnText, lineHeight: 1 }}>arrow_forward</span>
+        </a>
+      )}
+      <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer"
+        style={{ flexShrink: 0, fontSize: "10px", fontWeight: 600, color: learnColor, textDecoration: "none", whiteSpace: "nowrap", letterSpacing: "0.02em" }}>
         Learn more
       </a>
+    </div>
+  );
+}
+
+// ─── Reusable color card shell ────────────────────────────────────────────────
+// All specialty cards (Nike, Spotify, Uber, future brands) use this single shell.
+// Pass theme props + a `hero` render prop for the unique top content.
+function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCountChange, bg, border, glow, storeColor, isDark, useTopComment, hero }: {
+  deal: Deal; isOpen: boolean; toggleComments: () => void;
+  liveCommentCount: number; onCountChange: (n: number) => void;
+  bg: string; border: string; glow?: React.ReactNode;
+  storeColor: string; isDark: boolean; useTopComment?: boolean;
+  hero: React.ReactNode;
+}) {
+  return (
+    <div className="deal-card rounded-2xl overflow-hidden flex flex-col relative" style={{ background: bg, border }}>
+      {glow}
+      <div className="p-4 relative z-10 flex flex-col h-full">
+        {/* Store + expiry — always identical */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+          <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: storeColor }}>{deal.store.name}</span>
+          <ExpiryBadge expiresAt={deal.expiresAt} dark />
+        </div>
+
+        {/* Brand-specific hero content */}
+        {hero}
+
+        {/* CTA — always identical */}
+        <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark={isDark} />
+
+        {/* Footer — always identical */}
+        <div className="mt-auto">
+          {useTopComment
+            ? <TopComment dealId={deal.id} customBorder="border-white/20" textStyle="text-white" />
+            : <DarkComment dealId={deal.id} />}
+          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} darkBg={isDark} onCommentClick={toggleComments} />
+          {deal.isVerified && <VerifiedBadge dark={isDark} />}
+        </div>
+        <CommentsSection dealId={deal.id} darkBg={isDark} isOpen={isOpen} onToggle={toggleComments} onCountChange={onCountChange} />
+      </div>
     </div>
   );
 }
@@ -280,84 +310,57 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
   const isSpotify = deal.store?.id === "spotify";
   const isUber = deal.store?.id === "uber-eats";
 
+  const shared = { deal, isOpen, toggleComments, liveCommentCount, onCountChange: setLiveCommentCount };
+
   if (isNike) {
+    const raw = (deal.discount || deal.savingsAmount || "").replace(/\s*off\s*/gi, "").trim();
     return (
-      <div className="deal-card rounded-2xl overflow-hidden bg-[#111] text-white flex flex-col border border-white/5 relative">
-        <div className="absolute top-0 right-0 w-28 h-28 bg-purple-600 rounded-full blur-[50px] opacity-30 pointer-events-none" />
-        <div className="p-4 relative z-10 flex flex-col h-full">
-          <div className="flex justify-between items-center mb-3">
-            <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.4)" }}>{deal.store.name}</span>
-            <ExpiryBadge expiresAt={deal.expiresAt} dark />
-          </div>
-          {(() => {
-            const raw = (deal.discount || deal.savingsAmount || "").replace(/\s*off\s*/gi, "").trim();
-            return raw ? (
-              <div style={{ marginBottom: "8px" }}>
-                <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "4px" }}>
-                  <span style={{ fontSize: "48px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff" }}>{raw}</span>
-                  <span style={{ fontSize: "36px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.03em", background: "linear-gradient(135deg,#c084fc,#f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>OFF</span>
-                </div>
-                <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>on sale styles</div>
+      <ColorCard {...shared}
+        bg="#111111" border="1px solid rgba(255,255,255,0.05)" isDark
+        storeColor="rgba(255,255,255,0.4)"
+        glow={<div className="absolute top-0 right-0 w-28 h-28 bg-purple-600 rounded-full blur-[50px] opacity-30 pointer-events-none" />}
+        hero={<>
+          {raw && (
+            <div style={{ marginBottom: "8px" }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "4px" }}>
+                <span style={{ fontSize: "48px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff" }}>{raw}</span>
+                <span style={{ fontSize: "36px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.03em", background: "linear-gradient(135deg,#c084fc,#f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>OFF</span>
               </div>
-            ) : null;
-          })()}
+              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>on sale styles</div>
+            </div>
+          )}
           <h3 style={{ fontSize: "12px", fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: "4px" }} className="line-clamp-1">{deal.title}</h3>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
-          <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
-          <div className="mt-auto">
-            <DarkComment dealId={deal.id} />
-            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} darkBg whiteText onCommentClick={toggleComments} />
-            {deal.isVerified && <VerifiedBadge dark />}
-          </div>
-          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} onCountChange={setLiveCommentCount} />
-        </div>
-      </div>
+        </>}
+      />
     );
   }
 
   if (isSpotify) {
     return (
-      <div className="deal-card rounded-2xl overflow-hidden bg-[#1DB954] text-white flex flex-col relative border border-white/10">
-        <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />
-        <div className="p-4 relative z-10 flex flex-col h-full">
-          <div className="flex justify-between items-center mb-3">
-            <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.6)" }}>{deal.store.name}</span>
-            <ExpiryBadge expiresAt={deal.expiresAt} dark />
-          </div>
-          <div style={{ fontSize: "28px", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", color: "#fff", marginBottom: "6px" }}>{deal.title}</div>
+      <ColorCard {...shared}
+        bg="#1DB954" border="1px solid rgba(255,255,255,0.1)" isDark useTopComment
+        storeColor="rgba(255,255,255,0.6)"
+        glow={<div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />}
+        hero={<>
+          <div style={{ fontSize: "24px", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.03em", color: "#fff", marginBottom: "6px" }}>{deal.title}</div>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
-          <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
-          <div className="mt-auto">
-            <TopComment dealId={deal.id} customBorder="border-white/20" textStyle="text-white" />
-            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} whiteText darkBg onCommentClick={toggleComments} />
-            {deal.isVerified && <VerifiedBadge dark />}
-          </div>
-          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} onCountChange={setLiveCommentCount} />
-        </div>
-      </div>
+        </>}
+      />
     );
   }
 
   if (isUber) {
     return (
-      <div className="deal-card rounded-2xl overflow-hidden bg-[#0A0A0A] text-white flex flex-col border border-white/5 relative">
-        <div className="p-4 relative z-10 flex flex-col h-full">
-          <div className="flex justify-between items-center mb-3">
-            <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.4)" }}>{deal.store.name}</span>
-            <ExpiryBadge expiresAt={deal.expiresAt} dark />
-          </div>
+      <ColorCard {...shared}
+        bg="#0A0A0A" border="1px solid rgba(255,255,255,0.05)" isDark
+        storeColor="rgba(255,255,255,0.4)"
+        hero={<>
           <div style={{ fontSize: "44px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff", marginBottom: "4px" }}>{deal.savingsAmount}</div>
           <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "6px" }}>off first order</div>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
-          <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
-          <div className="mt-auto">
-            <DarkComment dealId={deal.id} />
-            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} darkBg whiteText onCommentClick={toggleComments} />
-            {deal.isVerified && <VerifiedBadge dark />}
-          </div>
-          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} onCountChange={setLiveCommentCount} />
-        </div>
-      </div>
+        </>}
+      />
     );
   }
 
