@@ -29,8 +29,8 @@ service cloud.firestore {
       allow update: if request.auth != null && (
                        // Owner or admin can update anything
                        (request.auth.uid == resource.data.submittedBy || isAdmin()) ||
-                       // Anyone can update netVotes (for voting system)
-                       (request.resource.data.keys().size() == 1 && 'netVotes' in request.resource.data.keys())
+                       // Anyone authenticated can update only netVotes (for voting system)
+                       (request.auth != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['netVotes']))
                        );
       allow delete: if request.auth != null &&
                        (request.auth.uid == resource.data.submittedBy || isAdmin());
@@ -50,19 +50,19 @@ service cloud.firestore {
     match /comments/{commentId} {
       allow read: if true;
       allow create: if request.auth != null &&
-                       request.resource.data.userId == request.auth.uid &&
                        request.resource.data.dealId is string &&
-                       request.resource.data.text is string &&
-                       request.resource.data.text.size() > 0 &&
-                       request.resource.data.text.size() <= 1000 &&
+                       request.resource.data.content is string &&
+                       request.resource.data.content.size() > 0 &&
+                       request.resource.data.content.size() <= 1000 &&
                        request.resource.data.createdAt is timestamp;
       allow update: if request.auth != null && (
-                       (request.auth.uid == resource.data.userId || isModerator()) ||
-                       // Anyone can update upvotes (for voting system)
-                       (request.resource.data.keys().size() == 1 && 'upvotes' in request.resource.data.keys())
+                       // Owner or moderator can edit content
+                       (request.auth.uid == resource.data.user.id || isModerator()) ||
+                       // Anyone authenticated can update only the upvotes field (voting)
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['upvotes'])
                        );
       allow delete: if request.auth != null &&
-                       (request.auth.uid == resource.data.userId || isModerator());
+                       (request.auth.uid == resource.data.user.id || isModerator());
     }
 
     // ────── VOTES ──────

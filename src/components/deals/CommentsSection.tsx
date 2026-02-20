@@ -270,12 +270,26 @@ function CommentVoting({ commentId, initialUpvotes, darkBg = false }: { commentI
   const handleVote = async (type: "up" | "down") => {
     if (!user) { alert("Sign in to vote"); return; }
     setLoading(true);
+
+    // Optimistic update
+    const wasUpvoted = voteStatus?.voteType === "upvote";
+    const wasDownvoted = voteStatus?.voteType === "downvote";
+    if (type === "up") {
+      setUpvotes(prev => wasUpvoted ? prev - 1 : wasDownvoted ? prev + 2 : prev + 1);
+      setVoteStatus({ hasVoted: !wasUpvoted, voteType: wasUpvoted ? null : "upvote" });
+    } else {
+      setUpvotes(prev => wasDownvoted ? prev + 1 : wasUpvoted ? prev - 2 : prev - 1);
+      setVoteStatus({ hasVoted: !wasDownvoted, voteType: wasDownvoted ? null : "downvote" });
+    }
+
     try {
       if (type === "up") await upvoteComment(user.uid, commentId);
       else await downvoteComment(user.uid, commentId);
-      setVoteStatus(await getCommentVoteStatus(user.uid, commentId));
     } catch (error) {
+      // Revert on failure
       console.error("Comment voting error:", error);
+      setUpvotes(initialUpvotes);
+      setVoteStatus(null);
     } finally {
       setLoading(false);
     }
