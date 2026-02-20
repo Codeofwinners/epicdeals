@@ -441,8 +441,8 @@ export default function Home() {
           min-height: 100vh;
           background-color: #FAF7F2;
           background-image:
-            repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(0,0,0,0.025) 18px, rgba(0,0,0,0.025) 19px),
-            repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(0,0,0,0.025) 18px, rgba(0,0,0,0.025) 19px);
+            repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(0,0,0,0.03) 18px, rgba(0,0,0,0.03) 19px),
+            repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(0,0,0,0.03) 18px, rgba(0,0,0,0.03) 19px);
         }
         .masonry-grid { column-count: 2; column-gap: 10px; }
         @media (min-width: 768px) { .masonry-grid { column-count: 4; column-gap: 20px; } }
