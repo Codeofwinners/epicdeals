@@ -224,33 +224,33 @@ function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: stri
   const btnText  = dark ? "#0A0A0A" : "#FFFFFF";
   const learnColor = dark ? "rgba(255,255,255,0.4)" : "#AAAAAA";
 
-  // Both layouts: code button + "Learn more" always in ONE row — never cut off
+  // Code on its own full-width row so it never truncates; "Learn more" sits below
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "10px" }}>
       {code ? (
         <button onClick={copyCode} style={{
-          flex: 1, minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px",
-          padding: "8px",
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
+          padding: "9px 10px",
           backgroundColor: dark ? "rgba(255,255,255,0.08)" : "#F5F5F5",
           border: `1px dashed ${dark ? "rgba(255,255,255,0.25)" : "#C8C8C8"}`,
-          borderRadius: "8px", cursor: "pointer", outline: "none", overflow: "hidden",
+          borderRadius: "8px", cursor: "pointer", outline: "none",
         }}>
-          <span style={{ fontFamily: "monospace", fontSize: "10px", fontWeight: 800, color: dark ? "#fff" : "#0A0A0A", letterSpacing: "0.05em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 800, color: dark ? "#fff" : "#0A0A0A", letterSpacing: "0.05em" }}>
             {copied ? "COPIED ✓" : code}
           </span>
-          {!copied && <span className="material-symbols-outlined" style={{ fontSize: "11px", color: dark ? "rgba(255,255,255,0.35)" : "#BBBBBB", lineHeight: 1, flexShrink: 0 }}>content_copy</span>}
+          {!copied && <span className="material-symbols-outlined" style={{ fontSize: "12px", color: dark ? "rgba(255,255,255,0.35)" : "#BBBBBB", lineHeight: 1, flexShrink: 0 }}>content_copy</span>}
         </button>
       ) : (
         <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer" style={{
-          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
-          padding: "7px 10px", backgroundColor: btnBg, borderRadius: "8px", textDecoration: "none",
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
+          padding: "9px 10px", backgroundColor: btnBg, borderRadius: "8px", textDecoration: "none",
         }}>
-          <span style={{ fontSize: "10px", fontWeight: 800, color: btnText, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>Get Deal</span>
-          <span className="material-symbols-outlined" style={{ fontSize: "11px", color: btnText, lineHeight: 1 }}>arrow_forward</span>
+          <span style={{ fontSize: "11px", fontWeight: 800, color: btnText, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>Get Deal</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "12px", color: btnText, lineHeight: 1 }}>arrow_forward</span>
         </a>
       )}
       <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer"
-        style={{ flexShrink: 0, fontSize: "10px", fontWeight: 600, color: learnColor, textDecoration: "none", whiteSpace: "nowrap", letterSpacing: "0.02em" }}>
+        style={{ display: "block", textAlign: "center", fontSize: "10px", fontWeight: 600, color: learnColor, textDecoration: "none", letterSpacing: "0.02em" }}>
         Learn more
       </a>
     </div>
@@ -270,7 +270,7 @@ function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCountChan
   return (
     <div className="deal-card rounded-2xl overflow-hidden flex flex-col relative" style={{ background: bg, border }}>
       {glow}
-      <div className="p-4 relative z-10 flex flex-col h-full">
+      <div className="p-4 md:p-5 relative z-10 flex flex-col h-full">
         {/* Store + expiry — always identical */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
           <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: storeColor }}>{deal.store.name}</span>
@@ -321,10 +321,10 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         glow={<div className="absolute top-0 right-0 w-28 h-28 bg-purple-600 rounded-full blur-[50px] opacity-30 pointer-events-none" />}
         hero={<>
           {raw && (
-            <div style={{ marginBottom: "8px" }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "4px" }}>
-                <span style={{ fontSize: "48px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff" }}>{raw}</span>
-                <span style={{ fontSize: "36px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.03em", background: "linear-gradient(135deg,#c084fc,#f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>OFF</span>
+            <div style={{ marginBottom: "8px", overflow: "visible" }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "4px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "clamp(20px, 7vw, 44px)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", color: "#fff" }}>{raw}</span>
+                <span style={{ fontSize: "clamp(14px, 5vw, 32px)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", background: "linear-gradient(135deg,#c084fc,#f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>OFF</span>
               </div>
               <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>on sale styles</div>
             </div>
@@ -343,7 +343,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         storeColor="rgba(255,255,255,0.6)"
         glow={<div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />}
         hero={<>
-          <div style={{ fontSize: "24px", fontWeight: 900, lineHeight: 1, letterSpacing: "-0.03em", color: "#fff", marginBottom: "6px" }}>{deal.title}</div>
+          <div style={{ fontSize: "clamp(16px, 5.5vw, 24px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-0.03em", color: "#fff", marginBottom: "6px" }} className="line-clamp-2">{deal.title}</div>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
         </>}
       />
@@ -351,12 +351,13 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
   }
 
   if (isUber) {
+    const uberAmount = (deal.savingsAmount || "").replace(/\s*off\s*/gi, "").trim();
     return (
       <ColorCard {...shared}
         bg="#0A0A0A" border="1px solid rgba(255,255,255,0.05)" isDark
         storeColor="rgba(255,255,255,0.4)"
         hero={<>
-          <div style={{ fontSize: "44px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff", marginBottom: "4px" }}>{deal.savingsAmount}</div>
+          <div style={{ fontSize: "clamp(28px, 11vw, 44px)", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff", marginBottom: "4px" }}>{uberAmount || deal.savingsAmount}</div>
           <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "6px" }}>off first order</div>
           <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
         </>}
@@ -423,7 +424,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
       </div>
 
       {/* Body */}
-      <div className="pt-3 px-3 pb-3 flex flex-col flex-grow">
+      <div className="pt-3 px-4 pb-4 flex flex-col flex-grow">
         <div className="flex items-center justify-between gap-1 mb-1.5">
           <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
           <ExpiryBadge expiresAt={deal.expiresAt} />
@@ -490,9 +491,9 @@ export default function Home() {
             repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(0,0,0,0.03) 18px, rgba(0,0,0,0.03) 19px),
             repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(0,0,0,0.03) 18px, rgba(0,0,0,0.03) 19px);
         }
-        .masonry-grid { column-count: 2; column-gap: 10px; }
+        .masonry-grid { column-count: 2; column-gap: 12px; }
         @media (min-width: 768px) { .masonry-grid { column-count: 4; column-gap: 20px; } }
-        .masonry-item { break-inside: avoid; margin-bottom: 10px; }
+        .masonry-item { break-inside: avoid; margin-bottom: 12px; }
         @media (min-width: 768px) { .masonry-item { margin-bottom: 20px; } }
         .deal-card { transition: transform 0.2s; }
         .deal-card:hover { transform: translateY(-1px); }
