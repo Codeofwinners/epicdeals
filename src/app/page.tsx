@@ -331,19 +331,21 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/5 to-transparent" />
-        {/* Discount chip — frosted dark */}
-        <div style={{
-          position: "absolute", top: "10px", left: "10px", zIndex: 20,
-          display: "inline-flex", alignItems: "center",
-          backgroundColor: "rgba(0,0,0,0.72)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          borderRadius: "8px",
-          padding: "4px 8px",
-          border: "1px solid rgba(255,255,255,0.12)",
-        }}>
-          <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>−{(deal.discount ?? "").replace(/^[-−]/, "")}</span>
-        </div>
+        {/* Discount chip — frosted dark, only when discount exists */}
+        {deal.discount && deal.discount.trim() !== "" && (
+          <div style={{
+            position: "absolute", top: "10px", left: "10px", zIndex: 20,
+            display: "inline-flex", alignItems: "center",
+            backgroundColor: "rgba(0,0,0,0.72)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            borderRadius: "8px",
+            padding: "4px 8px",
+            border: "1px solid rgba(255,255,255,0.12)",
+          }}>
+            <span style={{ fontFamily: "monospace", fontSize: "11px", fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>−{deal.discount.replace(/^[-−]/, "")}</span>
+          </div>
+        )}
       </div>
 
       {/* Body */}
