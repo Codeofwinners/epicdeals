@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { addComment, onDealComments, deleteComment, editComment, upvoteComment, downvoteComment, getCommentVoteStatus } from "@/lib/firestore";
+import { addComment, onDealComments, deleteComment, editComment, upvoteComment, getCommentVoteStatus } from "@/lib/firestore";
 import { signInWithGoogle } from "@/lib/auth";
 import type { Comment } from "@/types/deals";
 
@@ -255,6 +255,9 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
   );
 }
 
+// Shared gradient for upvote active state — matches deal vote buttons
+const COMMENT_UPVOTE_GRADIENT = "linear-gradient(135deg, #006039 0%, #16a34a 50%, #84cc16 100%)";
+
 function CommentVoting({ commentId, initialUpvotes, darkBg = false }: { commentId: string; initialUpvotes: number; darkBg?: boolean }) {
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
@@ -267,27 +270,17 @@ function CommentVoting({ commentId, initialUpvotes, darkBg = false }: { commentI
 
   useEffect(() => { setUpvotes(initialUpvotes); }, [initialUpvotes]);
 
-  const handleVote = async (type: "up" | "down") => {
+  const handleUpvote = async () => {
     if (!user) { alert("Sign in to vote"); return; }
     setLoading(true);
-
-    // Optimistic update
     const wasUpvoted = voteStatus?.voteType === "upvote";
-    const wasDownvoted = voteStatus?.voteType === "downvote";
-    if (type === "up") {
-      setUpvotes(prev => wasUpvoted ? prev - 1 : wasDownvoted ? prev + 2 : prev + 1);
-      setVoteStatus({ hasVoted: !wasUpvoted, voteType: wasUpvoted ? null : "upvote" });
-    } else {
-      setUpvotes(prev => wasDownvoted ? prev + 1 : wasUpvoted ? prev - 2 : prev - 1);
-      setVoteStatus({ hasVoted: !wasDownvoted, voteType: wasDownvoted ? null : "downvote" });
-    }
-
+    // Optimistic update
+    setUpvotes(prev => wasUpvoted ? prev - 1 : prev + 1);
+    setVoteStatus({ hasVoted: !wasUpvoted, voteType: wasUpvoted ? null : "upvote" });
     try {
-      if (type === "up") await upvoteComment(user.uid, commentId);
-      else await downvoteComment(user.uid, commentId);
+      await upvoteComment(user.uid, commentId);
     } catch (error) {
-      // Revert on failure
-      console.error("Comment voting error:", error);
+      console.error("Comment vote error:", error);
       setUpvotes(initialUpvotes);
       setVoteStatus(null);
     } finally {
@@ -295,31 +288,30 @@ function CommentVoting({ commentId, initialUpvotes, darkBg = false }: { commentI
     }
   };
 
-  const restColor   = darkBg ? "rgba(255,255,255,0.3)" : "#C8C8C8";
-  const upColor     = darkBg ? "#FFFFFF" : "#0A0A0A";
-  const downColor   = darkBg ? "rgba(255,255,255,0.5)" : "#888888";
-  const isUpvoted   = voteStatus?.voteType === "upvote";
-  const isDownvoted = voteStatus?.voteType === "downvote";
+  const restColor = darkBg ? "rgba(255,255,255,0.3)" : "#C8C8C8";
+  const isUpvoted = voteStatus?.voteType === "upvote";
+
+  // On dark bg (Spotify/Nike/Uber), use white for active — gradient would be invisible on green
+  const activeStyle = darkBg
+    ? { color: "#FFFFFF" }
+    : { background: COMMENT_UPVOTE_GRADIENT, WebkitBackgroundClip: "text" as const, WebkitTextFillColor: "transparent" as const };
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-      {/* Upvote */}
+      {/* Upvote only — no downvote on comments */}
       <button
-        onClick={() => handleVote("up")}
+        onClick={handleUpvote}
         disabled={loading}
         style={{ display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: 0, cursor: loading ? "wait" : "pointer", opacity: loading ? 0.4 : 1, outline: "none" }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: "12px", lineHeight: 1, color: isUpvoted ? upColor : restColor, fontVariationSettings: "'FILL' 1" }}>arrow_upward</span>
-        <span style={{ fontSize: "11px", fontWeight: 700, color: isUpvoted ? upColor : "#999", lineHeight: 1 }}>{upvotes}</span>
-      </button>
-
-      {/* Downvote */}
-      <button
-        onClick={() => handleVote("down")}
-        disabled={loading}
-        style={{ display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: 0, cursor: loading ? "wait" : "pointer", opacity: loading ? 0.4 : 1, outline: "none" }}
-      >
-        <span className="material-symbols-outlined" style={{ fontSize: "12px", lineHeight: 1, color: isDownvoted ? downColor : restColor, fontVariationSettings: "'FILL' 1" }}>arrow_downward</span>
+        <span className="material-symbols-outlined" style={{
+          fontSize: "12px", lineHeight: 1, fontVariationSettings: "'FILL' 1", display: "inline-block",
+          ...(isUpvoted ? activeStyle : { color: restColor }),
+        }}>arrow_upward</span>
+        <span style={{
+          fontSize: "11px", fontWeight: 700, lineHeight: 1,
+          ...(isUpvoted ? activeStyle : { color: "#999" }),
+        }}>{upvotes}</span>
       </button>
     </div>
   );

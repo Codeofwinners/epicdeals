@@ -17,10 +17,15 @@ function fmtCount(n: number): string {
   return String(n);
 }
 
+const ACTIVE_GRADIENT = "linear-gradient(135deg, #006039 0%, #16a34a 50%, #84cc16 100%)";
+const gradientText = { background: ACTIVE_GRADIENT, WebkitBackgroundClip: "text" as const, WebkitTextFillColor: "transparent" as const };
+
 function VoteButtons({ dealId, upvotes, downvotes, commentCount, darkBg = false, whiteText = false, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; commentCount?: number; darkBg?: boolean; whiteText?: boolean; onCommentClick?: () => void }) {
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
   const [voting, setVoting] = useState(false);
+  const [animKey, setAnimKey] = useState(0);
+  const [justVoted, setJustVoted] = useState(false);
 
   useEffect(() => {
     if (!db || !user?.uid) return;
@@ -30,6 +35,14 @@ function VoteButtons({ dealId, upvotes, downvotes, commentCount, darkBg = false,
   const handleVote = async (type: "up" | "down") => {
     if (!user) { alert("Sign in to vote"); return; }
     if (!db) return;
+
+    // Trigger animation only when upvoting (not unvoting)
+    if (type === "up" && voteStatus?.voteType !== "upvote") {
+      setAnimKey(k => k + 1);
+      setJustVoted(true);
+      setTimeout(() => setJustVoted(false), 700);
+    }
+
     setVoting(true);
     try {
       if (type === "up") await upvoteDeal(user.uid, dealId);
@@ -47,27 +60,50 @@ function VoteButtons({ dealId, upvotes, downvotes, commentCount, darkBg = false,
   const isUpvoted = voteStatus?.voteType === "upvote";
 
   const dividerColor = darkBg ? "rgba(255,255,255,0.08)" : "#EFEFEF";
-
-  const restColor   = darkBg ? "rgba(255,255,255,0.3)" : "#C0C0C0";
-  const activeGradient = "linear-gradient(135deg, #006039 0%, #16a34a 50%, #84cc16 100%)";
+  const restColor    = darkBg ? "rgba(255,255,255,0.3)" : "#C0C0C0";
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "10px", borderTop: `1px solid ${dividerColor}` }}>
       <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
 
-        {/* Upvote: arrow + count, green gradient when active */}
+        {/* Upvote button with animations */}
         <button
           onClick={() => handleVote("up")}
           disabled={voting}
-          style={{ display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: 0, cursor: voting ? "wait" : "pointer", opacity: voting ? 0.4 : 1, outline: "none" }}
+          style={{ position: "relative", display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: "4px 2px", cursor: voting ? "wait" : "pointer", outline: "none" }}
         >
-          <span className="material-symbols-outlined" style={{
+          {/* Floating +1 */}
+          {justVoted && (
+            <span key={`float-${animKey}`} style={{
+              position: "absolute", top: "-2px", left: "50%",
+              fontSize: "10px", fontWeight: 800, pointerEvents: "none",
+              animation: "vote-float-up 0.65s ease-out forwards",
+              ...gradientText,
+            }}>+1</span>
+          )}
+          {/* Ring pulse */}
+          {justVoted && (
+            <span key={`ring-${animKey}`} style={{
+              position: "absolute", top: "50%", left: "8px",
+              width: "14px", height: "14px",
+              borderRadius: "50%", border: "1.5px solid #16a34a",
+              pointerEvents: "none",
+              animation: "vote-ring 0.55s ease-out forwards",
+            }} />
+          )}
+          {/* Arrow icon */}
+          <span className="material-symbols-outlined" key={`arrow-${animKey}`} style={{
             fontSize: "12px", lineHeight: 1, fontVariationSettings: "'FILL' 1",
-            ...(isUpvoted ? { background: activeGradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : { color: "#CCCCCC" }),
+            display: "inline-block",
+            animation: justVoted ? "vote-arrow-pop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards" : "none",
+            ...(isUpvoted ? gradientText : { color: "#CCCCCC" }),
           }}>arrow_upward</span>
-          <span style={{
+          {/* Count */}
+          <span key={`count-${animKey}`} style={{
             fontSize: "12px", fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1,
-            ...(isUpvoted ? { background: activeGradient, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : { color: "#888" }),
+            display: "inline-block",
+            animation: justVoted ? "count-pop 0.45s ease-out forwards" : "none",
+            ...(isUpvoted ? gradientText : { color: "#888" }),
           }}>{fmtCount(netDisplay)}</span>
         </button>
 
@@ -164,13 +200,8 @@ function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: b
   );
 }
 
-const VERIFIED_GRADIENT = "linear-gradient(135deg, #006039 0%, #16a34a 50%, #84cc16 100%)";
-const VERIFIED_BORDER_LIGHT = "rgba(22,163,74,0.2)";
-const VERIFIED_BORDER_DARK  = "rgba(132,204,22,0.2)";
-
 function VerifiedBadge({ dark = false }: { dark?: boolean }) {
-  const border = dark ? VERIFIED_BORDER_DARK : VERIFIED_BORDER_LIGHT;
-  const gradientText = { background: VERIFIED_GRADIENT, WebkitBackgroundClip: "text" as const, WebkitTextFillColor: "transparent" as const };
+  const border = dark ? "rgba(132,204,22,0.2)" : "rgba(22,163,74,0.2)";
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", paddingTop: "8px", marginTop: "2px", borderTop: `1px solid ${border}` }}>
       <span className="material-symbols-outlined" style={{ fontSize: "11px", fontVariationSettings: "'FILL' 1", lineHeight: 1, ...gradientText }}>verified</span>
@@ -464,6 +495,27 @@ export default function Home() {
         .deal-card:hover { transform: translateY(-1px); }
         @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
         .verified-strip { background: linear-gradient(90deg, #059669, #10b981, #34d399, #10b981, #059669); background-size: 300% auto; animation: shimmer 4s linear infinite; }
+
+        @keyframes vote-arrow-pop {
+          0%   { transform: scale(1) translateY(0); }
+          25%  { transform: scale(1.7) translateY(-4px); }
+          55%  { transform: scale(0.82) translateY(2px); }
+          80%  { transform: scale(1.1) translateY(-1px); }
+          100% { transform: scale(1) translateY(0); }
+        }
+        @keyframes vote-float-up {
+          0%   { transform: translateX(-50%) translateY(0);   opacity: 1; }
+          100% { transform: translateX(-50%) translateY(-22px); opacity: 0; }
+        }
+        @keyframes vote-ring {
+          0%   { transform: translate(-50%,-50%) scale(0.6); opacity: 0.7; }
+          100% { transform: translate(-50%,-50%) scale(2.6); opacity: 0; }
+        }
+        @keyframes count-pop {
+          0%   { transform: scale(1); }
+          35%  { transform: scale(1.3); }
+          100% { transform: scale(1); }
+        }
       `}</style>
 
       {/* DESKTOP */}
