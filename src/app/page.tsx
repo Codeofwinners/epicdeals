@@ -241,13 +241,15 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
             <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.4)" }}>{deal.store.name}</span>
             <ExpiryBadge expiresAt={deal.expiresAt} dark />
           </div>
-          <div className="mb-3">
-            <div style={{ fontSize: "38px", fontWeight: 900, lineHeight: 0.85, letterSpacing: "-0.03em", color: "#fff" }}>
-              {deal.discount}<br /><span style={{ background: "linear-gradient(135deg,#c084fc,#f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>OFF</span>
+          <div style={{ marginBottom: "8px" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginBottom: "4px" }}>
+              <span style={{ fontSize: "48px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff" }}>{deal.discount}</span>
+              <span style={{ fontSize: "36px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.03em", background: "linear-gradient(135deg,#c084fc,#f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>OFF</span>
             </div>
+            <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>on sale styles</div>
           </div>
-          <h3 style={{ fontSize: "12px", fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: "6px" }} className="line-clamp-1">{deal.title}</h3>
-          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
+          <h3 style={{ fontSize: "12px", fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: "4px" }} className="line-clamp-1">{deal.title}</h3>
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
           <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
           <div className="mt-auto">
             <DarkComment dealId={deal.id} />
