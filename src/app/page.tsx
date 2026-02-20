@@ -166,6 +166,44 @@ function VerifiedBadge({ dark = false }: { dark?: boolean }) {
   );
 }
 
+function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: string; dark?: boolean }) {
+  const [copied, setCopied] = useState(false);
+  const copyCode = () => {
+    navigator.clipboard.writeText(code!);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  const btnBg   = dark ? "#FFFFFF" : "#0A0A0A";
+  const btnText = dark ? "#0A0A0A" : "#FFFFFF";
+  return (
+    <div style={{ display: "flex", gap: "5px", marginBottom: "10px" }}>
+      {code && (
+        <button onClick={copyCode} style={{
+          flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "4px",
+          padding: "7px 8px",
+          backgroundColor: dark ? "rgba(255,255,255,0.08)" : "#F5F5F5",
+          border: `1px dashed ${dark ? "rgba(255,255,255,0.25)" : "#C8C8C8"}`,
+          borderRadius: "8px", cursor: "pointer", outline: "none",
+        }}>
+          <span style={{ fontFamily: "monospace", fontSize: "10px", fontWeight: 800, color: dark ? "#fff" : "#0A0A0A", letterSpacing: "0.05em" }}>
+            {copied ? "COPIED ✓" : code}
+          </span>
+          {!copied && <span className="material-symbols-outlined" style={{ fontSize: "11px", color: dark ? "rgba(255,255,255,0.35)" : "#BBBBBB", lineHeight: 1 }}>content_copy</span>}
+        </button>
+      )}
+      <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer" style={{
+        flex: code ? "0 0 auto" : 1,
+        display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
+        padding: "7px 12px", backgroundColor: btnBg, borderRadius: "8px",
+        textDecoration: "none", whiteSpace: "nowrap",
+      }}>
+        <span style={{ fontSize: "10px", fontWeight: 800, color: btnText, letterSpacing: "0.04em" }}>{code ? "Shop" : "Get Deal"}</span>
+        <span className="material-symbols-outlined" style={{ fontSize: "11px", color: btnText, lineHeight: 1 }}>arrow_forward</span>
+      </a>
+    </div>
+  );
+}
+
 function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen: boolean, toggleComments: () => void }) {
   const isNike = deal.store?.id === "nike";
   const isSpotify = deal.store?.id === "spotify";
@@ -173,22 +211,26 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
 
   if (isNike) {
     return (
-      <div className="rounded-3xl overflow-hidden bg-[#111] shadow-card text-white flex flex-col justify-between min-h-[420px] relative border border-gray-800">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-purple-600 rounded-full blur-[60px] opacity-40 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-600 rounded-full blur-[80px] opacity-30 pointer-events-none"></div>
-        <div className="p-6 relative z-10 flex flex-col h-full">
-          <div className="flex justify-between items-start mb-6">
-            <span className="text-[10px] font-mono border border-white/20 px-2 py-1 rounded text-white/70 uppercase">{deal.code || "NIKE25"}</span>
-            <ExpiryBadge expiresAt={deal.expiresAt} dark={true} />
+      <div className="deal-card rounded-2xl overflow-hidden bg-[#111] text-white flex flex-col border border-white/5 relative">
+        <div className="absolute top-0 right-0 w-28 h-28 bg-purple-600 rounded-full blur-[50px] opacity-30 pointer-events-none" />
+        <div className="p-4 relative z-10 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-3">
+            <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.4)" }}>{deal.store.name}</span>
+            <ExpiryBadge expiresAt={deal.expiresAt} dark />
           </div>
-          <div className="flex-grow flex flex-col justify-center mb-6">
-            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-2">{deal.store.name}</h2>
-            <div className="text-5xl font-black tracking-tighter leading-[0.85] text-white break-words">EXTRA<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">{deal.discount}</span><br />OFF</div>
-            <p className="mt-4 text-sm text-white/80 font-medium leading-relaxed border-l-2 border-purple-500 pl-3">{deal.description}</p>
+          <div className="mb-3">
+            <div style={{ fontSize: "38px", fontWeight: 900, lineHeight: 0.85, letterSpacing: "-0.03em", color: "#fff" }}>
+              {deal.discount}<br /><span style={{ background: "linear-gradient(135deg,#c084fc,#f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>OFF</span>
+            </div>
           </div>
-          <DarkComment dealId={deal.id} />
-          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} darkBg={true} whiteText={true} onCommentClick={toggleComments} />
-          <CommentsSection dealId={deal.id} darkBg={true} isOpen={isOpen} onToggle={toggleComments} />
+          <h3 style={{ fontSize: "12px", fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: "6px" }} className="line-clamp-1">{deal.title}</h3>
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.55)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
+          <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
+          <div className="mt-auto">
+            <DarkComment dealId={deal.id} />
+            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} darkBg whiteText onCommentClick={toggleComments} />
+          </div>
+          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} />
         </div>
       </div>
     );
@@ -196,25 +238,21 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
 
   if (isSpotify) {
     return (
-      <div className="rounded-3xl overflow-hidden bg-[#1DB954] shadow-card border border-[#1db954]/20 flex flex-col justify-between min-h-[380px] relative transition-transform hover:scale-[1.02] duration-300">
-        <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent"></div>
-        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-        <div className="p-6 relative z-10 flex flex-col h-full text-white">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-2">
-              <span className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#1DB954] shadow-lg">
-                <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>play_circle</span>
-              </span>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">{deal.discount}</span>
-            </div>
+      <div className="deal-card rounded-2xl overflow-hidden bg-[#1DB954] text-white flex flex-col relative border border-white/10">
+        <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />
+        <div className="p-4 relative z-10 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-3">
+            <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.6)" }}>{deal.store.name}</span>
+            <ExpiryBadge expiresAt={deal.expiresAt} dark />
           </div>
-          <div className="flex-grow mb-6">
-            <h2 className="text-4xl font-black tracking-tighter leading-[0.9] text-white mb-4">3 Months<br />Premium <span className="text-black/30">Free</span></h2>
-            <p className="text-sm text-white/90 font-bold leading-relaxed">{deal.description}</p>
+          <div style={{ fontSize: "28px", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", color: "#fff", marginBottom: "6px" }}>{deal.title}</div>
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
+          <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
+          <div className="mt-auto">
+            <TopComment dealId={deal.id} customBorder="border-white/20" textStyle="text-white" />
+            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} whiteText darkBg onCommentClick={toggleComments} />
           </div>
-          <TopComment dealId={deal.id} customBorder="border-white/20" textStyle="text-white" />
-          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} whiteText={true} darkBg={true} onCommentClick={toggleComments} />
-          <CommentsSection dealId={deal.id} darkBg={true} isOpen={isOpen} onToggle={toggleComments} />
+          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} />
         </div>
       </div>
     );
@@ -222,21 +260,21 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
 
   if (isUber) {
     return (
-      <div className="rounded-3xl overflow-hidden bg-black shadow-card text-white flex flex-col justify-between min-h-[400px] relative border border-gray-800">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-        <div className="p-6 relative z-10 flex flex-col h-full text-white">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">{deal.store.name}</span>
-            <div className="text-xs font-mono bg-white text-black px-2 py-1 rounded font-bold">Uber Eats</div>
+      <div className="deal-card rounded-2xl overflow-hidden bg-[#0A0A0A] text-white flex flex-col border border-white/5 relative">
+        <div className="p-4 relative z-10 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-3">
+            <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.4)" }}>{deal.store.name}</span>
+            <ExpiryBadge expiresAt={deal.expiresAt} dark />
           </div>
-          <div className="flex-grow text-center py-4 flex flex-col justify-center">
-            <div className="text-8xl font-black leading-none tracking-tighter text-white drop-shadow-xl">{deal.savingsAmount}</div>
-            <div className="text-xl font-bold tracking-[0.3em] mt-2 text-white/80">OFF FIRST</div>
-            <div className="text-sm font-medium text-white/40 mt-1 uppercase tracking-widest">Order Only</div>
+          <div style={{ fontSize: "44px", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff", marginBottom: "4px" }}>{deal.savingsAmount}</div>
+          <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "6px" }}>off first order</div>
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
+          <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark />
+          <div className="mt-auto">
+            <DarkComment dealId={deal.id} />
+            <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} darkBg whiteText onCommentClick={toggleComments} />
           </div>
-          <DarkComment dealId={deal.id} />
-          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} darkBg={true} whiteText={true} onCommentClick={toggleComments} />
-          <CommentsSection dealId={deal.id} darkBg={true} isOpen={isOpen} onToggle={toggleComments} />
+          <CommentsSection dealId={deal.id} darkBg isOpen={isOpen} onToggle={toggleComments} />
         </div>
       </div>
     );
@@ -305,7 +343,10 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           <ExpiryBadge expiresAt={deal.expiresAt} />
         </div>
 
-        <h3 style={{ fontWeight: 800, fontSize: "13px", lineHeight: 1.3, color: "#0A0A0A", marginBottom: "12px" }} className="line-clamp-2">{deal.title}</h3>
+        <h3 style={{ fontWeight: 800, fontSize: "13px", lineHeight: 1.3, color: "#0A0A0A", marginBottom: "5px" }} className="line-clamp-2">{deal.title}</h3>
+        <p style={{ fontSize: "11px", color: "#888888", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
+
+        <DealCTA code={deal.code} dealUrl={deal.dealUrl} />
 
         <div className="mt-auto">
           <TopComment dealId={deal.id} />
