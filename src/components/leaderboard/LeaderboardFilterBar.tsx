@@ -15,10 +15,10 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
   const weekNum = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7);
   const weekKey = `weekly-${now.getFullYear()}-W${String(weekNum).padStart(2, "0")}` as LeaderboardPeriod;
 
-  const periods: { key: LeaderboardPeriod; label: string }[] = [
-    { key: "alltime", label: "ALL-TIME" },
-    { key: monthKey, label: "THIS MONTH" },
-    { key: weekKey, label: "THIS WEEK" },
+  const periods: { key: LeaderboardPeriod; label: string; icon: string }[] = [
+    { key: "alltime", label: "ALL-TIME", icon: "emoji_events" },
+    { key: monthKey, label: "MONTHLY", icon: "calendar_month" },
+    { key: weekKey, label: "WEEKLY", icon: "date_range" },
   ];
 
   const categories: { key: LeaderboardCategory; label: string; icon: string }[] = [
@@ -26,6 +26,7 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
     { key: "top-dealers", label: "Top Dealers", icon: "local_offer" },
     { key: "top-commenters", label: "Commenters", icon: "chat" },
     { key: "most-verified", label: "Verified", icon: "verified" },
+    { key: "rising-stars", label: "Rising", icon: "trending_up" },
   ];
 
   return (
@@ -44,6 +45,9 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
               key={p.key}
               onClick={() => onPeriodChange(p.key)}
               style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
                 padding: "10px 20px",
                 border: "none",
                 borderBottom: active ? "2px solid #0EA5E9" : "2px solid transparent",
@@ -59,6 +63,7 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
                 transition: "all 0.2s ease",
               }}
             >
+              <span className="material-symbols-outlined" style={{ fontSize: 15 }}>{p.icon}</span>
               {p.label}
             </button>
           );

@@ -13,6 +13,9 @@ export function XPProgressBar({ xp, showLabel = true, height = 12 }: XPProgressB
   const nextRank = getNextRank(xp);
   const progress = getProgressToNextRank(xp);
 
+  const fillColor = rank.color;
+  const targetColor = nextRank?.color || rank.color;
+
   return (
     <div style={{ width: "100%" }}>
       {/* Progress bar track */}
@@ -26,17 +29,19 @@ export function XPProgressBar({ xp, showLabel = true, height = 12 }: XPProgressB
           position: "relative",
         }}
       >
+        {/* Filled portion */}
         <div
           className="animate-progress-fill"
           style={{
             height: "100%",
             width: `${progress.percent}%`,
             borderRadius: height,
-            background: `linear-gradient(90deg, ${rank.color}, ${nextRank?.color || rank.color})`,
-            boxShadow: `0 0 14px ${rank.color}50`,
+            background: `linear-gradient(90deg, ${fillColor}, ${targetColor})`,
+            boxShadow: `0 0 14px ${fillColor}50`,
             position: "relative",
             overflow: "hidden",
-            // @ts-expect-error CSS custom property
+            transition: "width 0.6s cubic-bezier(0.22, 1, 0.36, 1)",
+            // @ts-expect-error CSS custom property for animation
             "--progress-width": `${progress.percent}%`,
           }}
         >
@@ -49,13 +54,14 @@ export function XPProgressBar({ xp, showLabel = true, height = 12 }: XPProgressB
               left: 0,
               width: "50%",
               height: "100%",
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+              background:
+                "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
             }}
           />
         </div>
       </div>
 
-      {/* Label */}
+      {/* Labels */}
       {showLabel && nextRank && (
         <div
           style={{
@@ -67,16 +73,24 @@ export function XPProgressBar({ xp, showLabel = true, height = 12 }: XPProgressB
             fontWeight: 600,
           }}
         >
-          <span style={{ color: "#64748B" }}>
+          <span style={{ color: "#334155" }}>
             {progress.needed} XP to {nextRank.name}
           </span>
-          <span style={{ color: rank.color, fontWeight: 800 }}>
+          <span style={{ color: "#334155", fontWeight: 800 }}>
             {progress.percent}%
           </span>
         </div>
       )}
       {showLabel && !nextRank && (
-        <div style={{ marginTop: 6, fontSize: 11, fontWeight: 700, color: "#F59E0B", textAlign: "center" }}>
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: 11,
+            fontWeight: 700,
+            color: "#334155",
+            textAlign: "center",
+          }}
+        >
           MAX RANK ACHIEVED
         </div>
       )}

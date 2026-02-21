@@ -25,7 +25,6 @@ function BadgeCard({ badge, earned }: { badge: Badge; earned: boolean }) {
         }}
         title={`${badge.name} — ${badge.description}`}
       >
-        {/* Badge icon with glow */}
         <div
           style={{
             width: 48,
@@ -39,27 +38,13 @@ function BadgeCard({ badge, earned }: { badge: Badge; earned: boolean }) {
             boxShadow: `0 0 20px ${badge.color}20`,
           }}
         >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 24, color: badge.color }}
-          >
+          <span className="material-symbols-outlined" style={{ fontSize: 24, color: badge.color }}>
             {badge.icon}
           </span>
         </div>
-
-        {/* Badge name */}
-        <span style={{
-          fontSize: 11,
-          fontWeight: 800,
-          color: "#0f172a",
-          textAlign: "center",
-          lineHeight: 1.2,
-          marginBottom: 4,
-        }}>
+        <span style={{ fontSize: 11, fontWeight: 800, color: "#0f172a", textAlign: "center", lineHeight: 1.2, marginBottom: 4 }}>
           {badge.name}
         </span>
-
-        {/* Rarity pill */}
         <span style={{
           fontSize: 8,
           fontWeight: 800,
@@ -74,21 +59,13 @@ function BadgeCard({ badge, earned }: { badge: Badge; earned: boolean }) {
         }}>
           {rarityLabel}
         </span>
-
-        {/* Description */}
-        <span style={{
-          fontSize: 9,
-          color: "#64748b",
-          textAlign: "center",
-          lineHeight: 1.3,
-        }}>
+        <span style={{ fontSize: 9, color: "#64748b", textAlign: "center", lineHeight: 1.3 }}>
           {badge.description}
         </span>
       </div>
     );
   }
 
-  // Locked badge — NO grayscale, light slate bg, dashed border, 70% opacity, hint of real color
   return (
     <div
       style={{
@@ -99,23 +76,16 @@ function BadgeCard({ badge, earned }: { badge: Badge; earned: boolean }) {
         padding: "16px 10px 14px",
         borderRadius: 14,
         backgroundColor: "#F8FAFC",
-        border: `1.5px dashed #CBD5E1`,
+        border: "1.5px dashed #CBD5E1",
         opacity: 0.7,
         transition: "all 0.3s ease",
         cursor: "default",
       }}
       title={`Locked: ${badge.description}`}
     >
-      {/* Lock icon */}
-      <div style={{
-        position: "absolute",
-        top: 8,
-        right: 8,
-      }}>
+      <div style={{ position: "absolute", top: 8, right: 8 }}>
         <span className="material-symbols-outlined" style={{ fontSize: 11, color: "#94a3b8" }}>lock</span>
       </div>
-
-      {/* Badge icon — hint of real color, not grayscale */}
       <div
         style={{
           width: 48,
@@ -128,45 +98,17 @@ function BadgeCard({ badge, earned }: { badge: Badge; earned: boolean }) {
           marginBottom: 10,
         }}
       >
-        <span
-          className="material-symbols-outlined"
-          style={{ fontSize: 24, color: `${badge.color}50` }}
-        >
+        <span className="material-symbols-outlined" style={{ fontSize: 24, color: `${badge.color}50` }}>
           {badge.icon}
         </span>
       </div>
-
-      {/* Badge name */}
-      <span style={{
-        fontSize: 11,
-        fontWeight: 800,
-        color: "#94a3b8",
-        textAlign: "center",
-        lineHeight: 1.2,
-        marginBottom: 4,
-      }}>
+      <span style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8", textAlign: "center", lineHeight: 1.2, marginBottom: 4 }}>
         {badge.name}
       </span>
-
-      {/* Rarity */}
-      <span style={{
-        fontSize: 8,
-        fontWeight: 800,
-        color: "#CBD5E1",
-        textTransform: "uppercase",
-        letterSpacing: "0.1em",
-        marginBottom: 4,
-      }}>
+      <span style={{ fontSize: 8, fontWeight: 800, color: "#CBD5E1", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
         {rarityLabel}
       </span>
-
-      {/* Description */}
-      <span style={{
-        fontSize: 9,
-        color: "#94a3b8",
-        textAlign: "center",
-        lineHeight: 1.3,
-      }}>
+      <span style={{ fontSize: 9, color: "#94a3b8", textAlign: "center", lineHeight: 1.3 }}>
         {badge.description}
       </span>
     </div>
@@ -178,13 +120,10 @@ export function BadgeGrid() {
   const { data: badgeData, loading } = useUserBadges(user?.uid);
 
   const earnedIds = new Set((badgeData?.earned || []).map((b) => b.id));
-
-  // Group badges by rarity
   const rarityOrder: BadgeRarity[] = ["common", "uncommon", "rare", "epic", "legendary"];
 
   return (
     <div style={{ marginBottom: 48 }}>
-      {/* Section header: Trophy Case */}
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
         <span className="material-symbols-outlined" style={{ fontSize: 22, color: "#F59E0B" }}>emoji_events</span>
         <h2 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em", margin: 0 }}>
@@ -208,10 +147,8 @@ export function BadgeGrid() {
       {rarityOrder.map((rarity) => {
         const badgesInRarity = BADGES.filter((b) => b.rarity === rarity);
         if (badgesInRarity.length === 0) return null;
-
         return (
           <div key={rarity} style={{ marginBottom: 20 }}>
-            {/* Rarity tier header with colored left border */}
             <div style={{
               display: "flex",
               alignItems: "center",
@@ -230,18 +167,9 @@ export function BadgeGrid() {
                 {rarity}
               </span>
             </div>
-
-            {/* Desktop: 5 cols, Mobile: 3 cols */}
-            <div
-              className="grid grid-cols-3 md:grid-cols-5"
-              style={{ gap: 8 }}
-            >
+            <div className="grid grid-cols-3 md:grid-cols-5" style={{ gap: 8 }}>
               {badgesInRarity.map((badge) => (
-                <BadgeCard
-                  key={badge.id}
-                  badge={badge}
-                  earned={earnedIds.has(badge.id)}
-                />
+                <BadgeCard key={badge.id} badge={badge} earned={earnedIds.has(badge.id)} />
               ))}
             </div>
           </div>
