@@ -21,7 +21,7 @@ export default function FixWisprPage() {
       await updateDoc(dealRef, {
         title: "1 Month Free of Wispr Flow Pro",
         description:
-          "Anyone who signs up through this link gets a full free month of Wispr Flow Pro — the AI dictation tool that lets you write 3x faster with your voice across any app. Flow Pro normally costs $10/mo and includes unlimited dictation, custom vocabulary, and multi-language support.",
+          "Get a full free month of Wispr Flow Pro — the AI-powered voice dictation tool that lets you write 3x faster by speaking naturally across any app on your Mac. Flow Pro normally costs $10/mo and includes unlimited dictation, custom vocabulary, 100+ language support, and seamless integration with every text field. Use this link to activate your free month instantly.",
       });
       setStatus("Done! Wispr deal updated. You can close this page.");
     } catch (e: any) {
