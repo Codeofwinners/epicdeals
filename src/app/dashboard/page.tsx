@@ -316,7 +316,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: "Manrope, sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: "Manrope, sans-serif", overflowX: "hidden" }}>
       {/* Header */}
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px 16px 0" }}>
         {/* Top bar */}
@@ -368,8 +368,8 @@ export default function DashboardPage() {
             overflow: "hidden",
             backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.02) 18px, rgba(255,255,255,0.02) 19px)",
           }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                 <span style={{ fontSize: 24, fontWeight: 900, color: xpData.rank.color, letterSpacing: "-0.02em" }}>
                   {xpData.xp.toLocaleString()}
                 </span>
@@ -386,6 +386,7 @@ export default function DashboardPage() {
                   fontWeight: 700,
                   color: "#0EA5E9",
                   textDecoration: "none",
+                  flexShrink: 0,
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 14 }}>leaderboard</span>
@@ -397,7 +398,7 @@ export default function DashboardPage() {
         )}
 
         {/* Tab navigation */}
-        <div style={{ display: "flex", gap: 4, background: "#fff", borderRadius: 14, padding: 4, boxShadow: "0 1px 4px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9", marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 3, background: "#fff", borderRadius: 14, padding: 4, boxShadow: "0 1px 4px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9", marginBottom: 24, overflow: "hidden" }}>
           {tabs.map((tab) => {
             const isActive = activeTab === tab.key;
             return (
@@ -406,34 +407,38 @@ export default function DashboardPage() {
                 onClick={() => setActiveTab(tab.key)}
                 style={{
                   flex: 1,
+                  minWidth: 0,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 4,
-                  padding: "10px 8px",
+                  gap: 3,
+                  padding: "10px 4px",
                   borderRadius: 10,
                   border: "none",
                   cursor: "pointer",
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: 700,
                   fontFamily: "Manrope, sans-serif",
                   transition: "all 0.2s",
                   background: isActive ? "linear-gradient(135deg, #06b6d4, #0891b2)" : "transparent",
                   color: isActive ? "#fff" : "#64748b",
                   boxShadow: isActive ? "0 2px 8px rgba(8,145,178,0.25)" : "none",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
                 }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{tab.icon}</span>
-                <span style={{ display: "inline" }}>{tab.label}</span>
+                <span className="material-symbols-outlined" style={{ fontSize: 16, flexShrink: 0 }}>{tab.icon}</span>
+                <span className="hidden sm:inline" style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{tab.label}</span>
                 <span style={{
                   fontSize: 10,
                   fontWeight: 800,
                   background: isActive ? "rgba(255,255,255,0.25)" : "#f1f5f9",
                   color: isActive ? "#fff" : "#94a3b8",
-                  padding: "1px 6px",
+                  padding: "1px 5px",
                   borderRadius: 20,
-                  minWidth: 18,
+                  minWidth: 16,
                   textAlign: "center",
+                  flexShrink: 0,
                 }}>
                   {tab.count}
                 </span>
@@ -1120,7 +1125,7 @@ function DealCard({
           {deal.title}
         </h3>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 5 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 5, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B" }}>
             {deal.store.name}
           </span>
