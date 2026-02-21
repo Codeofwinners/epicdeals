@@ -133,14 +133,14 @@ function TopComment({ dealId, customBg, customBorder, textStyle }: { dealId: str
 
   return (
     <div className={`mb-3 pb-3 border-b ${customBorder || "border-[#F0F0F0]"} flex flex-col gap-2 w-full`}>
-      <div className="flex items-center gap-2 w-full">
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", width: "100%" }}>
         <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex-shrink-0 flex items-center justify-center text-white text-[8px] font-bold shadow-sm">
           {comment.user.username[0].toUpperCase()}
         </div>
-        <p className={`text-[10px] uppercase tracking-wider font-extrabold truncate ${textStyle || "text-[#1A1A1A]"}`}>{comment.user.username}</p>
+        <span style={{ fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: textStyle ? "#fff" : "#1A1A1A", whiteSpace: "nowrap" }}>{comment.user.username}</span>
       </div>
-      <div className="flex-1 w-full">
-        <p className={`text-[13px] leading-snug line-clamp-3 font-medium ${textStyle ? "text-white/90" : "text-[#555555]"}`}>"{comment.content}"</p>
+      <div style={{ width: "100%" }}>
+        <p style={{ fontSize: "13px", lineHeight: 1.45, fontWeight: 500, color: textStyle ? "rgba(255,255,255,0.9)" : "#555555" }}>"{comment.content}"</p>
       </div>
     </div>
   );
@@ -152,17 +152,15 @@ function DarkComment({ dealId }: { dealId: string }) {
 
   return (
     <div className="mb-3 pb-3 border-b border-white/20 flex flex-col gap-2 w-full text-white">
-      <div className="flex items-center gap-2 w-full">
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", width: "100%" }}>
         <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 flex items-center justify-center text-white text-[8px] font-black shadow-sm">
           {comment.user.username[0].toUpperCase()}
         </div>
-        <p className="text-[10px] font-black text-white tracking-wider uppercase flex items-center gap-1.5 overflow-hidden">
-          {comment.user.username}
-          <span className="w-1 h-1 rounded-full bg-white/30"></span>
-          <span className="text-[9px] text-white/70 normal-case font-medium">Insight</span>
-        </p>
+        <span style={{ fontSize: "10px", fontWeight: 900, color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{comment.user.username}</span>
+        <span style={{ width: "3px", height: "3px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.3)", flexShrink: 0 }} />
+        <span style={{ fontSize: "9px", fontWeight: 500, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap" }}>Insight</span>
       </div>
-      <p className="text-[13px] text-white/90 leading-snug line-clamp-3 italic font-medium">"{comment.content}"</p>
+      <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", lineHeight: 1.45, fontStyle: "italic", fontWeight: 500 }}>"{comment.content}"</p>
     </div>
   );
 }
@@ -203,9 +201,9 @@ function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: b
 function VerifiedBadge({ dark = false }: { dark?: boolean }) {
   const border = dark ? "rgba(132,204,22,0.2)" : "rgba(22,163,74,0.2)";
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "4px", paddingTop: "8px", marginTop: "2px", borderTop: `1px solid ${border}` }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "11px", fontVariationSettings: "'FILL' 1", lineHeight: 1, ...gradientText }}>verified</span>
-      <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", lineHeight: 1, ...gradientText }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "5px", paddingTop: "10px", marginTop: "4px", borderTop: `1px solid ${border}`, overflow: "visible" }}>
+      <span className="material-symbols-outlined" style={{ fontSize: "13px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, ...gradientText }}>verified</span>
+      <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", lineHeight: 1, whiteSpace: "nowrap", ...gradientText }}>
         Verified by Legit.discount
       </span>
     </div>
@@ -329,8 +327,8 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
               <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>on sale styles</div>
             </div>
           )}
-          <h3 style={{ fontSize: "12px", fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: "4px" }} className="line-clamp-1">{deal.title}</h3>
-          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
+          <h3 style={{ fontSize: "12px", fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: "4px" }}>{deal.title}</h3>
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
         </>}
       />
     );
@@ -343,8 +341,8 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         storeColor="rgba(255,255,255,0.6)"
         glow={<div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />}
         hero={<>
-          <div style={{ fontSize: "clamp(16px, 5.5vw, 24px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-0.03em", color: "#fff", marginBottom: "6px" }} className="line-clamp-2">{deal.title}</div>
-          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
+          <div style={{ fontSize: "clamp(16px, 5.5vw, 24px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-0.03em", color: "#fff", marginBottom: "6px" }}>{deal.title}</div>
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
         </>}
       />
     );
@@ -359,7 +357,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         hero={<>
           <div style={{ fontSize: "clamp(28px, 11vw, 44px)", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff", marginBottom: "4px" }}>{uberAmount || deal.savingsAmount}</div>
           <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "6px" }}>off first order</div>
-          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
+          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
         </>}
       />
     );
@@ -430,8 +428,8 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
           <ExpiryBadge expiresAt={deal.expiresAt} />
         </div>
 
-        <h3 style={{ fontWeight: 800, fontSize: "13px", lineHeight: 1.3, color: "#0A0A0A", marginBottom: "5px" }} className="line-clamp-2">{deal.title}</h3>
-        <p style={{ fontSize: "11px", color: "#888888", lineHeight: 1.4, marginBottom: "10px" }} className="line-clamp-2">{deal.description}</p>
+        <h3 style={{ fontWeight: 800, fontSize: "13px", lineHeight: 1.3, color: "#0A0A0A", marginBottom: "5px" }}>{deal.title}</h3>
+        <p style={{ fontSize: "11px", color: "#888888", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
 
         <DealCTA code={deal.code} dealUrl={deal.dealUrl} />
 
