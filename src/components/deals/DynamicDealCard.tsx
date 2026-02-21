@@ -202,31 +202,35 @@ export function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; d
 
 // ─── Verified ─────────────────────────────────────────────────────────────────
 
-export function VerifiedShield({ size = 14, color }: { size?: number; color?: string }) {
-  const useGradient = !color;
-  const fillId = "vShieldGrad";
+export function VerifiedShield({ size = 14 }: { size?: number; color?: string }) {
+  const uid = `vs_${size}`;
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, display: "inline-block", verticalAlign: "middle" }}>
-      {useGradient && (
-        <defs>
-          <linearGradient id={fillId} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#006039" />
-            <stop offset="50%" stopColor="#16a34a" />
-            <stop offset="100%" stopColor="#84cc16" />
-          </linearGradient>
-        </defs>
-      )}
-      <path d="M12 2L3 6.5V11.5C3 16.74 6.84 21.64 12 23C17.16 21.64 21 16.74 21 11.5V6.5L12 2Z" fill={color || `url(#${fillId})`} />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, display: "inline-block", verticalAlign: "middle", filter: "drop-shadow(0 1px 3px rgba(14,165,233,0.35))" }}>
+      <defs>
+        <linearGradient id={`${uid}_bg`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#0EA5E9" />
+          <stop offset="50%" stopColor="#06B6D4" />
+          <stop offset="100%" stopColor="#22D3EE" />
+        </linearGradient>
+        <linearGradient id={`${uid}_shine`} x1="0%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
+          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+        </linearGradient>
+      </defs>
+      {/* Shield body */}
+      <path d="M12 2L3 6.5V11.5C3 16.74 6.84 21.64 12 23C17.16 21.64 21 16.74 21 11.5V6.5L12 2Z" fill={`url(#${uid}_bg)`} />
+      {/* Highlight / shine layer */}
+      <path d="M12 2L3 6.5V11.5C3 16.74 6.84 21.64 12 23C17.16 21.64 21 16.74 21 11.5V6.5L12 2Z" fill={`url(#${uid}_shine)`} />
+      {/* Checkmark */}
       <path d="M10 15.5L6.5 12L7.91 10.59L10 12.67L16.09 6.59L17.5 8L10 15.5Z" fill="#fff" />
     </svg>
   );
 }
 
 export function VerifiedBadge({ theme }: { theme: CardUITheme }) {
-  const shieldColor = theme.verifiedIcon.color as string | undefined;
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", paddingTop: "12px", paddingBottom: "4px", marginTop: "6px", borderTop: `1px solid ${theme.divider}` }}>
-      <VerifiedShield size={15} color={shieldColor} />
+      <VerifiedShield size={16} />
       <span style={theme.verifiedText}>
         Verified by Legit.discount
       </span>
