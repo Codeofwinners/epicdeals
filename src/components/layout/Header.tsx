@@ -27,6 +27,61 @@ function ShieldLogo({ size = 22 }: { size?: number }) {
   );
 }
 
+function AddDealButton() {
+  return (
+    <Link
+      href="/submit"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "6px",
+        padding: "8px 16px",
+        background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)",
+        borderRadius: "10px",
+        color: "#fff",
+        fontSize: "13px",
+        fontWeight: 700,
+        letterSpacing: "-0.01em",
+        textDecoration: "none",
+        whiteSpace: "nowrap",
+        border: "1px solid rgba(255,255,255,0.15)",
+        boxShadow: "0 0 20px rgba(14,165,233,0.3), inset 0 1px 0 rgba(255,255,255,0.2)",
+        transition: "all 0.2s ease",
+      }}
+      className="hover:brightness-110 hover:shadow-[0_0_28px_rgba(14,165,233,0.5)] active:scale-[0.97]"
+    >
+      <span style={{ fontSize: "16px", fontWeight: 800, lineHeight: 1 }}>+</span>
+      Add Deal
+    </Link>
+  );
+}
+
+function AddDealButtonMobile() {
+  return (
+    <Link
+      href="/submit"
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "4px",
+        padding: "6px 12px",
+        background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)",
+        borderRadius: "8px",
+        color: "#fff",
+        fontSize: "12px",
+        fontWeight: 700,
+        textDecoration: "none",
+        whiteSpace: "nowrap",
+        border: "1px solid rgba(255,255,255,0.15)",
+        boxShadow: "0 0 16px rgba(14,165,233,0.25)",
+      }}
+    >
+      <span style={{ fontSize: "14px", fontWeight: 800, lineHeight: 1 }}>+</span>
+      Add
+    </Link>
+  );
+}
+
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -44,7 +99,7 @@ export function Header() {
               </div>
             </Link>
 
-            <div className="flex items-center gap-3 flex-1 max-w-md">
+            <div className="flex items-center gap-3 flex-1 max-w-lg">
               <div className="relative flex-1">
                 <input
                   type="text"
@@ -64,6 +119,7 @@ export function Header() {
                 />
                 <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize: "16px", color: "rgba(255,255,255,0.3)" }}>search</span>
               </div>
+              <AddDealButton />
               <AuthButton />
             </div>
           </div>
@@ -73,7 +129,7 @@ export function Header() {
       {/* MOBILE HEADER */}
       <header className="md:hidden sticky top-0 z-50" style={HEADER_STYLE}>
         <div className="px-4 py-3">
-          <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center justify-between gap-2 mb-3">
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
               <ShieldLogo size={20} />
               <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.03em", fontSize: "20px", lineHeight: 1 }}>
@@ -81,7 +137,10 @@ export function Header() {
                 <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>discount</span>
               </div>
             </Link>
-            <AuthButton />
+            <div className="flex items-center gap-2">
+              <AddDealButtonMobile />
+              <AuthButton />
+            </div>
           </div>
 
           <div className="relative">

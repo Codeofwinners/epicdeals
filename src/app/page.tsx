@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { upvoteDeal, downvoteDeal, getVoteStatus, getFilteredDeals, getCommentCount, type TimeRange, type SortCategory } from "@/lib/firestore";
@@ -11,6 +12,7 @@ import { Footer } from "@/components/layout/Footer";
 import { useBestComment } from "@/hooks/useFirestore";
 import { FilterBar } from "@/components/deals/FilterBar";
 import type { Deal } from "@/types/deals";
+import { getStoreBrandTheme, getCardUITheme, THEME_DEFAULT, type CardUITheme } from "@/lib/brandThemes";
 
 function fmtCount(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
@@ -19,53 +21,6 @@ function fmtCount(n: number): string {
 
 const ACTIVE_GRADIENT = "linear-gradient(135deg, #006039 0%, #16a34a 50%, #84cc16 100%)";
 const gradientText = { background: ACTIVE_GRADIENT, WebkitBackgroundClip: "text" as const, WebkitTextFillColor: "transparent" as const };
-
-// ─── Card UI Theme ────────────────────────────────────────────────────────────
-// Each brand card defines a theme so icons, badges, and text pop against its bg.
-// AI-generated cards will produce these values based on the dominant card color.
-type CardUITheme = {
-  divider: string;       // border between sections
-  icon: string;          // comment, bookmark icons
-  countText: string;     // vote/comment counts (inactive)
-  upvoteInactive: string;// upvote arrow when not voted
-  upvoteActive: React.CSSProperties;  // upvote arrow + count when voted
-  learnMore: string;     // "Learn more" link color
-  verifiedIcon: React.CSSProperties;  // verified checkmark style
-  verifiedText: React.CSSProperties;  // verified label style
-  ringColor: string;     // upvote ring animation color
-  floatStyle: React.CSSProperties;    // +1 float text style
-};
-
-const THEME_DEFAULT: CardUITheme = {
-  divider: "#EFEFEF", icon: "#C0C0C0", countText: "#888", upvoteInactive: "#CCCCCC",
-  upvoteActive: gradientText,
-  learnMore: "#AAAAAA",
-  verifiedIcon: { ...gradientText, fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
-  verifiedText: { ...gradientText, fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
-  ringColor: "#16a34a",
-  floatStyle: gradientText,
-};
-
-const THEME_DARK: CardUITheme = {
-  divider: "rgba(255,255,255,0.08)", icon: "rgba(255,255,255,0.3)", countText: "rgba(255,255,255,0.4)", upvoteInactive: "rgba(255,255,255,0.35)",
-  upvoteActive: gradientText,
-  learnMore: "rgba(255,255,255,0.4)",
-  verifiedIcon: { ...gradientText, fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
-  verifiedText: { ...gradientText, fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
-  ringColor: "#16a34a",
-  floatStyle: gradientText,
-};
-
-// Spotify / bright colored backgrounds — white UI so everything pops
-const THEME_SPOTIFY: CardUITheme = {
-  divider: "rgba(255,255,255,0.2)", icon: "rgba(255,255,255,0.85)", countText: "rgba(255,255,255,0.7)", upvoteInactive: "rgba(255,255,255,0.7)",
-  upvoteActive: { color: "#fff" },
-  learnMore: "rgba(255,255,255,0.8)",
-  verifiedIcon: { color: "#fff", fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
-  verifiedText: { color: "#fff", fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
-  ringColor: "#fff",
-  floatStyle: { color: "#fff" },
-};
 
 function VoteButtons({ dealId, upvotes, downvotes, commentCount, theme, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; commentCount?: number; theme: CardUITheme; onCommentClick?: () => void }) {
   const { user } = useAuth();
@@ -367,7 +322,6 @@ function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCountChan
 
 function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen: boolean, toggleComments: () => void }) {
   const [liveCommentCount, setLiveCommentCount] = useState(deal.commentCount || 0);
-  const isNike = deal.store?.id === "nike";
 
   // Fetch accurate count on mount in case Firestore field is stale
   useEffect(() => {
@@ -375,67 +329,72 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
       setLiveCommentCount(count);
     });
   }, [deal.id]);
-  const isSpotify = deal.store?.id === "spotify";
-  const isUber = deal.store?.id === "uber-eats";
 
   const shared = { deal, isOpen, toggleComments, liveCommentCount, onCountChange: setLiveCommentCount };
 
-  if (isNike) {
+  const hasValidImage = (url: string | undefined | null) => {
+    if (!url) return false;
+    const t = url.trim();
+    if (t === "" || t === "null" || t === "undefined" || t.length < 5) return false;
+    return true;
+  };
+
+  const dealHasImage = hasValidImage(deal.imageUrl);
+
+  // ── Branded color card (no image) ──
+  if (!dealHasImage) {
+    const brandTheme = getStoreBrandTheme(deal.store?.id || "", deal.store?.name || "");
+    const theme = getCardUITheme(brandTheme.themeType);
     const raw = (deal.discount || deal.savingsAmount || "").replace(/\s*off\s*/gi, "").trim();
+    const isBright = brandTheme.themeType === "bright";
+
     return (
       <ColorCard {...shared}
-        bg="#111111" border="1px solid rgba(255,255,255,0.05)" isDark
-        theme={THEME_DARK}
-        storeColor="rgba(255,255,255,0.4)"
-        glow={<div className="absolute top-0 right-0 w-28 h-28 bg-purple-600 rounded-full blur-[50px] opacity-30 pointer-events-none" />}
+        bg={brandTheme.bgGradient}
+        border={`1px solid ${brandTheme.isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.08)"}`}
+        isDark={brandTheme.isDark}
+        useTopComment={isBright}
+        theme={theme}
+        storeColor={brandTheme.storeColor}
+        glow={brandTheme.glowColor
+          ? <div className="absolute top-0 right-0 w-28 h-28 rounded-full blur-[50px] pointer-events-none" style={{ backgroundColor: brandTheme.glowColor }} />
+          : (isBright
+            ? <div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />
+            : undefined)}
         hero={<>
           {raw && (
             <div style={{ marginBottom: "8px", overflow: "visible" }}>
               <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginBottom: "4px", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "clamp(20px, 7vw, 44px)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", color: "#fff" }}>{raw}</span>
-                <span style={{ fontSize: "clamp(14px, 5vw, 32px)", fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em", background: "linear-gradient(135deg,#c084fc,#f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>OFF</span>
+                <span style={{
+                  fontSize: "clamp(20px, 7vw, 44px)", fontWeight: 900, lineHeight: 0.95,
+                  letterSpacing: "-0.03em", color: brandTheme.textColor,
+                }}>{raw}</span>
+                <span style={{
+                  fontSize: "clamp(14px, 5vw, 32px)", fontWeight: 900, lineHeight: 0.95,
+                  letterSpacing: "-0.03em",
+                  color: brandTheme.isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.35)",
+                }}>OFF</span>
               </div>
-              <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>on sale styles</div>
             </div>
           )}
-          <h3 style={{ fontSize: "12px", fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: "4px" }}>{deal.title}</h3>
-          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
+          <h3 style={{
+            fontSize: raw ? "12px" : "clamp(16px, 5.5vw, 24px)",
+            fontWeight: raw ? 700 : 900,
+            color: brandTheme.textColor,
+            lineHeight: 1.3, marginBottom: "4px",
+            ...(raw ? {} : { letterSpacing: "-0.03em" }),
+          }}>{deal.title}</h3>
+          <p style={{
+            fontSize: "11px",
+            color: brandTheme.isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)",
+            lineHeight: 1.4, marginBottom: "10px",
+          }}>{deal.description}</p>
         </>}
       />
     );
   }
 
-  if (isSpotify) {
-    return (
-      <ColorCard {...shared}
-        bg="#1DB954" border="1px solid rgba(255,255,255,0.1)" isDark useTopComment
-        theme={THEME_SPOTIFY}
-        storeColor="rgba(255,255,255,0.85)"
-        glow={<div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />}
-        hero={<>
-          <div style={{ fontSize: "clamp(16px, 5.5vw, 24px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-0.03em", color: "#fff", marginBottom: "6px" }}>{deal.title}</div>
-          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.75)", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
-        </>}
-      />
-    );
-  }
-
-  if (isUber) {
-    const uberAmount = (deal.savingsAmount || "").replace(/\s*off\s*/gi, "").trim();
-    return (
-      <ColorCard {...shared}
-        bg="#0A0A0A" border="1px solid rgba(255,255,255,0.05)" isDark
-        theme={THEME_DARK}
-        storeColor="rgba(255,255,255,0.4)"
-        hero={<>
-          <div style={{ fontSize: "clamp(28px, 11vw, 44px)", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff", marginBottom: "4px" }}>{uberAmount || deal.savingsAmount}</div>
-          <div style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)", marginBottom: "6px" }}>off first order</div>
-          <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
-        </>}
-      />
-    );
-  }
-
+  // ── Standard image card (has image) ──
   const getFallbackImage = (deal: Deal) => {
     if (deal.category?.slug === 'electronics' || deal.title.toLowerCase().includes('headphone')) {
       return "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=800&auto=format&fit=crop";
@@ -454,15 +413,6 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
     return fallbacks[deal.title.length % fallbacks.length];
   };
 
-  const hasValidImage = (url: string | undefined | null) => {
-    if (!url) return false;
-    const t = url.trim();
-    if (t === "" || t === "null" || t === "undefined" || t.length < 5) return false;
-    return true;
-  };
-
-  const displayImage = hasValidImage(deal.imageUrl) ? deal.imageUrl : getFallbackImage(deal);
-
   return (
     <div className="deal-card relative group rounded-2xl overflow-hidden bg-white border border-[#E4E4E4] text-black flex flex-col h-full">
       {/* Image */}
@@ -470,7 +420,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
         <img
           alt={deal.title}
           className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 duration-700"
-          src={displayImage}
+          src={deal.imageUrl!}
           onError={(e) => {
             const fallback = getFallbackImage(deal);
             if (e.currentTarget.src !== fallback) e.currentTarget.src = fallback;
@@ -648,6 +598,27 @@ export default function Home() {
 
       </div>
       <Footer />
+
+      {/* Floating "Add Deal" FAB — mobile-only, always visible */}
+      <Link
+        href="/submit"
+        className="md:hidden fixed bottom-6 right-4 z-50 flex items-center gap-2 no-underline active:scale-95 transition-transform"
+        style={{
+          padding: "12px 20px",
+          background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)",
+          borderRadius: "50px",
+          color: "#fff",
+          fontSize: "14px",
+          fontWeight: 800,
+          letterSpacing: "-0.01em",
+          textDecoration: "none",
+          boxShadow: "0 4px 24px rgba(14,165,233,0.4), 0 2px 8px rgba(0,0,0,0.15)",
+          border: "1px solid rgba(255,255,255,0.2)",
+        }}
+      >
+        <span style={{ fontSize: "18px", fontWeight: 900, lineHeight: 1 }}>+</span>
+        Add Deal
+      </Link>
     </>
   );
 }
