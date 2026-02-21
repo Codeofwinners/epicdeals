@@ -272,9 +272,8 @@ function DealCTA({ code, dealUrl, dark = false, theme }: { code?: string; dealUr
   const btnText  = dark ? "#0A0A0A" : "#FFFFFF";
   const learnColor = theme?.learnMore || (dark ? "rgba(255,255,255,0.4)" : "#AAAAAA");
 
-  // Code on its own full-width row so it never truncates; "Learn more" sits below
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "10px" }}>
+    <div style={{ marginBottom: "10px" }}>
       {code ? (
         <button onClick={copyCode} style={{
           width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
@@ -297,10 +296,6 @@ function DealCTA({ code, dealUrl, dark = false, theme }: { code?: string; dealUr
           <span className="material-symbols-outlined" style={{ fontSize: "12px", color: btnText, lineHeight: 1 }}>arrow_forward</span>
         </a>
       )}
-      <a href={dealUrl || "#"} target="_blank" rel="noopener noreferrer"
-        style={{ display: "block", textAlign: "center", fontSize: "10px", fontWeight: 600, color: learnColor, textDecoration: "none", letterSpacing: "0.02em" }}>
-        Learn more
-      </a>
     </div>
   );
 }
@@ -319,10 +314,16 @@ function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCountChan
     <div className="deal-card rounded-2xl overflow-hidden flex flex-col relative" style={{ background: bg, border }}>
       {glow}
       <div style={{ padding: "16px 16px 20px", position: "relative", zIndex: 10, display: "flex", flexDirection: "column", height: "100%" }}>
-        {/* Store + expiry */}
+        {/* Store + Learn more */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
           <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: storeColor }}>{deal.store.name}</span>
-          <ExpiryBadge expiresAt={deal.expiresAt} dark />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <ExpiryBadge expiresAt={deal.expiresAt} dark />
+            <a href={deal.dealUrl || "#"} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: "10px", fontWeight: 600, color: theme.learnMore, textDecoration: "none", letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
+              Learn more
+            </a>
+          </div>
         </div>
 
         {hero}
@@ -473,9 +474,15 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
 
       {/* Body */}
       <div style={{ padding: "12px 16px 20px", display: "flex", flexDirection: "column", flexGrow: 1 }}>
-        <div className="flex items-center justify-between gap-1 mb-1.5">
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "4px", marginBottom: "6px" }}>
           <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
-          <ExpiryBadge expiresAt={deal.expiresAt} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <ExpiryBadge expiresAt={deal.expiresAt} />
+            <a href={deal.dealUrl || "#"} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: "10px", fontWeight: 600, color: "#AAAAAA", textDecoration: "none", letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
+              Learn more
+            </a>
+          </div>
         </div>
 
         <h3 style={{ fontWeight: 800, fontSize: "13px", lineHeight: 1.3, color: "#0A0A0A", marginBottom: "5px" }}>{deal.title}</h3>
