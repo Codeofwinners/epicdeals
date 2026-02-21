@@ -45,6 +45,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  const storeCouponsPages: MetadataRoute.Sitemap = stores.map((store) => ({
+    url: `${BASE_URL}/stores/${store.slug}/coupons`,
+    lastModified: new Date(),
+    changeFrequency: "daily" as const,
+    priority: 0.7,
+  }));
+
+  const storeDealsPages: MetadataRoute.Sitemap = stores.map((store) => ({
+    url: `${BASE_URL}/stores/${store.slug}/deals`,
+    lastModified: new Date(),
+    changeFrequency: "daily" as const,
+    priority: 0.7,
+  }));
+
   const categoryPages: MetadataRoute.Sitemap = categories.map((cat) => ({
     url: `${BASE_URL}/categories/${cat.slug}`,
     lastModified: new Date(),
@@ -52,5 +66,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticPages, ...dealPages, ...storePages, ...categoryPages];
+  return [...staticPages, ...dealPages, ...storePages, ...storeCouponsPages, ...storeDealsPages, ...categoryPages];
 }

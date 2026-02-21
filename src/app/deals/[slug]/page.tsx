@@ -72,6 +72,12 @@ export default async function DealPage({
     notFound();
   }
 
+  // Compute aggregate rating from community votes (map to 1-5 star scale)
+  const totalVotes = (deal.workedYes ?? 0) + (deal.workedNo ?? 0);
+  const ratingValue = totalVotes > 0
+    ? Math.round((((deal.workedYes ?? 0) / totalVotes) * 4 + 1) * 10) / 10 // maps 0-100% → 1-5 stars
+    : null;
+
   // JSON-LD structured data
   const jsonLd = {
     "@context": "https://schema.org",
@@ -84,9 +90,21 @@ export default async function DealPage({
       url: `https://${deal.store.domain}`,
     },
     url: `${BASE_URL}/deals/${slug}`,
+    priceCurrency: "USD",
+    datePublished: deal.createdAt,
+    dateModified: deal.lastVerifiedAt,
     ...(deal.code && { disambiguatingDescription: `Use code: ${deal.code}` }),
     ...(deal.expiresAt && { validThrough: deal.expiresAt }),
     availability: "https://schema.org/InStock",
+    ...(ratingValue && totalVotes >= 3 && {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: ratingValue,
+        bestRating: 5,
+        worstRating: 1,
+        ratingCount: totalVotes,
+      },
+    }),
   };
 
   const breadcrumbLd = {

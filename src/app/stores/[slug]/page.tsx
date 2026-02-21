@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getStoreBySlug, getAllStores } from "@/lib/firestore";
+import { getStoreBySlug, getAllStores, getStoreDeals } from "@/lib/firestore";
 import StorePageContent from "./StorePageContent";
 
 const BASE_URL = "https://legit.discount";
@@ -46,6 +46,25 @@ export default async function StorePage({
     notFound();
   }
 
+  // Fetch deals server-side for structured data
+  let deals: any[] = [];
+  try {
+    deals = await getStoreDeals(slug);
+  } catch (e) {
+    console.warn("Failed to fetch store deals for JSON-LD:", e);
+  }
+
+  const now = new Date();
+  const monthYear = now.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const activeDealCount = deals.filter(d => d.status !== "expired").length;
+  const couponsCount = deals.filter(d => !!d.code).length;
+  const hasFreeShipping = deals.some(d =>
+    d.title?.toLowerCase().includes("free shipping") ||
+    d.tags?.includes("free-shipping") ||
+    d.savingsType === "free_shipping"
+  );
+
+  // Organization JSON-LD
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -53,6 +72,7 @@ export default async function StorePage({
     url: `https://${store.domain}`,
   };
 
+  // Breadcrumb JSON-LD
   const breadcrumbLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -60,6 +80,64 @@ export default async function StorePage({
       { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
       { "@type": "ListItem", position: 2, name: "Stores", item: `${BASE_URL}/stores` },
       { "@type": "ListItem", position: 3, name: store.name, item: `${BASE_URL}/stores/${slug}` },
+    ],
+  };
+
+  // AggregateOffer JSON-LD
+  const aggregateOfferLd = activeDealCount > 0 ? {
+    "@context": "https://schema.org",
+    "@type": "AggregateOffer",
+    priceCurrency: "USD",
+    offerCount: activeDealCount,
+    offers: deals.slice(0, 10).map(d => ({
+      "@type": "Offer",
+      name: d.title,
+      description: d.description,
+      url: d.dealUrl,
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+    })),
+  } : null;
+
+  // FAQPage JSON-LD
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `How many ${store.name} coupons are available right now?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `There are currently ${activeDealCount} verified ${store.name} coupon codes and deals available for ${monthYear}${couponsCount > 0 ? `, including ${couponsCount} promo codes` : ""}.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Does ${store.name} offer free shipping?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: hasFreeShipping
+            ? `Yes! ${store.name} currently has free shipping offers available. Check our deals page for the latest free shipping codes and minimum order requirements.`
+            : `${store.name} may offer free shipping promotions from time to time. Check back regularly for the latest shipping deals and promo codes.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `How do I use a ${store.name} promo code?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `1. Browse our verified ${store.name} coupons and click to copy the code. 2. Shop at ${store.domain} and add items to your cart. 3. At checkout, paste the promo code in the coupon field and click Apply. 4. Your discount will be applied to your order total.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Are ${store.name} coupon codes verified?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `Yes, all ${store.name} coupons on Legit.discount are community-tested and AI-verified. Our users vote on deals and report whether codes work, so you can shop with confidence.`,
+        },
+      },
     ],
   };
 
@@ -72,6 +150,16 @@ export default async function StorePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
+      {aggregateOfferLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(aggregateOfferLd) }}
+        />
+      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
       />
 
       {/* Breadcrumb */}
