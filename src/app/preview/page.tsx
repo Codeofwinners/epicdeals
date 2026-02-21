@@ -1,12 +1,8 @@
 "use client";
 
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
-
 export default function PreviewPage() {
   return (
     <div className="bg-gray-50 min-h-screen">
-      <Header />
       
       {/* Content Preview */}
       <main className="px-4 md:px-8 py-16">
@@ -54,7 +50,6 @@ export default function PreviewPage() {
         </div>
       </main>
 
-      <Footer />
     </div>
   );
 }

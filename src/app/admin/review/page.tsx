@@ -72,25 +72,12 @@ export default function AdminReviewPage() {
     });
   }
 
-  const NavBar = () => (
-    <nav className="fixed top-0 w-full h-14 border-b border-gray-100 bg-white z-50">
-      <div className="max-w-7xl mx-auto h-full px-4 flex items-center">
-        <Link href="/" className="flex items-baseline leading-none">
-          <span className="font-black text-xl text-slate-900 tracking-tighter">Legit</span>
-          <span className="font-black text-xl text-emerald-500 tracking-tighter">.</span>
-          <span className="font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent tracking-tighter">Discount</span>
-        </Link>
-      </div>
-    </nav>
-  );
-
   // Auth loading
   if (authLoading || isAdmin === null) {
     if (!authLoading && !user) {
       return (
         <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-          <NavBar />
-          <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
+          <div className="flex items-center justify-center min-h-[60vh] px-4 py-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-md">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "#d1fae5" }}>
                 <LogIn className="w-8 h-8" style={{ color: "#059669" }} />
@@ -113,8 +100,7 @@ export default function AdminReviewPage() {
 
     return (
       <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-        <NavBar />
-        <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)]">
+          <div className="flex items-center justify-center min-h-[60vh] py-12">
           <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
         </div>
       </main>
@@ -125,8 +111,7 @@ export default function AdminReviewPage() {
   if (!isAdmin) {
     return (
       <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-        <NavBar />
-        <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
+          <div className="flex items-center justify-center min-h-[60vh] px-4 py-12">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-md">
             <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ backgroundColor: "#fee2e2" }}>
               <XCircle className="w-8 h-8" style={{ color: "#ef4444" }} />
@@ -148,9 +133,8 @@ export default function AdminReviewPage() {
 
   return (
     <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-      <NavBar />
 
-      <div className="pt-14">
+      <div>
         <div className="max-w-3xl mx-auto px-4 py-4">
           <nav className="flex items-center gap-1.5 text-sm text-gray-400">
             <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>

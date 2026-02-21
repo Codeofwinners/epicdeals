@@ -4,11 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AuthButton } from "@/components/auth/AuthButton";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { upvoteDeal, downvoteDeal, getVoteStatus, getFilteredDeals, getCommentCount, type TimeRange, type SortCategory } from "@/lib/firestore";
+import { upvoteDeal, downvoteDeal, getVoteStatus, getFilteredDeals, getNewDeals, getCommentCount, type TimeRange, type SortCategory } from "@/lib/firestore";
 import { db } from "@/lib/firebase";
 import { CommentsSection } from "@/components/deals/CommentsSection";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { useBestComment } from "@/hooks/useFirestore";
 import { FilterBar } from "@/components/deals/FilterBar";
 import type { Deal } from "@/types/deals";
@@ -476,6 +474,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
 export default function Home() {
   const [openComments, setOpenComments] = useState<Set<string>>(new Set());
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [justAdded, setJustAdded] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<TimeRange>("last-7d");
   const [sortBy, setSortBy] = useState<SortCategory>("most-voted");
@@ -491,6 +490,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchDeals();
+    getNewDeals(4).then(setJustAdded).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -553,8 +553,61 @@ export default function Home() {
 
       {/* DESKTOP */}
       <div className="hidden md:block bg-transparent text-black font-display min-h-screen antialiased">
-        <Header />
         <main className="px-6 py-6 max-w-7xl mx-auto">
+          {/* Just Added row */}
+          {justAdded.length > 0 && (
+            <div style={{ marginBottom: "24px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "18px", color: "#f59e0b" }}>auto_awesome</span>
+                <h2 style={{ fontSize: "15px", fontWeight: 900, color: "#1A1A1A", letterSpacing: "-0.02em" }}>Just Added</h2>
+              </div>
+              <div className="no-scrollbar" style={{ display: "flex", gap: "14px", overflowX: "auto", paddingBottom: "4px" }}>
+                {justAdded.map((deal) => (
+                  <Link
+                    key={deal.id}
+                    href={deal.dealUrl || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      minWidth: "220px",
+                      maxWidth: "260px",
+                      padding: "14px 16px",
+                      backgroundColor: "#fff",
+                      border: "1px solid #E4E4E4",
+                      borderRadius: "14px",
+                      textDecoration: "none",
+                      color: "inherit",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                      transition: "transform 0.15s",
+                    }}
+                    className="hover:scale-[1.02]"
+                  >
+                    <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
+                    <span style={{ fontSize: "13px", fontWeight: 800, color: "#0A0A0A", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{deal.title}</span>
+                    {(deal.discount || deal.savingsAmount) && (
+                      <span style={{
+                        display: "inline-flex",
+                        alignSelf: "flex-start",
+                        padding: "3px 8px",
+                        borderRadius: "6px",
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        letterSpacing: "0.02em",
+                        backgroundColor: "#ecfdf5",
+                        color: "#059669",
+                        border: "1px solid #a7f3d0",
+                      }}>
+                        {deal.discount || deal.savingsAmount}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
           {loading ? (
             <div className="flex items-center justify-center p-20">
@@ -575,8 +628,58 @@ export default function Home() {
 
       {/* MOBILE */}
       <div className="md:hidden bg-transparent text-black font-display min-h-screen antialiased">
-        <Header />
         <main className="px-3 pt-2 pb-8">
+          {/* Just Added row — mobile */}
+          {justAdded.length > 0 && (
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#f59e0b" }}>auto_awesome</span>
+                <h2 style={{ fontSize: "13px", fontWeight: 900, color: "#1A1A1A", letterSpacing: "-0.02em" }}>Just Added</h2>
+              </div>
+              <div className="no-scrollbar" style={{ display: "flex", gap: "10px", overflowX: "auto", paddingBottom: "4px" }}>
+                {justAdded.map((deal) => (
+                  <Link
+                    key={deal.id}
+                    href={deal.dealUrl || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      minWidth: "180px",
+                      maxWidth: "220px",
+                      padding: "12px 14px",
+                      backgroundColor: "#fff",
+                      border: "1px solid #E4E4E4",
+                      borderRadius: "12px",
+                      textDecoration: "none",
+                      color: "inherit",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "5px",
+                    }}
+                  >
+                    <span style={{ fontSize: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
+                    <span style={{ fontSize: "12px", fontWeight: 800, color: "#0A0A0A", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{deal.title}</span>
+                    {(deal.discount || deal.savingsAmount) && (
+                      <span style={{
+                        display: "inline-flex",
+                        alignSelf: "flex-start",
+                        padding: "2px 6px",
+                        borderRadius: "5px",
+                        fontSize: "9px",
+                        fontWeight: 800,
+                        backgroundColor: "#ecfdf5",
+                        color: "#059669",
+                        border: "1px solid #a7f3d0",
+                      }}>
+                        {deal.discount || deal.savingsAmount}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
           <h2 className="text-base font-black tracking-tight mb-3 text-[#1A1A1A]">
             {timeRange === "last-24h" ? "Daily Hits" : timeRange === "last-7d" ? "Weekly Legends" : timeRange === "last-30d" ? "Monthly Best" : "All-Time Best"}
@@ -597,8 +700,6 @@ export default function Home() {
         </main>
 
       </div>
-      <Footer />
-
       {/* Floating "Add Deal" FAB — mobile-only, always visible */}
       <Link
         href="/submit"

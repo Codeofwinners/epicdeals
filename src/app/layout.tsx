@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { AnalyticsInit } from "@/components/auth/AnalyticsInit";
+import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,7 +87,9 @@ export default function RootLayout({
         />
         <AuthProvider>
           <AnalyticsInit />
+          <Header />
           {children}
+          <Footer />
         </AuthProvider>
         {/* eBay Partner Network Smart Links */}
         <script

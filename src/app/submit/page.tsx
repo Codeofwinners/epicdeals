@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -19,6 +19,9 @@ import {
   ShieldCheck,
   Clock,
   XCircle,
+  Upload,
+  Camera,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { signInWithGoogle } from "@/lib/auth";
@@ -36,6 +39,7 @@ const savingsTypes: { value: DealType; label: string }[] = [
 
 type SubmitPhase = "idle" | "checking_duplicates" | "analyzing" | "creating";
 type ResultStatus = "approved" | "needs_review" | "duplicate" | null;
+type PageMode = "upload" | "manual";
 
 interface FormErrors {
   store?: string;
@@ -58,6 +62,16 @@ export default function SubmitDealPage() {
   const { user, loading: authLoading } = useAuth();
   const { data: stores } = useAllStores();
   const { data: categories } = useAllCategories();
+
+  // Page mode
+  const [mode, setMode] = useState<PageMode>("upload");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [extractedFromScreenshot, setExtractedFromScreenshot] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const [dragOver, setDragOver] = useState(false);
 
   // Form state
   const [storeId, setStoreId] = useState("");
@@ -105,8 +119,129 @@ export default function SubmitDealPage() {
     [storeId, storesList]
   );
 
+  // ── Screenshot handling ──────────────────────────────────────
+  function handleFileSelect(file: File) {
+    if (!file.type.startsWith("image/")) {
+      setExtractError("Please select an image file (PNG, JPG, or WebP).");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setExtractError("Image must be under 10MB.");
+      return;
+    }
+
+    setExtractError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      setImagePreview(base64);
+      extractDealFromImage(base64);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function extractDealFromImage(base64: string) {
+    setExtracting(true);
+    setExtractError(null);
+    try {
+      const res = await fetch("/api/extract-deal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64 }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to extract deal info.");
+      }
+
+      const ext = data.extracted;
+
+      // Auto-fill form fields
+      if (ext.title) setTitle(ext.title);
+      if (ext.description) setDescription(ext.description);
+      if (ext.savingsAmount) setSavingsAmount(ext.savingsAmount);
+      if (ext.code) setPromoCode(ext.code.toUpperCase());
+      if (ext.dealUrl) setDealUrl(ext.dealUrl);
+      if (ext.conditions) setConditions(ext.conditions);
+
+      // Match savings type
+      if (ext.savingsType) {
+        const validTypes: DealType[] = ["percent_off", "dollar_off", "bogo", "free_shipping", "free_trial", "cashback"];
+        if (validTypes.includes(ext.savingsType)) {
+          setSavingsType(ext.savingsType);
+        }
+      }
+
+      // Match store (fuzzy lowercase match)
+      if (ext.storeName && storesList.length > 0) {
+        const storeLower = ext.storeName.toLowerCase();
+        const matched = storesList.find(
+          (s) =>
+            s.name.toLowerCase() === storeLower ||
+            s.name.toLowerCase().includes(storeLower) ||
+            storeLower.includes(s.name.toLowerCase()) ||
+            (ext.storeDomain && s.domain.toLowerCase().includes(ext.storeDomain.toLowerCase()))
+        );
+        if (matched) {
+          setStoreId(matched.id);
+          setIsNewStore(false);
+          setStoreSearch("");
+        } else {
+          setIsNewStore(true);
+          setStoreSearch(ext.storeName);
+          if (ext.storeDomain) setNewStoreDomain(ext.storeDomain);
+        }
+      }
+
+      // Match category by slug
+      if (ext.categoryGuess && categoriesList.length > 0) {
+        const catSlug = ext.categoryGuess.toLowerCase();
+        const matched = categoriesList.find(
+          (c) => c.slug.toLowerCase() === catSlug || c.slug.toLowerCase().includes(catSlug)
+        );
+        if (matched) setCategoryId(matched.id);
+      }
+
+      setExtractedFromScreenshot(true);
+      setMode("manual");
+
+      // Scroll to form after a brief delay
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : "Failed to extract deal. Please fill in manually.");
+    }
+    setExtracting(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileSelect(file);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+  }
+
+  function clearScreenshot() {
+    setImagePreview(null);
+    setExtractedFromScreenshot(false);
+    setExtractError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   // ── Real-time duplicate checking with debounce
-  const checkDuplicates = useCallback(async () => {
+  const checkDuplicatesDebounced = useCallback(async () => {
     const currentStoreId = storeId;
     if (!currentStoreId || (!title && !promoCode && !dealUrl)) {
       setLiveDuplicates([]);
@@ -138,9 +273,9 @@ export default function SubmitDealPage() {
       setLiveDuplicates([]);
       return;
     }
-    const timer = setTimeout(checkDuplicates, 800);
+    const timer = setTimeout(checkDuplicatesDebounced, 800);
     return () => clearTimeout(timer);
-  }, [storeId, title, promoCode, dealUrl, checkDuplicates]);
+  }, [storeId, title, promoCode, dealUrl, checkDuplicatesDebounced]);
 
   function validate(): boolean {
     const newErrors: FormErrors = {};
@@ -283,6 +418,11 @@ export default function SubmitDealPage() {
     setStoreCreated(false);
     setLiveDuplicates([]);
     setSubmitPhase("idle");
+    setMode("upload");
+    setImagePreview(null);
+    setExtractedFromScreenshot(false);
+    setExtractError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   // Confetti particles for success animation
@@ -290,24 +430,12 @@ export default function SubmitDealPage() {
     "#10B981", "#3B82F6", "#F59E0B", "#EC4899", "#8B5CF6", "#EF4444", "#06B6D4", "#84CC16",
   ];
 
-  const NavBar = () => (
-    <nav className="fixed top-0 w-full h-14 border-b border-gray-100 bg-white z-50">
-      <div className="max-w-7xl mx-auto h-full px-4 flex items-center">
-        <Link href="/" className="flex items-baseline leading-none">
-          <span className="font-black text-xl text-slate-900 tracking-tighter">Legit</span>
-          <span className="font-black text-xl text-emerald-500 tracking-tighter">.</span>
-          <span className="font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent tracking-tighter">Discount</span>
-        </Link>
-      </div>
-    </nav>
-  );
-
   // ── Auth gate
   if (!authLoading && !user) {
     return (
       <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-        <NavBar />
-        <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
+
+        <div className="flex items-center justify-center min-h-[60vh] px-4 py-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -341,8 +469,8 @@ export default function SubmitDealPage() {
   if (resultStatus === "approved") {
     return (
       <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-        <NavBar />
-        <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
+
+        <div className="flex items-center justify-center min-h-[60vh] px-4 py-12">
           <div className="relative">
             {confettiColors.map((color, i) =>
               [0, 1, 2].map((j) => (
@@ -426,8 +554,8 @@ export default function SubmitDealPage() {
   if (resultStatus === "needs_review") {
     return (
       <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-        <NavBar />
-        <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
+
+        <div className="flex items-center justify-center min-h-[60vh] px-4 py-12">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -491,8 +619,8 @@ export default function SubmitDealPage() {
   if (resultStatus === "duplicate") {
     return (
       <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-        <NavBar />
-        <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
+
+        <div className="flex items-center justify-center min-h-[60vh] px-4 py-12">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -555,9 +683,7 @@ export default function SubmitDealPage() {
   // ── Main form
   return (
     <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
-      <NavBar />
-
-      <div className="pt-14">
+      <div>
         <div className="max-w-2xl mx-auto px-4 py-4">
           <nav className="flex items-center gap-1.5 text-sm text-gray-400">
             <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>
@@ -572,378 +698,580 @@ export default function SubmitDealPage() {
             <p className="text-gray-500">Found a deal we&apos;re missing? Share it with the community.</p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
-            className="mb-8 rounded-2xl p-4 flex items-start gap-3"
-            style={{ background: "linear-gradient(to right, #ecfdf5, #f0fdfa)", border: "1px solid #a7f3d0" }}
-          >
-            <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ backgroundColor: "#fff", border: "1px solid #a7f3d0" }}
+          {/* ── Screenshot Upload Zone (Mode A: Upload) ── */}
+          {mode === "upload" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.05 }}
+              className="mb-6"
             >
-              <Bot className="w-5 h-5" style={{ color: "#10b981" }} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold" style={{ color: "#065f46" }}>AI-Powered Review</p>
-              <p className="text-sm leading-relaxed" style={{ color: "rgba(5,150,105,0.8)" }}>
-                Our AI automatically checks for duplicates, evaluates deal quality, and can even create new stores. High-quality deals are published instantly.
-              </p>
-            </div>
-          </motion.div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelect(file);
+                }}
+              />
 
-          {/* Live duplicate warning */}
-          <AnimatePresence>
-            {liveDuplicates.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mb-6 overflow-hidden"
-              >
+              {/* Drop zone or extracting state */}
+              {!imagePreview && !extracting && (
                 <div
-                  className="rounded-2xl p-4"
-                  style={{ backgroundColor: "#fffbeb", border: "1px solid #fde68a" }}
+                  onClick={() => fileInputRef.current?.click()}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  className="cursor-pointer rounded-2xl p-10 flex flex-col items-center justify-center text-center transition-all"
+                  style={{
+                    border: dragOver ? "2px dashed #10b981" : "2px dashed #d1d5db",
+                    backgroundColor: dragOver ? "#ecfdf5" : "#fff",
+                    minHeight: "240px",
+                  }}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="w-4 h-4" style={{ color: "#d97706" }} />
-                    <span className="text-sm font-semibold" style={{ color: "#92400e" }}>
-                      Possible duplicates found
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {liveDuplicates.map((m) => (
-                      <div key={m.id} className="flex items-center gap-2 text-sm" style={{ color: "#a16207" }}>
-                        <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: "#d97706" }} />
-                        <span className="truncate">{m.title}</span>
-                        <span className="text-xs shrink-0" style={{ color: "#ca8a04" }}>({m.reason})</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Store */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Store <span style={{ color: "#f87171" }}>*</span></label>
-
-              {isNewStore ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="flex-1 flex items-center gap-2 rounded-xl px-4 py-3"
-                      style={{ border: "1px solid #a7f3d0", backgroundColor: "#ecfdf5" }}
-                    >
-                      <Plus className="w-4 h-4" style={{ color: "#059669" }} />
-                      <span className="text-sm font-medium" style={{ color: "#065f46" }}>
-                        New store: {storeSearch}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsNewStore(false);
-                        setNewStoreDomain("");
-                        setStoreSearch("");
-                      }}
-                      className="text-sm px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Store Domain</label>
-                    <input
-                      type="text"
-                      value={newStoreDomain}
-                      onChange={(e) => {
-                        setNewStoreDomain(e.target.value);
-                        if (errors.storeDomain) setErrors((prev) => { const next = { ...prev }; delete next.storeDomain; return next; });
-                      }}
-                      placeholder="e.g., example.com"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-                    />
-                    {errors.storeDomain && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.storeDomain}</p>}
-                  </div>
-                </div>
-              ) : (
-                <div className="relative">
                   <div
-                    className="w-full flex items-center gap-2 rounded-xl border px-4 py-3 cursor-pointer transition-all"
+                    className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5"
                     style={{
-                      borderColor: storeDropdownOpen ? "#10b981" : errors.store ? "#fca5a5" : "#e5e7eb",
-                      boxShadow: storeDropdownOpen ? "0 0 0 1px #10b981" : "none",
+                      background: "linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 100%)",
+                      border: "1px solid #a7f3d0",
                     }}
-                    onClick={() => setStoreDropdownOpen(!storeDropdownOpen)}
                   >
-                    <Search className="w-4 h-4 text-gray-400 shrink-0" />
-                    {storeDropdownOpen ? (
-                      <input
-                        type="text" value={storeSearch} onChange={(e) => setStoreSearch(e.target.value)}
-                        onClick={(e) => e.stopPropagation()} placeholder="Search stores..."
-                        className="flex-1 outline-none text-sm bg-transparent" autoFocus
-                      />
-                    ) : (
-                      <span className={`flex-1 text-sm ${selectedStore ? "text-gray-900" : "text-gray-400"}`}>
-                        {selectedStore ? selectedStore.name : "Select a store"}
-                      </span>
-                    )}
-                    <ChevronDown
-                      className="w-4 h-4 text-gray-400 shrink-0 transition-transform"
-                      style={{ transform: storeDropdownOpen ? "rotate(180deg)" : "none" }}
-                    />
+                    <Camera className="w-7 h-7" style={{ color: "#059669" }} />
                   </div>
-                  <AnimatePresence>
-                    {storeDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl z-30 max-h-52 overflow-y-auto"
-                      >
-                        {filteredStores.length > 0 ? (
-                          filteredStores.map((s) => (
-                            <button
-                              key={s.id} type="button"
-                              onClick={() => {
-                                setStoreId(s.id); setStoreSearch(""); setStoreDropdownOpen(false);
-                                if (errors.store) setErrors((prev) => { const next = { ...prev }; delete next.store; return next; });
-                              }}
-                              className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center justify-between"
-                              style={{
-                                backgroundColor: s.id === storeId ? "#ecfdf5" : undefined,
-                                color: s.id === storeId ? "#047857" : "#374151",
-                                fontWeight: s.id === storeId ? 500 : undefined,
-                              }}
-                            >
-                              <span>{s.name}</span>
-                              <span className="text-xs text-gray-400">{s.domain}</span>
-                            </button>
-                          ))
-                        ) : storeSearch.trim() ? (
-                          <div className="p-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setIsNewStore(true);
-                                setStoreDropdownOpen(false);
-                                setStoreId("");
-                                if (errors.store) setErrors((prev) => { const next = { ...prev }; delete next.store; return next; });
-                              }}
-                              className="w-full text-left px-3 py-2.5 text-sm rounded-lg flex items-center gap-2 transition-colors"
-                              style={{ backgroundColor: "#ecfdf5", color: "#059669" }}
-                            >
-                              <Plus className="w-4 h-4" />
-                              <span className="font-medium">Add &quot;{storeSearch}&quot; as a new store</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="px-4 py-3 text-sm text-gray-400">No stores found</div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <p className="text-lg font-bold text-gray-900 mb-1">
+                    Drop a screenshot of any deal
+                  </p>
+                  <p className="text-sm text-gray-400 mb-4">
+                    Our AI will extract everything automatically
+                  </p>
+                  <div
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
+                    style={{ backgroundColor: "#059669", color: "#fff" }}
+                  >
+                    <Upload className="w-4 h-4" />
+                    Browse Files
+                  </div>
+                  <p className="text-xs text-gray-300 mt-3">PNG, JPG, or WebP up to 10MB</p>
                 </div>
               )}
-              {errors.store && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.store}</p>}
-            </motion.div>
 
-            {/* Deal URL */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Deal URL <span style={{ color: "#f87171" }}>*</span></label>
-              <input
-                type="text" value={dealUrl}
-                onChange={(e) => { setDealUrl(e.target.value); if (errors.dealUrl) setErrors((prev) => { const next = { ...prev }; delete next.dealUrl; return next; }); }}
-                placeholder="https://example.com/deal"
-                className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-                style={{ borderColor: errors.dealUrl ? "#fca5a5" : "#e5e7eb" }}
-              />
-              {errors.dealUrl && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.dealUrl}</p>}
-            </motion.div>
+              {/* Extracting state with image preview */}
+              {imagePreview && extracting && (
+                <div className="rounded-2xl overflow-hidden" style={{ border: "2px solid #a7f3d0", backgroundColor: "#fff" }}>
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Screenshot preview"
+                      className="w-full max-h-64 object-contain"
+                      style={{ backgroundColor: "#f9fafb" }}
+                    />
+                    <div
+                      className="absolute inset-0 flex flex-col items-center justify-center"
+                      style={{ backgroundColor: "rgba(255,255,255,0.85)", backdropFilter: "blur(4px)" }}
+                    >
+                      <motion.div
+                        animate={{ scale: [1, 1.15, 1] }}
+                        transition={{ repeat: Infinity, duration: 1.5 }}
+                      >
+                        <Sparkles className="w-10 h-10 mb-3" style={{ color: "#059669" }} />
+                      </motion.div>
+                      <p className="text-sm font-bold" style={{ color: "#065f46" }}>AI reading your screenshot...</p>
+                      <p className="text-xs text-gray-400 mt-1">Extracting deal details</p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-            {/* Promo Code */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Promo Code <span className="text-gray-400 font-normal">(optional)</span></label>
-              <input
-                type="text" value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                placeholder="e.g., SAVE20"
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-mono tracking-wider focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-              />
-            </motion.div>
+              {/* Image preview after extraction (or error) */}
+              {imagePreview && !extracting && (
+                <div className="rounded-2xl overflow-hidden mb-4" style={{ border: "1px solid #e5e7eb", backgroundColor: "#fff" }}>
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Screenshot preview"
+                      className="w-full max-h-48 object-contain"
+                      style={{ backgroundColor: "#f9fafb" }}
+                    />
+                    <button
+                      onClick={clearScreenshot}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: "rgba(0,0,0,0.5)", color: "#fff" }}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {extractError && (
+                    <div className="p-3" style={{ backgroundColor: "#fef2f2", borderTop: "1px solid #fecaca" }}>
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "#ef4444" }} />
+                        <div>
+                          <p className="text-sm" style={{ color: "#dc2626" }}>{extractError}</p>
+                          <button
+                            onClick={() => { setMode("manual"); setExtractError(null); }}
+                            className="text-sm font-semibold mt-1 hover:underline"
+                            style={{ color: "#059669" }}
+                          >
+                            Fill in manually instead
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
-            {/* Savings Type + Amount */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.25 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Savings Type <span style={{ color: "#f87171" }}>*</span></label>
+              {/* Extract error without preview */}
+              {!imagePreview && extractError && (
+                <div className="rounded-xl p-3 mb-4" style={{ backgroundColor: "#fef2f2", border: "1px solid #fecaca" }}>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" style={{ color: "#ef4444" }} />
+                    <p className="text-sm" style={{ color: "#dc2626" }}>{extractError}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* "Or fill in manually" link */}
+              {!extracting && (
+                <div className="text-center mt-4">
+                  <button
+                    onClick={() => setMode("manual")}
+                    className="text-sm font-medium hover:underline transition-colors"
+                    style={{ color: "#6b7280" }}
+                  >
+                    Or fill in manually
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* ── Form (Mode B: Manual / post-extraction review) ── */}
+          {mode === "manual" && (
+            <div ref={formRef}>
+              {/* Extracted from screenshot badge */}
+              {extractedFromScreenshot && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-5 rounded-2xl p-4 flex items-start gap-3"
+                  style={{ background: "linear-gradient(to right, #ecfdf5, #f0fdfa)", border: "1px solid #a7f3d0" }}
+                >
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "#fff", border: "1px solid #a7f3d0" }}
+                  >
+                    <Sparkles className="w-5 h-5" style={{ color: "#10b981" }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold" style={{ color: "#065f46" }}>Extracted from screenshot</p>
+                    <p className="text-sm leading-relaxed" style={{ color: "rgba(5,150,105,0.8)" }}>
+                      Review the details below and make any corrections before submitting.
+                    </p>
+                  </div>
+                  {imagePreview && (
+                    <img
+                      src={imagePreview}
+                      alt="Source"
+                      className="w-12 h-12 rounded-lg object-cover shrink-0"
+                      style={{ border: "1px solid #a7f3d0" }}
+                    />
+                  )}
+                </motion.div>
+              )}
+
+              {/* AI-Powered Review banner (only when not extracted) */}
+              {!extractedFromScreenshot && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.05 }}
+                  className="mb-8 rounded-2xl p-4 flex items-start gap-3"
+                  style={{ background: "linear-gradient(to right, #ecfdf5, #f0fdfa)", border: "1px solid #a7f3d0" }}
+                >
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "#fff", border: "1px solid #a7f3d0" }}
+                  >
+                    <Bot className="w-5 h-5" style={{ color: "#10b981" }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "#065f46" }}>AI-Powered Review</p>
+                    <p className="text-sm leading-relaxed" style={{ color: "rgba(5,150,105,0.8)" }}>
+                      Our AI automatically checks for duplicates, evaluates deal quality, and can even create new stores. High-quality deals are published instantly.
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* "Use screenshot instead" link */}
+              {!extractedFromScreenshot && (
+                <div className="text-center mb-6">
+                  <button
+                    onClick={() => setMode("upload")}
+                    className="text-sm font-medium hover:underline transition-colors inline-flex items-center gap-1.5"
+                    style={{ color: "#059669" }}
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    Upload a screenshot instead
+                  </button>
+                </div>
+              )}
+
+              {/* Live duplicate warning */}
+              <AnimatePresence>
+                {liveDuplicates.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mb-6 overflow-hidden"
+                  >
+                    <div
+                      className="rounded-2xl p-4"
+                      style={{ backgroundColor: "#fffbeb", border: "1px solid #fde68a" }}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-4 h-4" style={{ color: "#d97706" }} />
+                        <span className="text-sm font-semibold" style={{ color: "#92400e" }}>
+                          Possible duplicates found
+                        </span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {liveDuplicates.map((m) => (
+                          <div key={m.id} className="flex items-center gap-2 text-sm" style={{ color: "#a16207" }}>
+                            <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: "#d97706" }} />
+                            <span className="truncate">{m.title}</span>
+                            <span className="text-xs shrink-0" style={{ color: "#ca8a04" }}>({m.reason})</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Store */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Store <span style={{ color: "#f87171" }}>*</span></label>
+
+                  {isNewStore ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="flex-1 flex items-center gap-2 rounded-xl px-4 py-3"
+                          style={{ border: "1px solid #a7f3d0", backgroundColor: "#ecfdf5" }}
+                        >
+                          <Plus className="w-4 h-4" style={{ color: "#059669" }} />
+                          <span className="text-sm font-medium" style={{ color: "#065f46" }}>
+                            New store: {storeSearch}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsNewStore(false);
+                            setNewStoreDomain("");
+                            setStoreSearch("");
+                          }}
+                          className="text-sm px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1.5">Store Domain</label>
+                        <input
+                          type="text"
+                          value={newStoreDomain}
+                          onChange={(e) => {
+                            setNewStoreDomain(e.target.value);
+                            if (errors.storeDomain) setErrors((prev) => { const next = { ...prev }; delete next.storeDomain; return next; });
+                          }}
+                          placeholder="e.g., example.com"
+                          className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                        />
+                        {errors.storeDomain && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.storeDomain}</p>}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <div
+                        className="w-full flex items-center gap-2 rounded-xl border px-4 py-3 cursor-pointer transition-all"
+                        style={{
+                          borderColor: storeDropdownOpen ? "#10b981" : errors.store ? "#fca5a5" : "#e5e7eb",
+                          boxShadow: storeDropdownOpen ? "0 0 0 1px #10b981" : "none",
+                        }}
+                        onClick={() => setStoreDropdownOpen(!storeDropdownOpen)}
+                      >
+                        <Search className="w-4 h-4 text-gray-400 shrink-0" />
+                        {storeDropdownOpen ? (
+                          <input
+                            type="text" value={storeSearch} onChange={(e) => setStoreSearch(e.target.value)}
+                            onClick={(e) => e.stopPropagation()} placeholder="Search stores..."
+                            className="flex-1 outline-none text-sm bg-transparent" autoFocus
+                          />
+                        ) : (
+                          <span className={`flex-1 text-sm ${selectedStore ? "text-gray-900" : "text-gray-400"}`}>
+                            {selectedStore ? selectedStore.name : "Select a store"}
+                          </span>
+                        )}
+                        <ChevronDown
+                          className="w-4 h-4 text-gray-400 shrink-0 transition-transform"
+                          style={{ transform: storeDropdownOpen ? "rotate(180deg)" : "none" }}
+                        />
+                      </div>
+                      <AnimatePresence>
+                        {storeDropdownOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl z-30 max-h-52 overflow-y-auto"
+                          >
+                            {filteredStores.length > 0 ? (
+                              filteredStores.map((s) => (
+                                <button
+                                  key={s.id} type="button"
+                                  onClick={() => {
+                                    setStoreId(s.id); setStoreSearch(""); setStoreDropdownOpen(false);
+                                    if (errors.store) setErrors((prev) => { const next = { ...prev }; delete next.store; return next; });
+                                  }}
+                                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center justify-between"
+                                  style={{
+                                    backgroundColor: s.id === storeId ? "#ecfdf5" : undefined,
+                                    color: s.id === storeId ? "#047857" : "#374151",
+                                    fontWeight: s.id === storeId ? 500 : undefined,
+                                  }}
+                                >
+                                  <span>{s.name}</span>
+                                  <span className="text-xs text-gray-400">{s.domain}</span>
+                                </button>
+                              ))
+                            ) : storeSearch.trim() ? (
+                              <div className="p-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setIsNewStore(true);
+                                    setStoreDropdownOpen(false);
+                                    setStoreId("");
+                                    if (errors.store) setErrors((prev) => { const next = { ...prev }; delete next.store; return next; });
+                                  }}
+                                  className="w-full text-left px-3 py-2.5 text-sm rounded-lg flex items-center gap-2 transition-colors"
+                                  style={{ backgroundColor: "#ecfdf5", color: "#059669" }}
+                                >
+                                  <Plus className="w-4 h-4" />
+                                  <span className="font-medium">Add &quot;{storeSearch}&quot; as a new store</span>
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="px-4 py-3 text-sm text-gray-400">No stores found</div>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                  {errors.store && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.store}</p>}
+                </motion.div>
+
+                {/* Deal URL */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Deal URL <span style={{ color: "#f87171" }}>*</span></label>
+                  <input
+                    type="text" value={dealUrl}
+                    onChange={(e) => { setDealUrl(e.target.value); if (errors.dealUrl) setErrors((prev) => { const next = { ...prev }; delete next.dealUrl; return next; }); }}
+                    placeholder="https://example.com/deal"
+                    className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                    style={{ borderColor: errors.dealUrl ? "#fca5a5" : "#e5e7eb" }}
+                  />
+                  {errors.dealUrl && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.dealUrl}</p>}
+                </motion.div>
+
+                {/* Promo Code */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Promo Code <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <input
+                    type="text" value={promoCode} onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    placeholder="e.g., SAVE20"
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm font-mono tracking-wider focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                  />
+                </motion.div>
+
+                {/* Savings Type + Amount */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.25 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Savings Type <span style={{ color: "#f87171" }}>*</span></label>
+                      <select
+                        value={savingsType}
+                        onChange={(e) => { setSavingsType(e.target.value as DealType | ""); if (errors.savingsType) setErrors((prev) => { const next = { ...prev }; delete next.savingsType; return next; }); }}
+                        className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all appearance-none bg-white"
+                        style={{
+                          borderColor: errors.savingsType ? "#fca5a5" : "#e5e7eb",
+                          color: !savingsType ? "#9ca3af" : "#111827",
+                        }}
+                      >
+                        <option value="">Select type</option>
+                        {savingsTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                      </select>
+                      {errors.savingsType && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.savingsType}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Savings Amount <span style={{ color: "#f87171" }}>*</span></label>
+                      <input
+                        type="text" value={savingsAmount}
+                        onChange={(e) => { setSavingsAmount(e.target.value); if (errors.savingsAmount) setErrors((prev) => { const next = { ...prev }; delete next.savingsAmount; return next; }); }}
+                        placeholder='e.g., "50% OFF", "$30 OFF"'
+                        className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                        style={{ borderColor: errors.savingsAmount ? "#fca5a5" : "#e5e7eb" }}
+                      />
+                      {errors.savingsAmount && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.savingsAmount}</p>}
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Title */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Deal Title <span style={{ color: "#f87171" }}>*</span></label>
+                  <input
+                    type="text" value={title}
+                    onChange={(e) => { if (e.target.value.length <= 100) setTitle(e.target.value); if (errors.title) setErrors((prev) => { const next = { ...prev }; delete next.title; return next; }); }}
+                    placeholder="e.g., 40% Off Select Electronics"
+                    className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                    style={{ borderColor: errors.title ? "#fca5a5" : "#e5e7eb" }}
+                  />
+                  <div className="flex items-center justify-between mt-1.5">
+                    {errors.title ? <p className="text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.title}</p> : <span />}
+                    <span className="text-xs" style={{ color: title.length > 90 ? "#f97316" : "#9ca3af" }}>{title.length}/100</span>
+                  </div>
+                </motion.div>
+
+                {/* Description */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.35 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description <span style={{ color: "#f87171" }}>*</span></label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => { if (e.target.value.length <= 500) setDescription(e.target.value); if (errors.description) setErrors((prev) => { const next = { ...prev }; delete next.description; return next; }); }}
+                    rows={3} placeholder="Describe the deal, what's included, any tips..."
+                    className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all resize-none"
+                    style={{ borderColor: errors.description ? "#fca5a5" : "#e5e7eb" }}
+                  />
+                  <div className="flex items-center justify-between mt-1.5">
+                    {errors.description ? <p className="text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.description}</p> : <span />}
+                    <span className="text-xs" style={{ color: description.length > 450 ? "#f97316" : "#9ca3af" }}>{description.length}/500</span>
+                  </div>
+                </motion.div>
+
+                {/* Category */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.4 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Category <span style={{ color: "#f87171" }}>*</span></label>
                   <select
-                    value={savingsType}
-                    onChange={(e) => { setSavingsType(e.target.value as DealType | ""); if (errors.savingsType) setErrors((prev) => { const next = { ...prev }; delete next.savingsType; return next; }); }}
+                    value={categoryId}
+                    onChange={(e) => { setCategoryId(e.target.value); if (errors.category) setErrors((prev) => { const next = { ...prev }; delete next.category; return next; }); }}
                     className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all appearance-none bg-white"
                     style={{
-                      borderColor: errors.savingsType ? "#fca5a5" : "#e5e7eb",
-                      color: !savingsType ? "#9ca3af" : "#111827",
+                      borderColor: errors.category ? "#fca5a5" : "#e5e7eb",
+                      color: !categoryId ? "#9ca3af" : "#111827",
                     }}
                   >
-                    <option value="">Select type</option>
-                    {savingsTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    <option value="">Select a category</option>
+                    {categoriesList.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
                   </select>
-                  {errors.savingsType && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.savingsType}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Savings Amount <span style={{ color: "#f87171" }}>*</span></label>
-                  <input
-                    type="text" value={savingsAmount}
-                    onChange={(e) => { setSavingsAmount(e.target.value); if (errors.savingsAmount) setErrors((prev) => { const next = { ...prev }; delete next.savingsAmount; return next; }); }}
-                    placeholder='e.g., "50% OFF", "$30 OFF"'
-                    className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-                    style={{ borderColor: errors.savingsAmount ? "#fca5a5" : "#e5e7eb" }}
+                  {errors.category && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.category}</p>}
+                </motion.div>
+
+                {/* Conditions */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.45 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Conditions <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <textarea
+                    value={conditions} onChange={(e) => setConditions(e.target.value)}
+                    rows={2} placeholder="e.g., New customers only. Minimum order $50."
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all resize-none"
                   />
-                  {errors.savingsAmount && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.savingsAmount}</p>}
-                </div>
-              </div>
-            </motion.div>
+                </motion.div>
 
-            {/* Title */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Deal Title <span style={{ color: "#f87171" }}>*</span></label>
-              <input
-                type="text" value={title}
-                onChange={(e) => { if (e.target.value.length <= 100) setTitle(e.target.value); if (errors.title) setErrors((prev) => { const next = { ...prev }; delete next.title; return next; }); }}
-                placeholder="e.g., 40% Off Select Electronics"
-                className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-                style={{ borderColor: errors.title ? "#fca5a5" : "#e5e7eb" }}
-              />
-              <div className="flex items-center justify-between mt-1.5">
-                {errors.title ? <p className="text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.title}</p> : <span />}
-                <span className="text-xs" style={{ color: title.length > 90 ? "#f97316" : "#9ca3af" }}>{title.length}/100</span>
-              </div>
-            </motion.div>
+                {/* Expiration Date */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.5 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Expiration Date <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <input
+                    type="date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)}
+                    min={new Date().toISOString().split("T")[0]}
+                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                  />
+                </motion.div>
 
-            {/* Description */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.35 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Description <span style={{ color: "#f87171" }}>*</span></label>
-              <textarea
-                value={description}
-                onChange={(e) => { if (e.target.value.length <= 500) setDescription(e.target.value); if (errors.description) setErrors((prev) => { const next = { ...prev }; delete next.description; return next; }); }}
-                rows={3} placeholder="Describe the deal, what's included, any tips..."
-                className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all resize-none"
-                style={{ borderColor: errors.description ? "#fca5a5" : "#e5e7eb" }}
-              />
-              <div className="flex items-center justify-between mt-1.5">
-                {errors.description ? <p className="text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.description}</p> : <span />}
-                <span className="text-xs" style={{ color: description.length > 450 ? "#f97316" : "#9ca3af" }}>{description.length}/500</span>
-              </div>
-            </motion.div>
-
-            {/* Category */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.4 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Category <span style={{ color: "#f87171" }}>*</span></label>
-              <select
-                value={categoryId}
-                onChange={(e) => { setCategoryId(e.target.value); if (errors.category) setErrors((prev) => { const next = { ...prev }; delete next.category; return next; }); }}
-                className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all appearance-none bg-white"
-                style={{
-                  borderColor: errors.category ? "#fca5a5" : "#e5e7eb",
-                  color: !categoryId ? "#9ca3af" : "#111827",
-                }}
-              >
-                <option value="">Select a category</option>
-                {categoriesList.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
-              </select>
-              {errors.category && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.category}</p>}
-            </motion.div>
-
-            {/* Conditions */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.45 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Conditions <span className="text-gray-400 font-normal">(optional)</span></label>
-              <textarea
-                value={conditions} onChange={(e) => setConditions(e.target.value)}
-                rows={2} placeholder="e.g., New customers only. Minimum order $50."
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all resize-none"
-              />
-            </motion.div>
-
-            {/* Expiration Date */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.5 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Expiration Date <span className="text-gray-400 font-normal">(optional)</span></label>
-              <input
-                type="date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)}
-                min={new Date().toISOString().split("T")[0]}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
-              />
-            </motion.div>
-
-            {/* Submit Button - Multi-phase */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.55 }}>
-              <button
-                type="submit"
-                disabled={submitPhase !== "idle"}
-                className="w-full rounded-xl py-3.5 font-semibold text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-                style={{
-                  backgroundColor: submitPhase !== "idle" ? "#6ee7b7" : "#059669",
-                  color: "#fff",
-                }}
-              >
-                <AnimatePresence mode="wait">
-                  {submitPhase === "idle" && (
-                    <motion.span
-                      key="idle"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Send className="w-5 h-5" />
-                      Submit Deal
-                    </motion.span>
-                  )}
-                  {submitPhase === "checking_duplicates" && (
-                    <motion.span
-                      key="checking"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Checking for duplicates...
-                    </motion.span>
-                  )}
-                  {submitPhase === "analyzing" && (
-                    <motion.span
-                      key="analyzing"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Sparkles className="w-5 h-5 animate-pulse" />
-                      AI analyzing...
-                    </motion.span>
-                  )}
-                  {submitPhase === "creating" && (
-                    <motion.span
-                      key="creating"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Publishing deal...
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </button>
-              <p className="text-center text-xs text-gray-400 mt-3">
-                By submitting, you agree to our community guidelines. Deals are reviewed by AI before publishing.
-              </p>
-            </motion.div>
-          </form>
+                {/* Submit Button - Multi-phase */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.55 }}>
+                  <button
+                    type="submit"
+                    disabled={submitPhase !== "idle"}
+                    className="w-full rounded-xl py-3.5 font-semibold text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                    style={{
+                      backgroundColor: submitPhase !== "idle" ? "#6ee7b7" : "#059669",
+                      color: "#fff",
+                    }}
+                  >
+                    <AnimatePresence mode="wait">
+                      {submitPhase === "idle" && (
+                        <motion.span
+                          key="idle"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Send className="w-5 h-5" />
+                          Submit Deal
+                        </motion.span>
+                      )}
+                      {submitPhase === "checking_duplicates" && (
+                        <motion.span
+                          key="checking"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Checking for duplicates...
+                        </motion.span>
+                      )}
+                      {submitPhase === "analyzing" && (
+                        <motion.span
+                          key="analyzing"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Sparkles className="w-5 h-5 animate-pulse" />
+                          AI analyzing...
+                        </motion.span>
+                      )}
+                      {submitPhase === "creating" && (
+                        <motion.span
+                          key="creating"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Publishing deal...
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                  <p className="text-center text-xs text-gray-400 mt-3">
+                    By submitting, you agree to our community guidelines. Deals are reviewed by AI before publishing.
+                  </p>
+                </motion.div>
+              </form>
+            </div>
+          )}
         </div>
       </div>
 
@@ -963,7 +1291,7 @@ export default function SubmitDealPage() {
           />
         </span>
         <span className="text-xs font-medium text-gray-500">
-          {checkingDuplicates ? "Checking..." : "AI monitoring"}
+          {extracting ? "AI extracting..." : checkingDuplicates ? "Checking..." : "AI monitoring"}
         </span>
       </div>
     </main>
