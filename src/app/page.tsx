@@ -93,6 +93,7 @@ export default function Home() {
         }
         .deal-card { transition: transform 0.2s; }
         .deal-card:hover { transform: translateY(-1px); }
+        .just-added-card:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.12) !important; }
         @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
         .verified-strip { background: linear-gradient(90deg, #059669, #10b981, #34d399, #10b981, #059669); background-size: 300% auto; animation: shimmer 4s linear infinite; }
 
@@ -123,69 +124,82 @@ export default function Home() {
         <main className="px-6 py-6 max-w-7xl mx-auto">
           {/* Just Added row */}
           {justAdded.length > 0 && (
-            <div style={{ marginBottom: "24px" }}>
+            <div style={{ marginBottom: "28px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "18px", color: "#f59e0b" }}>auto_awesome</span>
-                <h2 style={{ fontSize: "15px", fontWeight: 900, color: "#1A1A1A", letterSpacing: "-0.02em" }}>Just Added</h2>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#10B981", boxShadow: "0 0 8px #10B981" }} className="animate-live-pulse" />
+                <h2 style={{ fontSize: "12px", fontWeight: 800, color: "#64748B", letterSpacing: "0.1em", textTransform: "uppercase" }}>Just Added</h2>
               </div>
-              <div className="no-scrollbar" style={{ display: "flex", gap: "14px", overflowX: "auto", paddingBottom: "4px" }}>
+              <div className="no-scrollbar" style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px" }}>
                 {justAdded.map((deal) => (
                   <Link
                     key={deal.id}
                     href={deal.dealUrl || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="just-added-card"
                     style={{
-                      minWidth: "240px",
-                      maxWidth: "280px",
-                      padding: "16px 18px",
-                      backgroundColor: "#fff",
-                      border: "1px solid #E4E4E4",
-                      borderLeft: "3px solid #0EA5E9",
-                      borderRadius: "14px",
+                      minWidth: "250px",
+                      maxWidth: "290px",
+                      padding: "0",
+                      background: "linear-gradient(145deg, #0A0A0A 0%, #141414 100%)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      borderRadius: "16px",
                       textDecoration: "none",
                       color: "inherit",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "8px",
-                      transition: "transform 0.15s, box-shadow 0.15s",
+                      overflow: "hidden",
+                      transition: "all 0.25s cubic-bezier(0.25,0.46,0.45,0.94)",
+                      position: "relative",
                     }}
-                    className="hover:scale-[1.02] hover:shadow-md"
                   >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                        <span style={{ fontSize: "16px", lineHeight: 1 }}>{getCategoryEmoji(deal)}</span>
-                        <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#64748B" }}>{deal.store.name}</span>
-                      </div>
-                      <span style={{
-                        fontSize: "8px",
-                        fontWeight: 900,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        color: "#0EA5E9",
-                        backgroundColor: "#F0F9FF",
-                        padding: "2px 6px",
-                        borderRadius: "4px",
-                        border: "1px solid #BAE6FD",
-                      }}>NEW</span>
+                    {/* Top: Discount hero strip */}
+                    <div style={{
+                      padding: "14px 18px 12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderBottom: "1px solid rgba(255,255,255,0.05)",
+                    }}>
+                      {(deal.discount || deal.savingsAmount) ? (
+                        <span style={{
+                          fontSize: "20px",
+                          fontWeight: 900,
+                          letterSpacing: "-0.03em",
+                          background: "linear-gradient(135deg, #34D399, #10B981)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                          lineHeight: 1,
+                        }}>
+                          {deal.discount || deal.savingsAmount}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Deal</span>
+                      )}
+                      <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "rgba(255,255,255,0.15)" }}>north_east</span>
                     </div>
-                    <span style={{ fontSize: "14px", fontWeight: 800, color: "#0A0A0A", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{deal.title}</span>
-                    {(deal.discount || deal.savingsAmount) && (
+
+                    {/* Body */}
+                    <div style={{ padding: "14px 18px 16px", flex: 1, display: "flex", flexDirection: "column", gap: "10px" }}>
                       <span style={{
-                        display: "inline-flex",
-                        alignSelf: "flex-start",
-                        padding: "4px 10px",
-                        borderRadius: "6px",
-                        fontSize: "11px",
-                        fontWeight: 900,
-                        letterSpacing: "0.02em",
-                        backgroundColor: "#ecfdf5",
-                        color: "#059669",
-                        border: "1px solid #a7f3d0",
-                      }}>
-                        {deal.discount || deal.savingsAmount}
-                      </span>
-                    )}
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        color: "#FFFFFF",
+                        lineHeight: 1.35,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        letterSpacing: "-0.01em",
+                      }}>{deal.title}</span>
+
+                      {/* Store + category */}
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "auto" }}>
+                        <span style={{ fontSize: "13px", lineHeight: 1 }}>{getCategoryEmoji(deal)}</span>
+                        <span style={{ fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{deal.store.name}</span>
+                      </div>
+                    </div>
                   </Link>
                 ))}
               </div>
@@ -217,64 +231,78 @@ export default function Home() {
           {justAdded.length > 0 && (
             <div style={{ marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#f59e0b" }}>auto_awesome</span>
-                <h2 style={{ fontSize: "13px", fontWeight: 900, color: "#1A1A1A", letterSpacing: "-0.02em" }}>Just Added</h2>
+                <div style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: "#10B981", boxShadow: "0 0 6px #10B981" }} className="animate-live-pulse" />
+                <h2 style={{ fontSize: "10px", fontWeight: 800, color: "#64748B", letterSpacing: "0.1em", textTransform: "uppercase" }}>Just Added</h2>
               </div>
-              <div className="no-scrollbar" style={{ display: "flex", gap: "10px", overflowX: "auto", paddingBottom: "4px" }}>
+              <div className="no-scrollbar" style={{ display: "flex", gap: "8px", overflowX: "auto", paddingBottom: "4px" }}>
                 {justAdded.map((deal) => (
                   <Link
                     key={deal.id}
                     href={deal.dealUrl || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="just-added-card"
                     style={{
                       minWidth: "200px",
                       maxWidth: "240px",
-                      padding: "14px 14px",
-                      backgroundColor: "#fff",
-                      border: "1px solid #E4E4E4",
-                      borderLeft: "3px solid #0EA5E9",
-                      borderRadius: "12px",
+                      padding: "0",
+                      background: "linear-gradient(145deg, #0A0A0A 0%, #141414 100%)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      borderRadius: "14px",
                       textDecoration: "none",
                       color: "inherit",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "6px",
+                      overflow: "hidden",
+                      position: "relative",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                        <span style={{ fontSize: "14px", lineHeight: 1 }}>{getCategoryEmoji(deal)}</span>
-                        <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#64748B" }}>{deal.store.name}</span>
-                      </div>
-                      <span style={{
-                        fontSize: "7px",
-                        fontWeight: 900,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        color: "#0EA5E9",
-                        backgroundColor: "#F0F9FF",
-                        padding: "2px 5px",
-                        borderRadius: "3px",
-                        border: "1px solid #BAE6FD",
-                      }}>NEW</span>
+                    {/* Top: Discount hero strip */}
+                    <div style={{
+                      padding: "12px 14px 10px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      borderBottom: "1px solid rgba(255,255,255,0.05)",
+                    }}>
+                      {(deal.discount || deal.savingsAmount) ? (
+                        <span style={{
+                          fontSize: "17px",
+                          fontWeight: 900,
+                          letterSpacing: "-0.03em",
+                          background: "linear-gradient(135deg, #34D399, #10B981)",
+                          WebkitBackgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          backgroundClip: "text",
+                          lineHeight: 1,
+                        }}>
+                          {deal.discount || deal.savingsAmount}
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Deal</span>
+                      )}
+                      <span className="material-symbols-outlined" style={{ fontSize: "14px", color: "rgba(255,255,255,0.15)" }}>north_east</span>
                     </div>
-                    <span style={{ fontSize: "12px", fontWeight: 800, color: "#0A0A0A", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{deal.title}</span>
-                    {(deal.discount || deal.savingsAmount) && (
+
+                    {/* Body */}
+                    <div style={{ padding: "10px 14px 14px", flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
                       <span style={{
-                        display: "inline-flex",
-                        alignSelf: "flex-start",
-                        padding: "3px 8px",
-                        borderRadius: "5px",
-                        fontSize: "10px",
-                        fontWeight: 900,
-                        backgroundColor: "#ecfdf5",
-                        color: "#059669",
-                        border: "1px solid #a7f3d0",
-                      }}>
-                        {deal.discount || deal.savingsAmount}
-                      </span>
-                    )}
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        color: "#FFFFFF",
+                        lineHeight: 1.35,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                        letterSpacing: "-0.01em",
+                      }}>{deal.title}</span>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: "5px", marginTop: "auto" }}>
+                        <span style={{ fontSize: "12px", lineHeight: 1 }}>{getCategoryEmoji(deal)}</span>
+                        <span style={{ fontSize: "9px", fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{deal.store.name}</span>
+                      </div>
+                    </div>
                   </Link>
                 ))}
               </div>
