@@ -25,8 +25,11 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { signInWithGoogle } from "@/lib/auth";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useAllStores, useAllCategories } from "@/hooks/useFirestore";
 import type { DealType, DiscountType } from "@/types/deals";
+import Image from "next/image";
 
 const savingsTypes: { value: DealType; label: string }[] = [
   { value: "percent_off", label: "Percent Off" },
@@ -88,6 +91,12 @@ export default function SubmitDealPage() {
   const [categoryId, setCategoryId] = useState("");
   const [conditions, setConditions] = useState("");
   const [expirationDate, setExpirationDate] = useState("");
+
+  // Deal image (optional photo to attach to the deal)
+  const [dealImageFile, setDealImageFile] = useState<File | null>(null);
+  const [dealImagePreview, setDealImagePreview] = useState<string | null>(null);
+  const [dealImageUploading, setDealImageUploading] = useState(false);
+  const dealImageInputRef = useRef<HTMLInputElement>(null);
 
   // UI state
   const [errors, setErrors] = useState<FormErrors>({});
@@ -240,6 +249,25 @@ export default function SubmitDealPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
+  // ── Deal image handling ──────────────────────────────────────
+  function handleDealImageSelect(file: File) {
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, title: "Deal image must be under 5MB." }));
+      return;
+    }
+    setDealImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => setDealImagePreview(e.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  function clearDealImage() {
+    setDealImageFile(null);
+    setDealImagePreview(null);
+    if (dealImageInputRef.current) dealImageInputRef.current.value = "";
+  }
+
   // ── Real-time duplicate checking with debounce
   const checkDuplicatesDebounced = useCallback(async () => {
     const currentStoreId = storeId;
@@ -320,6 +348,24 @@ export default function SubmitDealPage() {
     setSubmitPhase("checking_duplicates");
 
     try {
+      // Upload deal image if provided
+      let uploadedImageUrl: string | undefined;
+      if (dealImageFile && user && storage) {
+        setDealImageUploading(true);
+        try {
+          const timestamp = Date.now();
+          const safeName = dealImageFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+          const storagePath = `deal-images/${user.uid}_${timestamp}_${safeName}`;
+          const storageRef = ref(storage, storagePath);
+          await uploadBytes(storageRef, dealImageFile);
+          uploadedImageUrl = await getDownloadURL(storageRef);
+        } catch (uploadErr) {
+          console.error("Image upload failed:", uploadErr);
+          // Continue without image rather than blocking submission
+        }
+        setDealImageUploading(false);
+      }
+
       // Build payload
       const discountType: DiscountType = promoCode ? "code" : "deal";
       const payload: Record<string, unknown> = {
@@ -344,6 +390,7 @@ export default function SubmitDealPage() {
             }
           : undefined,
         tags: [selectedCategory.slug],
+        imageUrl: uploadedImageUrl || undefined,
       };
 
       if (isNewStore) {
@@ -422,7 +469,11 @@ export default function SubmitDealPage() {
     setImagePreview(null);
     setExtractedFromScreenshot(false);
     setExtractError(null);
+    setDealImageFile(null);
+    setDealImagePreview(null);
+    setDealImageUploading(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    if (dealImageInputRef.current) dealImageInputRef.current.value = "";
   }
 
   // Confetti particles for success animation
@@ -1165,6 +1216,54 @@ export default function SubmitDealPage() {
                   </div>
                 </motion.div>
 
+                {/* Deal Image (optional) */}
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.38 }} className="bg-white rounded-2xl border border-gray-100 p-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Deal Image <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <p className="text-xs text-gray-400 mb-3">Attach a photo of the discount. Deals with images get more attention.</p>
+                  <input
+                    ref={dealImageInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleDealImageSelect(file);
+                    }}
+                  />
+                  {dealImagePreview ? (
+                    <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid #e5e7eb" }}>
+                      <Image
+                        src={dealImagePreview}
+                        alt="Deal image preview"
+                        width={600}
+                        height={200}
+                        className="w-full max-h-48 object-contain"
+                        style={{ backgroundColor: "#f9fafb" }}
+                        unoptimized
+                      />
+                      <button
+                        type="button"
+                        onClick={clearDealImage}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: "rgba(0,0,0,0.5)", color: "#fff" }}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => dealImageInputRef.current?.click()}
+                      className="w-full rounded-xl py-4 flex flex-col items-center justify-center gap-2 transition-all hover:border-emerald-300"
+                      style={{ border: "2px dashed #d1d5db", backgroundColor: "#fafafa" }}
+                    >
+                      <Camera className="w-5 h-5" style={{ color: "#9ca3af" }} />
+                      <span className="text-sm font-medium" style={{ color: "#6b7280" }}>Click to add a photo</span>
+                      <span className="text-xs" style={{ color: "#9ca3af" }}>PNG, JPG, WebP — max 5MB</span>
+                    </button>
+                  )}
+                </motion.div>
+
                 {/* Category */}
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.4 }} className="bg-white rounded-2xl border border-gray-100 p-5">
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Category <span style={{ color: "#f87171" }}>*</span></label>
@@ -1291,7 +1390,7 @@ export default function SubmitDealPage() {
           />
         </span>
         <span className="text-xs font-medium text-gray-500">
-          {extracting ? "AI extracting..." : checkingDuplicates ? "Checking..." : "AI monitoring"}
+          {extracting ? "AI extracting..." : dealImageUploading ? "Uploading image..." : checkingDuplicates ? "Checking..." : "AI monitoring"}
         </span>
       </div>
     </main>

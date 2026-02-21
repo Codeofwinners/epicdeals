@@ -31,6 +31,7 @@ export async function POST(request: Request) {
       conditions,
       storeName,
       storeDomain,
+      imageUrl,
     } = body;
 
     if (!dealId || !userId) {
@@ -135,6 +136,7 @@ Guidelines:
     if (dealUrl !== undefined) updateFields.dealUrl = dealUrl;
     if (savingsAmount !== undefined) updateFields.savingsAmount = savingsAmount;
     if (conditions !== undefined) updateFields.conditions = conditions || null;
+    if (imageUrl !== undefined) updateFields.imageUrl = imageUrl || null;
 
     await db.collection("deals").doc(dealId).update(updateFields);
 

@@ -74,6 +74,8 @@ export async function POST(request: Request) {
       storeDomain,
       // Category
       category,
+      // Optional image
+      imageUrl,
     } = body;
 
     // ── Validate required fields
@@ -206,7 +208,7 @@ Deal details:
 - Promo Code: ${code || "None"}
 - Savings: ${savingsAmount} (${savingsType})
 - URL: ${dealUrl}
-- Conditions: ${conditions || "None"}
+- Conditions: ${conditions || "None"}${imageUrl ? `\n- User attached a deal image: ${imageUrl}` : ""}
 
 Evaluate and return JSON:
 {
@@ -283,6 +285,7 @@ Guidelines:
       discountType: discountType || (code ? "code" : "deal"),
       conditions: conditions || null,
       dealUrl,
+      imageUrl: imageUrl || null,
       expiresAt: expiresAt ? new Date(expiresAt) : null,
       submittedBy: submittedBy || null,
       tags: tags || [],

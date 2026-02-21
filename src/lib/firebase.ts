@@ -1,6 +1,7 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getStorage } from "firebase/storage";
 import type { Analytics } from "firebase/analytics";
 
 const firebaseConfig = {
@@ -17,6 +18,7 @@ const firebaseConfig = {
 let app: any;
 let db: any;
 let auth: any;
+let storage: any;
 
 // Validate Firebase config
 const isConfigValid =
@@ -40,6 +42,7 @@ try {
     app = getApps().length ? getApp() : initializeApp(firebaseConfig);
     db = getFirestore(app);
     auth = getAuth(app);
+    storage = getStorage(app);
     console.log("✅ Firebase initialized successfully");
   } else {
     throw new Error("Firebase configuration is incomplete");
@@ -50,9 +53,10 @@ try {
   app = null;
   db = null;
   auth = null;
+  storage = null;
 }
 
-export { db, auth };
+export { db, auth, storage };
 
 let analyticsInstance: Analytics | null = null;
 
