@@ -332,8 +332,8 @@ export default function DashboardPage() {
                     <DealCard
                       key={deal.id}
                       deal={deal}
-                      actionIcon="thumb_down"
-                      actionLabel="Remove Vote"
+                      actionIcon="close"
+                      actionLabel="Remove"
                       onAction={() => handleRemoveVote(deal.id)}
                     />
                   ))}
@@ -472,8 +472,8 @@ export default function DashboardPage() {
                     <DealCard
                       key={deal.id}
                       deal={deal}
-                      actionIcon="bookmark_remove"
-                      actionLabel="Unsave"
+                      actionIcon="close"
+                      actionLabel="Remove"
                       onAction={() => handleUnsave(deal.id)}
                     />
                   ))}
@@ -544,65 +544,65 @@ function DealCard({
     <div style={{
       background: "#fff",
       borderRadius: 14,
-      padding: 12,
+      padding: "14px 16px",
       border: "1px solid #f1f5f9",
       boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
-      opacity: isExpired ? 0.65 : 1,
+      opacity: isExpired ? 0.6 : 1,
       display: "flex",
       gap: 12,
       alignItems: "center",
+      transition: "all 0.2s ease",
     }}>
       {/* Thumbnail */}
       <div style={{
-        width: 64, height: 64, flexShrink: 0,
-        borderRadius: 10, overflow: "hidden",
-        background: "#f1f5f9",
+        width: 56, height: 56, flexShrink: 0,
+        borderRadius: 12, overflow: "hidden",
+        background: "#f8fafc",
       }}>
         {deal.imageUrl ? (
           <img src={deal.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         ) : (
           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 28, color: "#cbd5e1" }}>local_offer</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 24, color: "#cbd5e1" }}>local_offer</span>
           </div>
         )}
       </div>
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-          <h3 style={{
-            fontSize: 14, fontWeight: 700, color: "#0f172a", margin: 0,
-            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-          }}>
-            {deal.title}
-          </h3>
-          <span style={{ fontSize: 14, fontWeight: 800, color: "#0891b2", flexShrink: 0 }}>
-            {deal.savingsAmount}
-          </span>
-        </div>
+        <h3 style={{
+          fontSize: 14, fontWeight: 700, color: "#0f172a", margin: 0,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          letterSpacing: "-0.01em",
+        }}>
+          {deal.title}
+        </h3>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 3,
-            fontSize: 11, fontWeight: 600,
-            color: isExpired ? "#94a3b8" : "#f59e0b",
-            background: isExpired ? "#f8fafc" : "#fffbeb",
-            padding: "2px 8px",
-            borderRadius: 6,
-          }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 13 }}>
-              {isExpired ? "timer_off" : "timer"}
-            </span>
-            {expiryLabel}
-          </span>
-          <span style={{ fontSize: 11, color: "#94a3b8" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 5 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B" }}>
             {deal.store.name}
+          </span>
+          {deal.savingsAmount && (
+            <>
+              <span style={{ fontSize: 10, color: "#CBD5E1" }}>·</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#059669", letterSpacing: "-0.01em" }}>
+                {deal.savingsAmount}
+              </span>
+            </>
+          )}
+          <span style={{ fontSize: 10, color: "#CBD5E1" }}>·</span>
+          <span style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: isExpired ? "#94a3b8" : "#f59e0b",
+          }}>
+            {expiryLabel}
           </span>
         </div>
       </div>
 
-      {/* Actions */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+      {/* Actions — clean ghost icons, no backgrounds */}
+      <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
         <button
           onClick={() => {
             const text = `Check out this deal: ${deal.title} at ${deal.store.name}`;
@@ -612,28 +612,34 @@ function DealCard({
               navigator.clipboard.writeText(
                 `${deal.title} - ${window.location.origin}/deals/${deal.slug}`
               );
-              alert("Deal link copied!");
+              alert("Link copied!");
             }
           }}
-          title="Share Deal"
+          title="Share"
           style={{
-            width: 34, height: 34, borderRadius: 8, border: "none",
-            background: "#f8fafc", color: "#94a3b8", cursor: "pointer",
+            width: 36, height: 36, borderRadius: 10, border: "none",
+            background: "transparent", color: "#94A3B8", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "color 0.15s ease",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#0f172a"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "#94A3B8"; }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>share</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>ios_share</span>
         </button>
         <button
           onClick={onAction}
           title={actionLabel}
           style={{
-            width: 34, height: 34, borderRadius: 8, border: "none",
-            background: "#fef2f2", color: "#ef4444", cursor: "pointer",
+            width: 36, height: 36, borderRadius: 10, border: "none",
+            background: "transparent", color: "#CBD5E1", cursor: "pointer",
             display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "color 0.15s ease",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#EF4444"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "#CBD5E1"; }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{actionIcon}</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{actionIcon}</span>
         </button>
       </div>
     </div>
