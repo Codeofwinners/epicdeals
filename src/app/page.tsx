@@ -20,7 +20,50 @@ function fmtCount(n: number): string {
 const ACTIVE_GRADIENT = "linear-gradient(135deg, #006039 0%, #16a34a 50%, #84cc16 100%)";
 const gradientText = { background: ACTIVE_GRADIENT, WebkitBackgroundClip: "text" as const, WebkitTextFillColor: "transparent" as const };
 
-function VoteButtons({ dealId, upvotes, downvotes, commentCount, darkBg = false, whiteText = false, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; commentCount?: number; darkBg?: boolean; whiteText?: boolean; onCommentClick?: () => void }) {
+// ─── Card UI Theme ────────────────────────────────────────────────────────────
+// Each brand card defines a theme so icons, badges, and text pop against its bg.
+// AI-generated cards will produce these values based on the dominant card color.
+type CardUITheme = {
+  divider: string;       // border between sections
+  icon: string;          // comment, bookmark icons
+  countText: string;     // vote/comment counts (inactive)
+  upvoteInactive: string;// upvote arrow when not voted
+  learnMore: string;     // "Learn more" link color
+  verifiedIcon: React.CSSProperties;  // verified checkmark style
+  verifiedText: React.CSSProperties;  // verified label style
+  ringColor: string;     // upvote ring animation color
+  floatStyle: React.CSSProperties;    // +1 float text style
+};
+
+const THEME_DEFAULT: CardUITheme = {
+  divider: "#EFEFEF", icon: "#C0C0C0", countText: "#888", upvoteInactive: "#CCCCCC",
+  learnMore: "#AAAAAA",
+  verifiedIcon: { ...gradientText, fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
+  verifiedText: { ...gradientText, fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
+  ringColor: "#16a34a",
+  floatStyle: gradientText,
+};
+
+const THEME_DARK: CardUITheme = {
+  divider: "rgba(255,255,255,0.08)", icon: "rgba(255,255,255,0.3)", countText: "rgba(255,255,255,0.4)", upvoteInactive: "rgba(255,255,255,0.35)",
+  learnMore: "rgba(255,255,255,0.4)",
+  verifiedIcon: { ...gradientText, fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
+  verifiedText: { ...gradientText, fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
+  ringColor: "#16a34a",
+  floatStyle: gradientText,
+};
+
+// Spotify / bright colored backgrounds — white UI so everything pops
+const THEME_SPOTIFY: CardUITheme = {
+  divider: "rgba(255,255,255,0.2)", icon: "rgba(255,255,255,0.85)", countText: "rgba(255,255,255,0.7)", upvoteInactive: "rgba(255,255,255,0.7)",
+  learnMore: "rgba(255,255,255,0.8)",
+  verifiedIcon: { color: "#fff", fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
+  verifiedText: { color: "#fff", fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
+  ringColor: "#fff",
+  floatStyle: { color: "#fff" },
+};
+
+function VoteButtons({ dealId, upvotes, downvotes, commentCount, theme, onCommentClick }: { dealId: string; upvotes: number; downvotes: number; commentCount?: number; theme: CardUITheme; onCommentClick?: () => void }) {
   const { user } = useAuth();
   const [voteStatus, setVoteStatus] = useState<any>(null);
   const [voting, setVoting] = useState(false);
@@ -59,11 +102,8 @@ function VoteButtons({ dealId, upvotes, downvotes, commentCount, darkBg = false,
   const netDisplay = upvotes + (voteStatus?.voteType === "upvote" ? 1 : 0) + (voteStatus?.voteType === "downvote" ? -1 : 0);
   const isUpvoted = voteStatus?.voteType === "upvote";
 
-  const dividerColor = darkBg ? "rgba(255,255,255,0.08)" : "#EFEFEF";
-  const restColor    = darkBg ? "rgba(255,255,255,0.3)" : "#C0C0C0";
-
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "10px", borderTop: `1px solid ${dividerColor}` }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "10px", borderTop: `1px solid ${theme.divider}` }}>
       <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
 
         {/* Upvote button with animations */}
@@ -72,56 +112,52 @@ function VoteButtons({ dealId, upvotes, downvotes, commentCount, darkBg = false,
           disabled={voting}
           style={{ position: "relative", display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: "4px 2px", cursor: voting ? "wait" : "pointer", outline: "none" }}
         >
-          {/* Floating +1 */}
           {justVoted && (
             <span key={`float-${animKey}`} style={{
               position: "absolute", top: "-2px", left: "50%",
               fontSize: "10px", fontWeight: 800, pointerEvents: "none",
               animation: "vote-float-up 0.65s ease-out forwards",
-              ...gradientText,
+              ...theme.floatStyle,
             }}>+1</span>
           )}
-          {/* Ring pulse */}
           {justVoted && (
             <span key={`ring-${animKey}`} style={{
               position: "absolute", top: "50%", left: "8px",
               width: "14px", height: "14px",
-              borderRadius: "50%", border: "1.5px solid #16a34a",
+              borderRadius: "50%", border: `1.5px solid ${theme.ringColor}`,
               pointerEvents: "none",
               animation: "vote-ring 0.55s ease-out forwards",
             }} />
           )}
-          {/* Arrow icon */}
           <span className="material-symbols-outlined" key={`arrow-${animKey}`} style={{
             fontSize: "12px", lineHeight: 1, fontVariationSettings: "'FILL' 1",
             display: "inline-block",
             animation: justVoted ? "vote-arrow-pop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards" : "none",
-            ...(isUpvoted ? gradientText : { color: "#CCCCCC" }),
+            ...(isUpvoted ? gradientText : { color: theme.upvoteInactive }),
           }}>arrow_upward</span>
-          {/* Count */}
           <span key={`count-${animKey}`} style={{
             fontSize: "12px", fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1,
             display: "inline-block",
             animation: justVoted ? "count-pop 0.45s ease-out forwards" : "none",
-            ...(isUpvoted ? gradientText : { color: "#888" }),
+            ...(isUpvoted ? gradientText : { color: theme.countText }),
           }}>{fmtCount(netDisplay)}</span>
         </button>
 
-        {/* Comment: bare icon + live count */}
+        {/* Comment */}
         <button
           onClick={() => onCommentClick?.()}
           style={{ display: "flex", alignItems: "center", gap: "3px", background: "none", border: "none", padding: 0, cursor: "pointer", outline: "none" }}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: "14px", color: restColor, lineHeight: 1 }}>chat_bubble</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "14px", color: theme.icon, lineHeight: 1 }}>chat_bubble</span>
           {commentCount !== undefined && commentCount > 0 && (
-            <span style={{ fontSize: "12px", fontWeight: 700, color: darkBg ? "rgba(255,255,255,0.4)" : "#888", letterSpacing: "-0.01em", lineHeight: 1 }}>{fmtCount(commentCount)}</span>
+            <span style={{ fontSize: "12px", fontWeight: 700, color: theme.countText, letterSpacing: "-0.01em", lineHeight: 1 }}>{fmtCount(commentCount)}</span>
           )}
         </button>
       </div>
 
-      {/* Save: bare icon */}
+      {/* Save */}
       <button style={{ display: "flex", alignItems: "center", background: "none", border: "none", padding: 0, cursor: "pointer", outline: "none" }}>
-        <span className="material-symbols-outlined" style={{ fontSize: "14px", color: restColor, lineHeight: 1 }}>bookmark</span>
+        <span className="material-symbols-outlined" style={{ fontSize: "14px", color: theme.icon, lineHeight: 1 }}>bookmark</span>
       </button>
     </div>
   );
@@ -209,19 +245,18 @@ function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: b
   );
 }
 
-function VerifiedBadge({ dark = false }: { dark?: boolean }) {
-  const borderClr = dark ? "rgba(132,204,22,0.2)" : "rgba(22,163,74,0.2)";
+function VerifiedBadge({ theme }: { theme: CardUITheme }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", paddingTop: "12px", paddingBottom: "4px", marginTop: "6px", borderTop: `1px solid ${borderClr}` }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block", ...gradientText }}>verified</span>
-      <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", lineHeight: 1.2, ...gradientText }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", paddingTop: "12px", paddingBottom: "4px", marginTop: "6px", borderTop: `1px solid ${theme.divider}` }}>
+      <span className="material-symbols-outlined" style={theme.verifiedIcon}>verified</span>
+      <span style={theme.verifiedText}>
         Verified by Legit.discount
       </span>
     </div>
   );
 }
 
-function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: string; dark?: boolean }) {
+function DealCTA({ code, dealUrl, dark = false, theme }: { code?: string; dealUrl: string; dark?: boolean; theme?: CardUITheme }) {
   const [copied, setCopied] = useState(false);
   const copyCode = () => {
     navigator.clipboard.writeText(code!);
@@ -231,7 +266,7 @@ function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: stri
   };
   const btnBg    = dark ? "#FFFFFF" : "#0A0A0A";
   const btnText  = dark ? "#0A0A0A" : "#FFFFFF";
-  const learnColor = dark ? "rgba(255,255,255,0.4)" : "#AAAAAA";
+  const learnColor = theme?.learnMore || (dark ? "rgba(255,255,255,0.4)" : "#AAAAAA");
 
   // Code on its own full-width row so it never truncates; "Learn more" sits below
   return (
@@ -269,36 +304,33 @@ function DealCTA({ code, dealUrl, dark = false }: { code?: string; dealUrl: stri
 // ─── Reusable color card shell ────────────────────────────────────────────────
 // All specialty cards (Nike, Spotify, Uber, future brands) use this single shell.
 // Pass theme props + a `hero` render prop for the unique top content.
-function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCountChange, bg, border, glow, storeColor, isDark, useTopComment, hero }: {
+function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCountChange, bg, border, glow, storeColor, isDark, useTopComment, hero, theme }: {
   deal: Deal; isOpen: boolean; toggleComments: () => void;
   liveCommentCount: number; onCountChange: (n: number) => void;
   bg: string; border: string; glow?: React.ReactNode;
   storeColor: string; isDark: boolean; useTopComment?: boolean;
-  hero: React.ReactNode;
+  hero: React.ReactNode; theme: CardUITheme;
 }) {
   return (
     <div className="deal-card rounded-2xl overflow-hidden flex flex-col relative" style={{ background: bg, border }}>
       {glow}
       <div style={{ padding: "16px 16px 20px", position: "relative", zIndex: 10, display: "flex", flexDirection: "column", height: "100%" }}>
-        {/* Store + expiry — always identical */}
+        {/* Store + expiry */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
           <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: storeColor }}>{deal.store.name}</span>
           <ExpiryBadge expiresAt={deal.expiresAt} dark />
         </div>
 
-        {/* Brand-specific hero content */}
         {hero}
 
-        {/* CTA — always identical */}
-        <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark={isDark} />
+        <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark={isDark} theme={theme} />
 
-        {/* Footer — always identical */}
         <div className="mt-auto">
           {useTopComment
             ? <TopComment dealId={deal.id} customBorder="border-white/20" textStyle="text-white" />
             : <DarkComment dealId={deal.id} />}
-          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} darkBg={isDark} onCommentClick={toggleComments} />
-          {deal.isVerified && <VerifiedBadge dark={isDark} />}
+          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} theme={theme} onCommentClick={toggleComments} />
+          {deal.isVerified && <VerifiedBadge theme={theme} />}
         </div>
         <CommentsSection dealId={deal.id} darkBg={isDark} isOpen={isOpen} onToggle={toggleComments} onCountChange={onCountChange} />
       </div>
@@ -326,6 +358,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
     return (
       <ColorCard {...shared}
         bg="#111111" border="1px solid rgba(255,255,255,0.05)" isDark
+        theme={THEME_DARK}
         storeColor="rgba(255,255,255,0.4)"
         glow={<div className="absolute top-0 right-0 w-28 h-28 bg-purple-600 rounded-full blur-[50px] opacity-30 pointer-events-none" />}
         hero={<>
@@ -349,7 +382,8 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
     return (
       <ColorCard {...shared}
         bg="#1DB954" border="1px solid rgba(255,255,255,0.1)" isDark useTopComment
-        storeColor="rgba(255,255,255,0.6)"
+        theme={THEME_SPOTIFY}
+        storeColor="rgba(255,255,255,0.85)"
         glow={<div className="absolute inset-0 bg-gradient-to-br from-black/20 to-transparent pointer-events-none" />}
         hero={<>
           <div style={{ fontSize: "clamp(16px, 5.5vw, 24px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-0.03em", color: "#fff", marginBottom: "6px" }}>{deal.title}</div>
@@ -364,6 +398,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
     return (
       <ColorCard {...shared}
         bg="#0A0A0A" border="1px solid rgba(255,255,255,0.05)" isDark
+        theme={THEME_DARK}
         storeColor="rgba(255,255,255,0.4)"
         hero={<>
           <div style={{ fontSize: "clamp(28px, 11vw, 44px)", fontWeight: 900, lineHeight: 0.9, letterSpacing: "-0.04em", color: "#fff", marginBottom: "4px" }}>{uberAmount || deal.savingsAmount}</div>
@@ -446,8 +481,8 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
 
         <div className="mt-auto">
           <TopComment dealId={deal.id} />
-          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} onCommentClick={toggleComments} />
-          {deal.isVerified && <VerifiedBadge />}
+          <VoteButtons dealId={deal.id} upvotes={deal.netVotes} downvotes={0} commentCount={liveCommentCount} theme={THEME_DEFAULT} onCommentClick={toggleComments} />
+          {deal.isVerified && <VerifiedBadge theme={THEME_DEFAULT} />}
           <CommentsSection dealId={deal.id} isOpen={isOpen} onToggle={toggleComments} onCountChange={setLiveCommentCount} />
         </div>
       </div>
