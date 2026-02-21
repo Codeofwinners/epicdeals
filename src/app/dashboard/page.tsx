@@ -309,10 +309,10 @@ export default function DashboardPage() {
   }
 
   const tabs: { key: Tab; label: string; icon: string; count: number }[] = [
-    { key: "upvotes", label: "Upvotes", icon: "thumb_up", count: userDeals.length },
+    { key: "upvotes", label: "Upvotes", icon: "rocket_launch", count: userDeals.length },
     { key: "comments", label: "Comments", icon: "chat_bubble", count: userComments.length },
     { key: "saved", label: "Saved", icon: "bookmark", count: savedDeals.length },
-    { key: "my-deals", label: "My Deals", icon: "storefront", count: submittedDeals.length },
+    { key: "my-deals", label: "My Deals", icon: "sell", count: submittedDeals.length },
   ];
 
   return (
@@ -453,7 +453,7 @@ export default function DashboardPage() {
           {activeTab === "upvotes" && (
             <div>
               {userDeals.length === 0 ? (
-                <EmptyState icon="thumb_up" message="No upvoted deals yet" subtext="Deals you upvote will appear here" />
+                <EmptyState icon="rocket_launch" message="No upvoted deals yet" subtext="Deals you upvote will appear here" />
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {userDeals.map((deal) => (
@@ -606,7 +606,7 @@ export default function DashboardPage() {
           {activeTab === "my-deals" && (
             <div>
               {submittedDeals.length === 0 ? (
-                <EmptyState icon="storefront" message="No submitted deals yet" subtext="Deals you submit will appear here" />
+                <EmptyState icon="sell" message="No submitted deals yet" subtext="Deals you submit will appear here" />
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {submittedDeals.map((deal) => (
