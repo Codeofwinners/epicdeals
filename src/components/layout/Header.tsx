@@ -119,6 +119,28 @@ export function Header() {
                 />
                 <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2" style={{ fontSize: "16px", color: "rgba(255,255,255,0.3)" }}>search</span>
               </div>
+              <Link
+                href="/leaderboard"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "8px 14px",
+                  borderRadius: "10px",
+                  background: "linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(239,68,68,0.12) 100%)",
+                  color: "#F59E0B",
+                  fontSize: "13px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                  border: "1px solid rgba(245,158,11,0.25)",
+                  transition: "all 0.2s ease",
+                }}
+                className="hover:brightness-125 hover:border-amber-400/40"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#F59E0B" }}>emoji_events</span>
+                Ranks
+              </Link>
               <AddDealButton />
               <AuthButton />
             </div>
@@ -138,6 +160,26 @@ export function Header() {
               </div>
             </Link>
             <div className="flex items-center gap-2">
+              <Link
+                href="/leaderboard"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  padding: "6px 10px",
+                  borderRadius: "8px",
+                  background: "linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(239,68,68,0.12) 100%)",
+                  color: "#F59E0B",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                  border: "1px solid rgba(245,158,11,0.25)",
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: "14px", color: "#F59E0B" }}>emoji_events</span>
+                Ranks
+              </Link>
               <AddDealButtonMobile />
               <AuthButton />
             </div>

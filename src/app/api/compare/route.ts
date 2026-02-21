@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { callGemini } from "@/lib/gemini";
 
 type CompareProductInput = {
   index?: number;
@@ -25,7 +26,6 @@ type ProductResult = {
 
 const MAX_ITEM_COUNT = 5;
 const BRAVE_TIMEOUT_MS = 10_000;
-const GPT_TIMEOUT_MS = 45_000;
 
 function cleanForSearch(title: string) {
   const remove = [
@@ -86,34 +86,6 @@ async function searchBrave(query: string, apiKey: string) {
   }
 }
 
-async function callOpenAI(payload: Record<string, unknown>, apiKey: string) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), GPT_TIMEOUT_MS);
-
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    if (!response.ok) {
-      return { error: `OpenAI API error: ${response.status}` };
-    }
-
-    return { data: await response.json() };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return { error: message };
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
 function parseJsonFromText(text: string) {
   let jsonText = text;
   const match = text.match(/```(?:json)?\s*([\s\S]*?)```/);
@@ -125,11 +97,11 @@ function parseJsonFromText(text: string) {
 
 export async function POST(request: Request) {
   const braveKey = process.env.BRAVE_API_KEY;
-  const openaiKey = process.env.OPENAI_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY;
 
-  if (!braveKey || !openaiKey) {
+  if (!braveKey || !geminiKey) {
     return NextResponse.json(
-      { success: false, error: "Missing BRAVE_API_KEY or OPENAI_API_KEY." },
+      { success: false, error: "Missing BRAVE_API_KEY or GEMINI_API_KEY." },
       { status: 500 },
     );
   }
@@ -245,23 +217,24 @@ VERDICT RULES:
 - Fair deal = 5-9% savings
 - Not worth it = <5% savings`;
 
-  const requestBody = {
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content:
-          "You analyze web search results to find real product prices. Extract actual prices from the search result titles and descriptions. Always provide real URLs from the search results. Respond with valid JSON only.",
-      },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.1,
-    max_tokens: 2500,
-  };
+  let gptText = "";
+  let gptError = false;
 
-  const gptResponse = await callOpenAI(requestBody, openaiKey);
+  try {
+    gptText = await callGemini({
+      system:
+        "You analyze web search results to find real product prices. Extract actual prices from the search result titles and descriptions. Always provide real URLs from the search results. Respond with valid JSON only.",
+      messages: [{ role: "user", content: prompt }],
+      json: true,
+      temperature: 0.1,
+      maxTokens: 2500,
+      timeoutMs: 45000,
+    });
+  } catch {
+    gptError = true;
+  }
 
-  if (gptResponse.error || !gptResponse.data) {
+  if (gptError || !gptText) {
     return NextResponse.json({
       success: true,
       analysis: productResults.map((product) => ({
@@ -277,11 +250,9 @@ VERDICT RULES:
     });
   }
 
-  const text = gptResponse.data.choices?.[0]?.message?.content || "";
-
   let result: any = null;
   try {
-    result = parseJsonFromText(text);
+    result = parseJsonFromText(gptText);
   } catch {
     result = null;
   }
@@ -321,6 +292,6 @@ VERDICT RULES:
     topPick: result.topPick ?? null,
     summary: result.summary ?? "",
     products: productResults,
-    source: "brave+gpt4",
+    source: "brave+gemini",
   });
 }

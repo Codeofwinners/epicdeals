@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { geminiChat, geminiMultiTurn } from "@/lib/gemini";
 
 export const runtime = "nodejs";
 
@@ -47,29 +48,6 @@ function classifyDeal(savingsPercent: number) {
   return "Fair";
 }
 
-async function callOpenAI(payload: Record<string, unknown>) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("Missing OPENAI_API_KEY in .env.local");
-  }
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`OpenAI API error: ${response.status} ${text}`);
-  }
-
-  return response.json();
-}
-
 async function analyzeDeal(item: DealItem) {
   const estimatedMarket = estimateMarketValue(item);
 
@@ -101,22 +79,15 @@ Return JSON only in this format:
   } = {};
 
   try {
-    const completion = await callOpenAI({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a careful pricing analyst. Base estimates on typical retail or refurb market values. Respond with valid JSON only.",
-        },
-        { role: "user", content: prompt },
-      ],
-      response_format: { type: "json_object" },
+    const text = await geminiChat({
+      system:
+        "You are a careful pricing analyst. Base estimates on typical retail or refurb market values. Respond with valid JSON only.",
+      prompt,
+      json: true,
       temperature: 0.2,
-      max_completion_tokens: 600,
+      maxTokens: 600,
     });
 
-    const text = completion.choices?.[0]?.message?.content || "";
     aiResult = JSON.parse(text);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
@@ -145,32 +116,29 @@ Return JSON only in this format:
 }
 
 async function runChat(item: DealItem, question: string, history: ChatMessage[]) {
-  const messages = [
-    {
-      role: "system",
-      content:
-        "You are a Deal Expert. Answer questions about refurbished listings with concise, practical advice. If information is missing, say what would help.",
-    },
-    {
-      role: "user",
-      content: `Item context:\nTitle: ${item.title}\nPrice: $${item.price}\nCondition: ${
-        item.condition || "Unknown"
-      }\nOriginal price: ${item.originalPrice ? `$${item.originalPrice}` : "Not listed"}\nSeller rating: ${
-        item.sellerRating || "N/A"
-      }\nFree shipping: ${item.freeShipping ? "Yes" : "No"}`,
-    },
-    ...history,
-    { role: "user", content: question },
+  const contextMessage = `Item context:\nTitle: ${item.title}\nPrice: $${item.price}\nCondition: ${
+    item.condition || "Unknown"
+  }\nOriginal price: ${item.originalPrice ? `$${item.originalPrice}` : "Not listed"}\nSeller rating: ${
+    item.sellerRating || "N/A"
+  }\nFree shipping: ${item.freeShipping ? "Yes" : "No"}`;
+
+  // Convert OpenAI-style history to Gemini format
+  const geminiHistory: { role: "user" | "model"; content: string }[] = [
+    { role: "user", content: contextMessage },
+    ...history.map((h) => ({
+      role: (h.role === "assistant" ? "model" : "user") as "user" | "model",
+      content: h.content,
+    })),
   ];
 
-  const completion = await callOpenAI({
-    model: "gpt-4o-mini",
-    messages,
+  return geminiMultiTurn({
+    system:
+      "You are a Deal Expert. Answer questions about refurbished listings with concise, practical advice. If information is missing, say what would help.",
+    history: geminiHistory,
+    question,
     temperature: 0.3,
-    max_completion_tokens: 700,
+    maxTokens: 700,
   });
-
-  return completion.choices?.[0]?.message?.content?.trim() || "";
 }
 
 export async function POST(request: Request) {

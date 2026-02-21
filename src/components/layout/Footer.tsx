@@ -81,6 +81,7 @@ export function Footer() {
                 <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Trending Now</Link></li>
                 <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Best Sellers</Link></li>
                 <li><Link href="/" className="text-sm text-gray-600 footer-link hover:text-blue-600">Expiring Soon</Link></li>
+                <li><Link href="/leaderboard" className="text-sm text-gray-600 footer-link hover:text-blue-600">Leaderboard</Link></li>
               </ul>
             </div>
 
@@ -159,7 +160,7 @@ export function Footer() {
               <ul className="space-y-2">
                 <li><Link href="/" className="text-xs text-gray-600 footer-link">Daily Hits</Link></li>
                 <li><Link href="/" className="text-xs text-gray-600 footer-link">Trending</Link></li>
-                <li><Link href="/" className="text-xs text-gray-600 footer-link">Categories</Link></li>
+                <li><Link href="/leaderboard" className="text-xs text-gray-600 footer-link">Leaderboard</Link></li>
               </ul>
             </div>
             <div>

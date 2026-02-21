@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
+import { geminiChat } from "@/lib/gemini";
 
 export const runtime = "nodejs";
 
@@ -35,27 +36,6 @@ function wordOverlap(a: string, b: string): number {
     if (wordsB.has(w)) overlap++;
   }
   return overlap / Math.max(wordsA.size, wordsB.size);
-}
-
-async function callOpenAI(payload: Record<string, unknown>) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("Missing OPENAI_API_KEY");
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`OpenAI API error: ${response.status} ${text}`);
-  }
-
-  return response.json();
 }
 
 // ─── Main handler ───────────────────────────────────────────────
@@ -233,22 +213,15 @@ Guidelines:
 - High spamScore (>60) for: unrealistic discounts (99% off), suspicious URLs, generic/spammy text
 - Low legitimacyScore (<40) for: vague descriptions, no real store, too-good-to-be-true`;
 
-      const completion = await callOpenAI({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a deal quality evaluator. Return valid JSON only. Be fair but catch obvious spam.",
-          },
-          { role: "user", content: prompt },
-        ],
-        response_format: { type: "json_object" },
+      const text = await geminiChat({
+        system:
+          "You are a deal quality evaluator. Return valid JSON only. Be fair but catch obvious spam.",
+        prompt,
+        json: true,
         temperature: 0.2,
-        max_completion_tokens: 500,
+        maxTokens: 500,
       });
 
-      const text = completion.choices?.[0]?.message?.content || "";
       const parsed = JSON.parse(text);
       aiReview = {
         verdict: parsed.verdict || "needs_review",

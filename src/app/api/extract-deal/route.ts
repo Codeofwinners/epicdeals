@@ -1,29 +1,7 @@
 import { NextResponse } from "next/server";
+import { geminiImageAnalysis } from "@/lib/gemini";
 
 export const runtime = "nodejs";
-
-async function callOpenAI(payload: Record<string, unknown>) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error("Missing OPENAI_API_KEY in .env.local");
-  }
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`OpenAI API error: ${response.status} ${text}`);
-  }
-
-  return response.json();
-}
 
 export async function POST(request: Request) {
   try {
@@ -37,20 +15,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const completion = await callOpenAI({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a deal extraction assistant. Analyze screenshots of deals, coupons, promotions, and discount offers. Extract structured deal information from the image. Respond with valid JSON only.",
-        },
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `Analyze this screenshot and extract deal information. Return JSON with these fields:
+    const text = await geminiImageAnalysis({
+      system:
+        "You are a deal extraction assistant. Analyze screenshots of deals, coupons, promotions, and discount offers. Extract structured deal information from the image. Respond with valid JSON only.",
+      prompt: `Analyze this screenshot and extract deal information. Return JSON with these fields:
 {
   "title": "concise deal title (e.g. '40% Off Select Electronics')",
   "storeName": "store or brand name if visible",
@@ -65,23 +33,12 @@ export async function POST(request: Request) {
 }
 
 If you cannot determine a field, set it to null. Always try your best to extract what's visible.`,
-            },
-            {
-              type: "image_url",
-              image_url: {
-                url: image,
-                detail: "high",
-              },
-            },
-          ],
-        },
-      ],
-      response_format: { type: "json_object" },
+      imageBase64: image,
+      json: true,
       temperature: 0.2,
-      max_completion_tokens: 800,
+      maxTokens: 800,
     });
 
-    const text = completion.choices?.[0]?.message?.content || "{}";
     const extracted = JSON.parse(text);
 
     return NextResponse.json({ success: true, extracted });

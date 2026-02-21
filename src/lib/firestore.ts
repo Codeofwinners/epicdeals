@@ -20,6 +20,17 @@ import {
 import { db } from "./firebase";
 import type { Deal, Store, Category, Comment } from "@/types/deals";
 import { generateDealSlug } from "./slugify";
+import {
+  XP_VALUES,
+  getUserRank,
+  calculateUserXP,
+  getEarnedBadges,
+  BADGES,
+  type XPActionType,
+  type LeaderboardEntry,
+  type LeaderboardPeriod,
+  type UserStats,
+} from "./gamification";
 
 // ─── Collection refs ────────────────────────────────────────────
 const dealsCol = (db ? collection(db, "deals") : null) as any;
@@ -423,6 +434,14 @@ export async function submitDeal(input: SubmitDealInput): Promise<string> {
       : null,
     tags: input.tags ?? [],
   });
+
+  // Award XP for deal submission
+  if (input.submittedBy?.id) {
+    awardXP(input.submittedBy.id, XP_VALUES.DEAL_SUBMITTED, "DEAL_SUBMITTED", ref.id)
+      .then(() => checkAndAwardBadges(input.submittedBy!.id))
+      .catch(console.error);
+  }
+
   return ref.id;
 }
 
@@ -450,6 +469,14 @@ export async function addComment(input: {
   batch.update(dealRef, { commentCount: increment(1) });
 
   await batch.commit();
+
+  // Award XP for commenting
+  if (input.user.id) {
+    awardXP(input.user.id, XP_VALUES.COMMENT_POSTED, "COMMENT_POSTED", commentRef.id)
+      .then(() => checkAndAwardBadges(input.user.id))
+      .catch(console.error);
+  }
+
   return commentRef.id;
 }
 
@@ -706,6 +733,17 @@ export async function upvoteDeal(userId: string, dealId: string): Promise<boolea
       netVotes: (dealSnap.data().netVotes || 0) + netVoteChange,
     });
 
+    // Award XP to deal author when upvoted (not when removing upvote)
+    if (!upvoteSnap.exists()) {
+      const dealData = dealSnap.data();
+      const authorId = (dealData.submittedBy as any)?.id;
+      if (authorId && authorId !== userId) {
+        awardXP(authorId, XP_VALUES.DEAL_UPVOTE_RECEIVED, "DEAL_UPVOTE_RECEIVED", dealId)
+          .then(() => checkAndAwardBadges(authorId))
+          .catch(console.error);
+      }
+    }
+
     console.log("Vote successful");
     return !upvoteSnap.exists(); // Return true if upvote was added
   } catch (error) {
@@ -818,6 +856,17 @@ export async function upvoteComment(userId: string, commentId: string): Promise<
     await updateDoc(commentRef, {
       upvotes: (commentSnap.data().upvotes || 0) + voteChange,
     });
+
+    // Award XP to comment author when upvoted
+    if (!upvoteSnap.exists()) {
+      const commentData = commentSnap.data();
+      const authorId = (commentData.user as any)?.id;
+      if (authorId && authorId !== userId) {
+        awardXP(authorId, XP_VALUES.COMMENT_UPVOTE_RECEIVED, "COMMENT_UPVOTE_RECEIVED", commentId)
+          .then(() => checkAndAwardBadges(authorId))
+          .catch(console.error);
+      }
+    }
 
     return !upvoteSnap.exists();
   } catch (error) {
@@ -1028,14 +1077,231 @@ export async function getPendingReviewDeals(): Promise<Deal[]> {
 /** Approve a pending deal (moves to newly_added) */
 export async function approveDeal(dealId: string): Promise<void> {
   if (!db) throw new Error("Firebase not initialized");
-  await updateDoc(doc(db, "deals", dealId), {
+  const dealRef = doc(db, "deals", dealId);
+  const dealSnap = await getDoc(dealRef);
+
+  await updateDoc(dealRef, {
     status: "newly_added",
     reviewedAt: Timestamp.now(),
   });
+
+  // Award XP to deal submitter for verification
+  if (dealSnap.exists()) {
+    const submitterId = (dealSnap.data().submittedBy as any)?.id;
+    if (submitterId) {
+      awardXP(submitterId, XP_VALUES.DEAL_VERIFIED, "DEAL_VERIFIED", dealId)
+        .then(() => checkAndAwardBadges(submitterId))
+        .catch(console.error);
+    }
+  }
 }
 
 /** Reject a pending deal (deletes it) */
 export async function rejectDeal(dealId: string): Promise<void> {
   if (!db) throw new Error("Firebase not initialized");
   await deleteDoc(doc(db, "deals", dealId));
+}
+
+// ─── Gamification: XP & Leaderboard ─────────────────────────────────────────
+
+/** Award XP to a user atomically and update their rank */
+export async function awardXP(
+  userId: string,
+  amount: number,
+  actionType: XPActionType,
+  _sourceId?: string
+): Promise<void> {
+  if (!db || !userId || amount <= 0) return;
+  try {
+    const userRef = doc(db, "users", userId);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return;
+
+    const currentXP = (snap.data().xp as number) || 0;
+    const newXP = currentXP + amount;
+    const rank = getUserRank(newXP);
+
+    // Build stat increment field based on action type
+    const statField: Record<string, unknown> = {
+      xp: newXP,
+      rank: rank.name,
+      xpUpdatedAt: Timestamp.now(),
+    };
+
+    if (actionType === "DEAL_SUBMITTED") statField.dealsSubmitted = increment(1);
+    if (actionType === "DEAL_VERIFIED") statField.dealsVerified = increment(1);
+    if (actionType === "DEAL_COMMUNITY_PICK") statField.dealsCommunityPick = increment(1);
+    if (actionType === "DEAL_UPVOTE_RECEIVED") statField.totalDealUpvotesReceived = increment(1);
+    if (actionType === "COMMENT_POSTED") statField.commentsPosted = increment(1);
+    if (actionType === "COMMENT_UPVOTE_RECEIVED") statField.totalCommentUpvotesReceived = increment(1);
+    if (actionType === "DEAL_WORKED_VOTE") statField.totalWorkedYes = increment(1);
+
+    // Update streak
+    const lastActive = snap.data().lastActiveDate as string | undefined;
+    const today = new Date().toISOString().split("T")[0];
+    if (lastActive !== today) {
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+      const currentStreak = (snap.data().currentStreak as number) || 0;
+      const longestStreak = (snap.data().longestStreak as number) || 0;
+
+      if (lastActive === yesterday) {
+        const newStreak = currentStreak + 1;
+        statField.currentStreak = newStreak;
+        statField.longestStreak = Math.max(longestStreak, newStreak);
+      } else {
+        statField.currentStreak = 1;
+        statField.longestStreak = Math.max(longestStreak, 1);
+      }
+      statField.lastActiveDate = today;
+    }
+
+    await updateDoc(userRef, statField);
+  } catch (error) {
+    console.error("Error awarding XP:", error);
+  }
+}
+
+/** Recalculate a user's total XP from their stats */
+export async function recalculateUserXP(userId: string): Promise<number> {
+  if (!db) return 0;
+  try {
+    const userRef = doc(db, "users", userId);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return 0;
+
+    const data = snap.data();
+    const stats: UserStats = {
+      dealsSubmitted: (data.dealsSubmitted as number) || 0,
+      dealsVerified: (data.dealsVerified as number) || 0,
+      dealsCommunityPick: (data.dealsCommunityPick as number) || 0,
+      totalDealUpvotesReceived: (data.totalDealUpvotesReceived as number) || 0,
+      commentsPosted: (data.commentsPosted as number) || 0,
+      totalCommentUpvotesReceived: (data.totalCommentUpvotesReceived as number) || 0,
+      totalWorkedYes: (data.totalWorkedYes as number) || 0,
+    };
+
+    const xp = calculateUserXP(stats);
+    const rank = getUserRank(xp);
+
+    await updateDoc(userRef, { xp, rank: rank.name, xpUpdatedAt: Timestamp.now() });
+    return xp;
+  } catch (error) {
+    console.error("Error recalculating XP:", error);
+    return 0;
+  }
+}
+
+/** Check and award badges for a user */
+export async function checkAndAwardBadges(userId: string): Promise<string[]> {
+  if (!db) return [];
+  try {
+    const userRef = doc(db, "users", userId);
+    const snap = await getDoc(userRef);
+    if (!snap.exists()) return [];
+
+    const data = snap.data();
+    const stats = {
+      dealsSubmitted: (data.dealsSubmitted as number) || 0,
+      dealsVerified: (data.dealsVerified as number) || 0,
+      dealsCommunityPick: (data.dealsCommunityPick as number) || 0,
+      totalDealUpvotesReceived: (data.totalDealUpvotesReceived as number) || 0,
+      commentsPosted: (data.commentsPosted as number) || 0,
+      totalCommentUpvotesReceived: (data.totalCommentUpvotesReceived as number) || 0,
+      totalWorkedYes: (data.totalWorkedYes as number) || 0,
+      joinedAt: tsToISO(data.createdAt),
+      currentStreak: (data.currentStreak as number) || 0,
+      longestStreak: (data.longestStreak as number) || 0,
+    };
+
+    const earned = getEarnedBadges(stats);
+    const existingBadges: string[] = (data.badges as string[]) || [];
+    const newBadgeIds = earned.map((b) => b.id).filter((id) => !existingBadges.includes(id));
+
+    if (newBadgeIds.length > 0) {
+      await updateDoc(userRef, { badges: [...existingBadges, ...newBadgeIds] });
+    }
+
+    return newBadgeIds;
+  } catch (error) {
+    console.error("Error checking badges:", error);
+    return [];
+  }
+}
+
+/** Get leaderboard snapshot for a given period */
+export async function getLeaderboard(period: LeaderboardPeriod = "alltime"): Promise<LeaderboardEntry[]> {
+  if (!db) return [];
+  try {
+    const snapshotRef = doc(db, "leaderboardSnapshots", period);
+    const snap = await getDoc(snapshotRef);
+
+    if (snap.exists()) {
+      return (snap.data().entries as LeaderboardEntry[]) || [];
+    }
+
+    // If no snapshot exists, build one on-the-fly from users collection
+    return await rebuildLeaderboardSnapshot(period);
+  } catch (error) {
+    console.error("Error fetching leaderboard:", error);
+    return [];
+  }
+}
+
+/** Get a user's rank position in a leaderboard period */
+export async function getUserRankPosition(
+  userId: string,
+  period: LeaderboardPeriod = "alltime"
+): Promise<{ position: number; entry: LeaderboardEntry | null }> {
+  const entries = await getLeaderboard(period);
+  const index = entries.findIndex((e) => e.userId === userId);
+  if (index === -1) return { position: -1, entry: null };
+  return { position: index + 1, entry: entries[index] };
+}
+
+/** Rebuild leaderboard snapshot from users collection */
+export async function rebuildLeaderboardSnapshot(period: LeaderboardPeriod = "alltime"): Promise<LeaderboardEntry[]> {
+  if (!db) return [];
+  try {
+    const usersCol = collection(db, "users");
+    const q = query(usersCol, orderBy("xp", "desc"), firestoreLimit(100));
+    const snap = await getDocs(q);
+
+    const entries: LeaderboardEntry[] = snap.docs
+      .filter((d) => (d.data().xp || 0) > 0)
+      .map((d, i) => {
+        const data = d.data();
+        const xp = (data.xp as number) || 0;
+        const rank = getUserRank(xp);
+        return {
+          userId: d.id,
+          displayName: (data.displayName as string) || "User",
+          photoURL: (data.photoURL as string) || null,
+          xp,
+          rank: rank.name,
+          rankColor: rank.color,
+          rankIcon: rank.icon,
+          dealsSubmitted: (data.dealsSubmitted as number) || 0,
+          totalUpvotes: (data.totalDealUpvotesReceived as number) || (data.totalUpvotes as number) || 0,
+          badges: (data.badges as string[]) || [],
+          position: i + 1,
+        };
+      });
+
+    // Save snapshot
+    try {
+      const snapshotRef = doc(db, "leaderboardSnapshots", period);
+      await setDoc(snapshotRef, {
+        entries,
+        updatedAt: Timestamp.now(),
+        period,
+      });
+    } catch {
+      // Non-critical — snapshot save can fail silently
+    }
+
+    return entries;
+  } catch (error) {
+    console.error("Error rebuilding leaderboard:", error);
+    return [];
+  }
 }

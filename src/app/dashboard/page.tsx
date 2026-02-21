@@ -15,12 +15,16 @@ import {
 import type { Deal, Comment } from "@/types/deals";
 import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useUserXP } from "@/hooks/useGamification";
+import { RankBadge } from "@/components/leaderboard/RankBadge";
+import { XPProgressBar } from "@/components/leaderboard/XPProgressBar";
 
 type Tab = "upvotes" | "comments" | "saved";
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { data: xpData } = useUserXP(user?.uid);
 
   const [activeTab, setActiveTab] = useState<Tab>("upvotes");
   const [userDeals, setUserDeals] = useState<Deal[]>([]);
@@ -229,6 +233,45 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
+
+        {/* XP & Rank Section */}
+        {xpData && (
+          <div style={{
+            background: "#111",
+            borderRadius: 16,
+            padding: "20px 20px 16px",
+            marginBottom: 20,
+            position: "relative",
+            overflow: "hidden",
+            backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(255,255,255,0.02) 18px, rgba(255,255,255,0.02) 19px)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 24, fontWeight: 900, color: xpData.rank.color, letterSpacing: "-0.02em" }}>
+                  {xpData.xp.toLocaleString()}
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>XP</span>
+                <RankBadge xp={xpData.xp} size="md" />
+              </div>
+              <Link
+                href="/leaderboard"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#0EA5E9",
+                  textDecoration: "none",
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>leaderboard</span>
+                View Leaderboard
+              </Link>
+            </div>
+            <XPProgressBar xp={xpData.xp} height={6} />
+          </div>
+        )}
 
         {/* Tab navigation */}
         <div style={{ display: "flex", gap: 6, background: "#fff", borderRadius: 14, padding: 4, boxShadow: "0 1px 4px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9", marginBottom: 24 }}>
