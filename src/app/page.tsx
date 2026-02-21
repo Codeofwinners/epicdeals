@@ -28,6 +28,7 @@ type CardUITheme = {
   icon: string;          // comment, bookmark icons
   countText: string;     // vote/comment counts (inactive)
   upvoteInactive: string;// upvote arrow when not voted
+  upvoteActive: React.CSSProperties;  // upvote arrow + count when voted
   learnMore: string;     // "Learn more" link color
   verifiedIcon: React.CSSProperties;  // verified checkmark style
   verifiedText: React.CSSProperties;  // verified label style
@@ -37,6 +38,7 @@ type CardUITheme = {
 
 const THEME_DEFAULT: CardUITheme = {
   divider: "#EFEFEF", icon: "#C0C0C0", countText: "#888", upvoteInactive: "#CCCCCC",
+  upvoteActive: gradientText,
   learnMore: "#AAAAAA",
   verifiedIcon: { ...gradientText, fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
   verifiedText: { ...gradientText, fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
@@ -46,6 +48,7 @@ const THEME_DEFAULT: CardUITheme = {
 
 const THEME_DARK: CardUITheme = {
   divider: "rgba(255,255,255,0.08)", icon: "rgba(255,255,255,0.3)", countText: "rgba(255,255,255,0.4)", upvoteInactive: "rgba(255,255,255,0.35)",
+  upvoteActive: gradientText,
   learnMore: "rgba(255,255,255,0.4)",
   verifiedIcon: { ...gradientText, fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
   verifiedText: { ...gradientText, fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
@@ -56,6 +59,7 @@ const THEME_DARK: CardUITheme = {
 // Spotify / bright colored backgrounds — white UI so everything pops
 const THEME_SPOTIFY: CardUITheme = {
   divider: "rgba(255,255,255,0.2)", icon: "rgba(255,255,255,0.85)", countText: "rgba(255,255,255,0.7)", upvoteInactive: "rgba(255,255,255,0.7)",
+  upvoteActive: { color: "#fff" },
   learnMore: "rgba(255,255,255,0.8)",
   verifiedIcon: { color: "#fff", fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
   verifiedText: { color: "#fff", fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
@@ -133,13 +137,13 @@ function VoteButtons({ dealId, upvotes, downvotes, commentCount, theme, onCommen
             fontSize: "12px", lineHeight: 1, fontVariationSettings: "'FILL' 1",
             display: "inline-block",
             animation: justVoted ? "vote-arrow-pop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards" : "none",
-            ...(isUpvoted ? gradientText : { color: theme.upvoteInactive }),
+            ...(isUpvoted ? theme.upvoteActive : { color: theme.upvoteInactive }),
           }}>arrow_upward</span>
           <span key={`count-${animKey}`} style={{
             fontSize: "12px", fontWeight: 700, letterSpacing: "-0.01em", lineHeight: 1,
             display: "inline-block",
             animation: justVoted ? "count-pop 0.45s ease-out forwards" : "none",
-            ...(isUpvoted ? gradientText : { color: theme.countText }),
+            ...(isUpvoted ? theme.upvoteActive : { color: theme.countText }),
           }}>{fmtCount(netDisplay)}</span>
         </button>
 
