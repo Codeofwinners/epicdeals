@@ -18,71 +18,73 @@ import {
 } from "@/lib/gamification";
 
 /* ── Weekly Challenge Card ──────────────────────────────────────────────── */
-function ChallengeCard({ challenge }: { challenge: WeeklyChallenge }) {
-  const categoryColors: Record<string, { bg: string; border: string; text: string; icon: string }> = {
-    deals: { bg: "#FFF7ED", border: "#FDBA74", text: "#C2410C", icon: "#F97316" },
-    social: { bg: "#EFF6FF", border: "#93C5FD", text: "#1D4ED8", icon: "#3B82F6" },
-    community: { bg: "#F0FDF4", border: "#86EFAC", text: "#15803D", icon: "#22C55E" },
+function ChallengeCard({ challenge, index }: { challenge: WeeklyChallenge; index: number }) {
+  const emojis: Record<string, string> = {
+    devices: "💻", checkroom: "👗", verified: "✅", chat: "💬",
+    share: "📤", add_circle: "➕", thumb_up: "👍", local_fire_department: "🔥",
   };
-  const colors = categoryColors[challenge.category] || categoryColors.deals;
+  const emoji = emojis[challenge.icon] || "🎯";
 
   return (
     <div
       style={{
         flex: "1 1 0",
-        minWidth: 220,
-        backgroundColor: colors.bg,
-        border: `1.5px solid ${colors.border}`,
-        borderRadius: 14,
-        padding: "18px 16px",
+        minWidth: 200,
+        background: index === 0
+          ? "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)"
+          : "linear-gradient(135deg, #1E293B 0%, #334155 100%)",
+        borderRadius: 16,
+        padding: "20px 18px 16px",
         display: "flex",
         flexDirection: "column",
-        gap: 10,
+        gap: 14,
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            backgroundColor: `${colors.icon}15`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 20, color: colors.icon }}>
-            {challenge.icon}
+      {/* Subtle corner glow */}
+      <div style={{
+        position: "absolute",
+        top: -20,
+        right: -20,
+        width: 80,
+        height: 80,
+        borderRadius: "50%",
+        background: index === 0
+          ? "radial-gradient(circle, rgba(14,165,233,0.15) 0%, transparent 70%)"
+          : "radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%)",
+      }} />
+
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 18 }}>{emoji}</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "#F8FAFC", letterSpacing: "-0.01em" }}>
+              {challenge.title}
+            </span>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.45)", lineHeight: 1.4, paddingLeft: 1 }}>
+            {challenge.description}
           </span>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: colors.text, lineHeight: 1.2 }}>
-            {challenge.title}
-          </div>
-          <div style={{ fontSize: 11, fontWeight: 600, color: `${colors.text}90`, lineHeight: 1.3 }}>
-            {challenge.description}
-          </div>
-        </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 800,
-            color: colors.icon,
-            backgroundColor: `${colors.icon}12`,
-            padding: "3px 8px",
-            borderRadius: 6,
-            textTransform: "uppercase",
-            letterSpacing: "0.06em",
-          }}
-        >
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative", zIndex: 1 }}>
+        <span style={{
+          fontSize: 11,
+          fontWeight: 800,
+          color: index === 0 ? "#38BDF8" : "#FBBF24",
+          letterSpacing: "0.02em",
+        }}>
           +{challenge.xpReward} XP
         </span>
-        <span style={{ fontSize: 10, fontWeight: 700, color: `${colors.text}70` }}>
-          Target: {challenge.target}
+        <span style={{
+          fontSize: 10,
+          fontWeight: 600,
+          color: "rgba(255,255,255,0.3)",
+          letterSpacing: "0.04em",
+        }}>
+          {challenge.target} to complete
         </span>
       </div>
     </div>
@@ -116,7 +118,7 @@ export function LeaderboardContent() {
   const daysLeft = getDaysLeftInWeek();
 
   // Quick stats from entries
-  const totalPlayers = entries?.length || 0;
+  const totalMembers = entries?.length || 0;
   const totalXP = entries?.reduce((sum, e) => sum + e.xp, 0) || 0;
   const totalDeals = entries?.reduce((sum, e) => sum + e.dealsSubmitted, 0) || 0;
 
@@ -161,9 +163,7 @@ export function LeaderboardContent() {
         <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center", position: "relative", zIndex: 10 }}>
           {/* Bouncing trophy */}
           <div className="animate-trophy-bounce" style={{ marginBottom: 8 }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 40, color: "#F59E0B" }}>
-              emoji_events
-            </span>
+            <span style={{ fontSize: 40 }}>🏆</span>
           </div>
 
           <h1
@@ -206,55 +206,38 @@ export function LeaderboardContent() {
         <div
           style={{
             display: "flex",
-            gap: 12,
-            marginBottom: 28,
-            flexWrap: "wrap",
+            gap: 0,
+            marginBottom: 32,
+            backgroundColor: "#FFFFFF",
+            borderRadius: 16,
+            overflow: "hidden",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           }}
         >
           {[
-            { icon: "group", label: "Players", value: totalPlayers.toLocaleString(), color: "#0EA5E9" },
-            { icon: "bolt", label: "Total XP", value: totalXP.toLocaleString(), color: "#F59E0B" },
-            { icon: "local_offer", label: "Deals Shared", value: totalDeals.toLocaleString(), color: "#22C55E" },
-          ].map((stat) => (
+            { emoji: "👥", label: "Members", value: totalMembers.toLocaleString() },
+            { emoji: "⚡", label: "Total XP", value: totalXP.toLocaleString() },
+            { emoji: "🏷️", label: "Deals Shared", value: totalDeals.toLocaleString() },
+          ].map((stat, i, arr) => (
             <div
               key={stat.label}
               style={{
                 flex: "1 1 0",
-                minWidth: 100,
-                backgroundColor: "#FFFFFF",
-                border: "1px solid #E4E4E4",
-                borderRadius: 12,
-                padding: "14px 16px",
+                padding: "18px 16px",
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
-                gap: 10,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+                gap: 2,
+                borderRight: i < arr.length - 1 ? "1px solid #F1F5F9" : "none",
               }}
             >
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
-                  backgroundColor: `${stat.color}10`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 18, color: stat.color }}>
-                  {stat.icon}
-                </span>
-              </div>
-              <div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: "#0f172a", letterSpacing: "-0.02em", lineHeight: 1 }}>
-                  {stat.value}
-                </div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {stat.label}
-                </div>
-              </div>
+              <span style={{ fontSize: 20, lineHeight: 1, marginBottom: 4 }}>{stat.emoji}</span>
+              <span style={{ fontSize: 22, fontWeight: 900, color: "#0f172a", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                {stat.value}
+              </span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                {stat.label}
+              </span>
             </div>
           ))}
         </div>
@@ -263,9 +246,7 @@ export function LeaderboardContent() {
         <div style={{ marginBottom: 32 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#F59E0B" }}>
-                local_fire_department
-              </span>
+              <span style={{ fontSize: 18 }}>🔥</span>
               <h2 style={{ fontSize: 16, fontWeight: 800, color: "#0f172a", letterSpacing: "-0.01em", margin: 0 }}>
                 Weekly Challenges
               </h2>
@@ -280,13 +261,12 @@ export function LeaderboardContent() {
                 gap: 4,
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>schedule</span>
-              {daysLeft === 0 ? "Resets today" : `${daysLeft}d left`}
+              ⏳ {daysLeft === 0 ? "Resets today" : `${daysLeft}d left`}
             </span>
           </div>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            {challenges.map((c) => (
-              <ChallengeCard key={c.id} challenge={c} />
+            {challenges.map((c, i) => (
+              <ChallengeCard key={c.id} challenge={c} index={i} />
             ))}
           </div>
         </div>

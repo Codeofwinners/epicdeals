@@ -15,23 +15,23 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
   const weekNum = Math.ceil((now.getDate() + new Date(now.getFullYear(), now.getMonth(), 1).getDay()) / 7);
   const weekKey = `weekly-${now.getFullYear()}-W${String(weekNum).padStart(2, "0")}` as LeaderboardPeriod;
 
-  const periods: { key: LeaderboardPeriod; label: string; icon: string }[] = [
-    { key: "alltime", label: "ALL-TIME", icon: "emoji_events" },
-    { key: monthKey, label: "MONTHLY", icon: "calendar_month" },
-    { key: weekKey, label: "WEEKLY", icon: "date_range" },
+  const periods: { key: LeaderboardPeriod; label: string; emoji: string }[] = [
+    { key: "alltime", label: "All-Time", emoji: "🏆" },
+    { key: monthKey, label: "Monthly", emoji: "📅" },
+    { key: weekKey, label: "Weekly", emoji: "⚡" },
   ];
 
-  const categories: { key: LeaderboardCategory; label: string; icon: string }[] = [
-    { key: "overall", label: "Overall", icon: "leaderboard" },
-    { key: "top-dealers", label: "Top Dealers", icon: "local_offer" },
-    { key: "top-commenters", label: "Commenters", icon: "chat" },
-    { key: "most-verified", label: "Verified", icon: "verified" },
-    { key: "rising-stars", label: "Rising", icon: "trending_up" },
+  const categories: { key: LeaderboardCategory; label: string }[] = [
+    { key: "overall", label: "Overall" },
+    { key: "top-dealers", label: "Top Dealers" },
+    { key: "top-commenters", label: "Commenters" },
+    { key: "most-verified", label: "Verified" },
+    { key: "rising-stars", label: "Rising" },
   ];
 
   return (
     <div style={{ marginBottom: 28 }}>
-      {/* Period: underline tab bar */}
+      {/* Period tabs */}
       <div style={{
         display: "flex",
         gap: 0,
@@ -50,27 +50,26 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
                 gap: 5,
                 padding: "10px 20px",
                 border: "none",
-                borderBottom: active ? "2px solid #0EA5E9" : "2px solid transparent",
+                borderBottom: active ? "2px solid #0f172a" : "2px solid transparent",
                 marginBottom: -2,
-                fontSize: 11,
-                fontWeight: 800,
+                fontSize: 12,
+                fontWeight: active ? 800 : 600,
                 fontFamily: "Manrope, sans-serif",
                 cursor: "pointer",
                 background: "transparent",
-                color: active ? "#0EA5E9" : "#94A3B8",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
+                color: active ? "#0f172a" : "#94A3B8",
+                letterSpacing: "0.02em",
                 transition: "all 0.2s ease",
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 15 }}>{p.icon}</span>
+              <span style={{ fontSize: 13 }}>{p.emoji}</span>
               {p.label}
             </button>
           );
         })}
       </div>
 
-      {/* Category: chip buttons */}
+      {/* Category pills */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {categories.map((c) => {
           const active = category === c.key;
@@ -81,21 +80,18 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 5,
-                padding: "8px 14px",
-                borderRadius: 10,
-                border: active ? "1.5px solid #0EA5E9" : "1px solid #E2E8F0",
+                padding: "7px 14px",
+                borderRadius: 999,
+                border: "none",
                 fontSize: 12,
-                fontWeight: 700,
+                fontWeight: active ? 800 : 600,
                 fontFamily: "Manrope, sans-serif",
                 cursor: "pointer",
-                backgroundColor: active ? "#F0F9FF" : "#FFFFFF",
-                color: active ? "#0891b2" : "#64748B",
+                backgroundColor: active ? "#0f172a" : "#F1F5F9",
+                color: active ? "#FFFFFF" : "#64748B",
                 transition: "all 0.2s ease",
-                boxShadow: active ? "0 2px 8px rgba(14,165,233,0.15)" : "none",
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 15, color: active ? "#0891b2" : "#94A3B8" }}>{c.icon}</span>
               {c.label}
             </button>
           );
