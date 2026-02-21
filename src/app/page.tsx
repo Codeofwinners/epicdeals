@@ -131,17 +131,24 @@ function TopComment({ dealId, customBg, customBorder, textStyle }: { dealId: str
   const { data: comment, loading } = useBestComment(dealId);
   if (loading || !comment) return null;
 
+  const isDark = !!textStyle;
+  const borderColor = isDark ? "rgba(255,255,255,0.15)" : "#F0F0F0";
+
   return (
-    <div className={`mb-3 pb-3 border-b ${customBorder || "border-[#F0F0F0]"} flex flex-col gap-2 w-full`}>
-      <div style={{ display: "flex", alignItems: "center", gap: "6px", width: "100%" }}>
+    <div style={{ marginBottom: "14px", paddingBottom: "14px", borderBottom: `1px solid ${borderColor}`, width: "100%" }}>
+      {/* Row 1: avatar + username */}
+      <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "4px" }}>
         <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 flex-shrink-0 flex items-center justify-center text-white text-[8px] font-bold shadow-sm">
           {comment.user.username[0].toUpperCase()}
         </div>
-        <span style={{ fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: textStyle ? "#fff" : "#1A1A1A", whiteSpace: "nowrap" }}>{comment.user.username}</span>
+        <span style={{ fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: isDark ? "#fff" : "#1A1A1A" }}>{comment.user.username}</span>
       </div>
-      <div style={{ width: "100%" }}>
-        <p style={{ fontSize: "13px", lineHeight: 1.45, fontWeight: 500, color: textStyle ? "rgba(255,255,255,0.9)" : "#555555" }}>"{comment.content}"</p>
+      {/* Row 2: Insight label */}
+      <div style={{ marginBottom: "8px", paddingLeft: "27px" }}>
+        <span style={{ fontSize: "9px", fontWeight: 600, color: isDark ? "rgba(255,255,255,0.5)" : "#AAAAAA", letterSpacing: "0.06em", textTransform: "uppercase" }}>Insight</span>
       </div>
+      {/* Row 3: comment text — full width, never truncated */}
+      <p style={{ fontSize: "13px", lineHeight: 1.5, fontWeight: 500, color: isDark ? "rgba(255,255,255,0.9)" : "#555555" }}>"{comment.content}"</p>
     </div>
   );
 }
@@ -151,16 +158,20 @@ function DarkComment({ dealId }: { dealId: string }) {
   if (loading || !comment) return null;
 
   return (
-    <div className="mb-3 pb-3 border-b border-white/20 flex flex-col gap-2 w-full text-white">
-      <div style={{ display: "flex", alignItems: "center", gap: "6px", width: "100%" }}>
+    <div style={{ marginBottom: "14px", paddingBottom: "14px", borderBottom: "1px solid rgba(255,255,255,0.15)", width: "100%" }}>
+      {/* Row 1: avatar + username */}
+      <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "4px" }}>
         <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 flex items-center justify-center text-white text-[8px] font-black shadow-sm">
           {comment.user.username[0].toUpperCase()}
         </div>
-        <span style={{ fontSize: "10px", fontWeight: 900, color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{comment.user.username}</span>
-        <span style={{ width: "3px", height: "3px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.3)", flexShrink: 0 }} />
-        <span style={{ fontSize: "9px", fontWeight: 500, color: "rgba(255,255,255,0.6)", whiteSpace: "nowrap" }}>Insight</span>
+        <span style={{ fontSize: "10px", fontWeight: 900, color: "#fff", letterSpacing: "0.08em", textTransform: "uppercase" }}>{comment.user.username}</span>
       </div>
-      <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", lineHeight: 1.45, fontStyle: "italic", fontWeight: 500 }}>"{comment.content}"</p>
+      {/* Row 2: Insight label */}
+      <div style={{ marginBottom: "8px", paddingLeft: "27px" }}>
+        <span style={{ fontSize: "9px", fontWeight: 600, color: "rgba(255,255,255,0.5)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Insight</span>
+      </div>
+      {/* Row 3: comment text */}
+      <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", lineHeight: 1.5, fontStyle: "italic", fontWeight: 500 }}>"{comment.content}"</p>
     </div>
   );
 }
@@ -199,11 +210,11 @@ function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: b
 }
 
 function VerifiedBadge({ dark = false }: { dark?: boolean }) {
-  const border = dark ? "rgba(132,204,22,0.2)" : "rgba(22,163,74,0.2)";
+  const borderClr = dark ? "rgba(132,204,22,0.2)" : "rgba(22,163,74,0.2)";
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "5px", paddingTop: "10px", marginTop: "4px", borderTop: `1px solid ${border}`, overflow: "visible" }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "13px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, ...gradientText }}>verified</span>
-      <span style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", lineHeight: 1, whiteSpace: "nowrap", ...gradientText }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", paddingTop: "12px", paddingBottom: "4px", marginTop: "6px", borderTop: `1px solid ${borderClr}` }}>
+      <span className="material-symbols-outlined" style={{ fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block", ...gradientText }}>verified</span>
+      <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", lineHeight: 1.2, ...gradientText }}>
         Verified by Legit.discount
       </span>
     </div>
@@ -268,7 +279,7 @@ function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCountChan
   return (
     <div className="deal-card rounded-2xl overflow-hidden flex flex-col relative" style={{ background: bg, border }}>
       {glow}
-      <div className="p-4 md:p-5 relative z-10 flex flex-col h-full">
+      <div style={{ padding: "16px 16px 20px", position: "relative", zIndex: 10, display: "flex", flexDirection: "column", height: "100%" }}>
         {/* Store + expiry — always identical */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
           <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: storeColor }}>{deal.store.name}</span>
@@ -422,7 +433,7 @@ function DynamicDealCard({ deal, isOpen, toggleComments }: { deal: Deal, isOpen:
       </div>
 
       {/* Body */}
-      <div className="pt-3 px-4 pb-4 flex flex-col flex-grow">
+      <div style={{ padding: "12px 16px 20px", display: "flex", flexDirection: "column", flexGrow: 1 }}>
         <div className="flex items-center justify-between gap-1 mb-1.5">
           <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
           <ExpiryBadge expiresAt={deal.expiresAt} />
