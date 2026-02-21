@@ -284,6 +284,10 @@ export function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCo
           <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: storeColor }}>{deal.store.name}</span>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <ExpiryBadge expiresAt={deal.expiresAt} dark />
+            <Link href={`/deals/${deal.slug}`}
+              style={{ fontSize: "10px", fontWeight: 600, color: theme.learnMore, textDecoration: "none", letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
+              Learn more
+            </Link>
           </div>
         </div>
 
@@ -291,21 +295,7 @@ export function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCo
           {hero}
         </Link>
 
-        <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
-          <div style={{ flex: 1 }}>
-            <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark={isDark} theme={theme} />
-          </div>
-          <Link href={`/deals/${deal.slug}`}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
-              padding: "9px 14px", borderRadius: "8px", textDecoration: "none", whiteSpace: "nowrap",
-              backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "#F5F5F5",
-              border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "#E0E0E0"}`,
-            }}>
-            <span style={{ fontSize: "11px", fontWeight: 800, color: isDark ? "rgba(255,255,255,0.7)" : "#555", letterSpacing: "0.04em" }}>Details</span>
-            <span className="material-symbols-outlined" style={{ fontSize: "12px", color: isDark ? "rgba(255,255,255,0.4)" : "#999", lineHeight: 1 }}>arrow_forward</span>
-          </Link>
-        </div>
+        <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark={isDark} theme={theme} />
 
         <div className="mt-auto">
           {useTopComment
@@ -450,7 +440,13 @@ export default function DynamicDealCard({ deal, isOpen, toggleComments }: { deal
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
           </div>
-          <ExpiryBadge expiresAt={deal.expiresAt} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <ExpiryBadge expiresAt={deal.expiresAt} />
+            <Link href={`/deals/${deal.slug}`}
+              style={{ fontSize: "10px", fontWeight: 600, color: "#AAAAAA", textDecoration: "none", letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
+              Learn more
+            </Link>
+          </div>
         </div>
 
         <Link href={`/deals/${deal.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", cursor: "pointer" }}>
@@ -458,21 +454,7 @@ export default function DynamicDealCard({ deal, isOpen, toggleComments }: { deal
           <p style={{ fontSize: "11px", color: "#888888", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
         </Link>
 
-        <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
-          <div style={{ flex: 1 }}>
-            <DealCTA code={deal.code} dealUrl={deal.dealUrl} />
-          </div>
-          <Link href={`/deals/${deal.slug}`}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
-              padding: "9px 14px", borderRadius: "8px", textDecoration: "none", whiteSpace: "nowrap",
-              backgroundColor: "#F5F5F5",
-              border: "1px solid #E0E0E0",
-            }}>
-            <span style={{ fontSize: "11px", fontWeight: 800, color: "#555", letterSpacing: "0.04em" }}>Details</span>
-            <span className="material-symbols-outlined" style={{ fontSize: "12px", color: "#999", lineHeight: 1 }}>arrow_forward</span>
-          </Link>
-        </div>
+        <DealCTA code={deal.code} dealUrl={deal.dealUrl} />
 
         <div className="mt-auto">
           <TopComment dealId={deal.id} />
