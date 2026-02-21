@@ -201,6 +201,9 @@ const BRAND_DATABASE: Record<string, BrandColors> = {
   "uber":            { primary: "#1A1A1A", isDark: true },
   "lyft":            { primary: "#FF00BF", isDark: true },
 
+  // ── Productivity / AI ──
+  "wispr":           { primary: "#1A3A2A", isDark: true },
+
   // ── Finance / Services ──
   "paypal":          { primary: "#003087", isDark: true },
   "venmo":           { primary: "#3D95CE", isDark: true },
