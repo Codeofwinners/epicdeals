@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LogIn, LogOut, User } from "lucide-react";
 import { useAuth } from "./AuthProvider";
 import { signInWithGoogle, signOut } from "@/lib/auth";
+import Link from "next/link";
 
 export function AuthButton() {
   const { user, loading } = useAuth();
@@ -19,7 +20,7 @@ export function AuthButton() {
   if (user) {
     return (
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden">
+        <Link href="/dashboard" className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden" title="Your Dashboard">
           {user.photoURL ? (
             <img
               src={user.photoURL}
@@ -30,7 +31,7 @@ export function AuthButton() {
           ) : (
             <User className="w-4 h-4 text-emerald-600" />
           )}
-        </div>
+        </Link>
         <button
           onClick={async () => {
             try {
