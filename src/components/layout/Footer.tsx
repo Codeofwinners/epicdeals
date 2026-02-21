@@ -2,6 +2,21 @@
 
 import Link from "next/link";
 
+function ShieldLogo({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, display: "inline-block", verticalAlign: "middle" }}>
+      <defs>
+        <linearGradient id="footerShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#0EA5E9" />
+          <stop offset="100%" stopColor="#06B6D4" />
+        </linearGradient>
+      </defs>
+      <path d="M12 2L3 6.5V11.5C3 16.74 6.84 21.64 12 23C17.16 21.64 21 16.74 21 11.5V6.5L12 2Z" fill="url(#footerShieldGrad)" />
+      <path d="M10 15.5L6.5 12L7.91 10.59L10 12.67L16.09 6.59L17.5 8L10 15.5Z" fill="#fff" />
+    </svg>
+  );
+}
+
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -45,9 +60,12 @@ export function Footer() {
             {/* Brand Column */}
             <div className="col-span-1">
               <div className="flex flex-col gap-3 mb-6">
-                <div className="footer-brand text-2xl leading-none">
-                  <span className="text-black">legit.</span>
-                  <span className="footer-accent">discount</span>
+                <div className="flex items-center gap-2">
+                  <ShieldLogo size={22} />
+                  <div className="footer-brand text-2xl leading-none">
+                    <span className="text-black">legit.</span>
+                    <span className="footer-accent">discount</span>
+                  </div>
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed">
                   AI-verified deals and community-validated savings. Real discounts, no dead codes.
@@ -122,9 +140,12 @@ export function Footer() {
         <div className="px-4 py-6">
           {/* Brand */}
           <div className="mb-6">
-            <div className="footer-brand text-xl leading-none mb-3">
-              <span className="text-black">legit.</span>
-              <span className="footer-accent">discount</span>
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldLogo size={18} />
+              <div className="footer-brand text-xl leading-none">
+                <span className="text-black">legit.</span>
+                <span className="footer-accent">discount</span>
+              </div>
             </div>
             <p className="text-xs text-gray-600 leading-relaxed">
               AI-verified deals and community-validated savings.

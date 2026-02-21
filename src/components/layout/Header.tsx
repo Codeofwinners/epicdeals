@@ -12,6 +12,21 @@ const HEADER_STYLE = {
   ].join(", "),
 };
 
+function ShieldLogo({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <defs>
+        <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#0EA5E9" />
+          <stop offset="100%" stopColor="#06B6D4" />
+        </linearGradient>
+      </defs>
+      <path d="M12 2L3 6.5V11.5C3 16.74 6.84 21.64 12 23C17.16 21.64 21 16.74 21 11.5V6.5L12 2Z" fill="url(#shieldGrad)" />
+      <path d="M10 15.5L6.5 12L7.91 10.59L10 12.67L16.09 6.59L17.5 8L10 15.5Z" fill="#fff" />
+    </svg>
+  );
+}
+
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -21,13 +36,11 @@ export function Header() {
       <header className="hidden md:block sticky top-0 z-50" style={HEADER_STYLE}>
         <div className="px-8 py-4">
           <div className="flex items-center justify-between gap-8">
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity">
+            <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity">
+              <ShieldLogo size={24} />
               <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.03em", fontSize: "26px", lineHeight: 1 }}>
                 <span style={{ color: "#FFFFFF" }}>legit.</span>
                 <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>discount</span>
-              </div>
-              <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "13px", color: "#fff", fontVariationSettings: "'FILL' 1" }}>check</span>
               </div>
             </Link>
 
@@ -62,12 +75,10 @@ export function Header() {
         <div className="px-4 py-3">
           <div className="flex items-center justify-between gap-3 mb-3">
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+              <ShieldLogo size={20} />
               <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.03em", fontSize: "20px", lineHeight: 1 }}>
                 <span style={{ color: "#FFFFFF" }}>legit.</span>
                 <span style={{ background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>discount</span>
-              </div>
-              <div style={{ width: "19px", height: "19px", borderRadius: "50%", background: "linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "11px", color: "#fff", fontVariationSettings: "'FILL' 1" }}>check</span>
               </div>
             </Link>
             <AuthButton />

@@ -249,10 +249,32 @@ function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; dark?: b
   );
 }
 
+function VerifiedShield({ size = 14, color }: { size?: number; color?: string }) {
+  const useGradient = !color;
+  const fillId = "vShieldGrad";
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, display: "inline-block", verticalAlign: "middle" }}>
+      {useGradient && (
+        <defs>
+          <linearGradient id={fillId} x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#006039" />
+            <stop offset="50%" stopColor="#16a34a" />
+            <stop offset="100%" stopColor="#84cc16" />
+          </linearGradient>
+        </defs>
+      )}
+      <path d="M12 2L3 6.5V11.5C3 16.74 6.84 21.64 12 23C17.16 21.64 21 16.74 21 11.5V6.5L12 2Z" fill={color || `url(#${fillId})`} />
+      <path d="M10 15.5L6.5 12L7.91 10.59L10 12.67L16.09 6.59L17.5 8L10 15.5Z" fill="#fff" />
+    </svg>
+  );
+}
+
 function VerifiedBadge({ theme }: { theme: CardUITheme }) {
+  // Determine shield color from theme — if theme uses plain color (e.g. white for Spotify), use that
+  const shieldColor = theme.verifiedIcon.color as string | undefined;
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", paddingTop: "12px", paddingBottom: "4px", marginTop: "6px", borderTop: `1px solid ${theme.divider}` }}>
-      <span className="material-symbols-outlined" style={theme.verifiedIcon}>verified</span>
+      <VerifiedShield size={15} color={shieldColor} />
       <span style={theme.verifiedText}>
         Verified by Legit.discount
       </span>
