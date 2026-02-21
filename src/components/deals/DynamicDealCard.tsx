@@ -260,7 +260,7 @@ export function DealCTA({ code, dealUrl, dark = false, theme }: { code?: string;
           padding: "9px 10px", backgroundColor: btnBg, borderRadius: "8px", textDecoration: "none",
         }}>
           <span style={{ fontSize: "11px", fontWeight: 800, color: btnText, letterSpacing: "0.04em", whiteSpace: "nowrap" }}>Get Deal</span>
-          <span className="material-symbols-outlined" style={{ fontSize: "12px", color: btnText, lineHeight: 1 }}>arrow_forward</span>
+          <span className="material-symbols-outlined" style={{ fontSize: "11px", color: btnText, lineHeight: 1, opacity: 0.5 }}>open_in_new</span>
         </a>
       )}
     </div>
