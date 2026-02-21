@@ -1258,6 +1258,83 @@ export async function getUserRankPosition(
   return { position: index + 1, entry: entries[index] };
 }
 
+// ─── User Deal Management (Edit/Delete) ─────────────────────────
+
+/** Get all deals submitted by a specific user */
+export async function getUserSubmittedDeals(userId: string): Promise<Deal[]> {
+  if (!dealsCol || !userId) return [];
+  try {
+    const q = query(dealsCol, where("submittedBy.id", "==", userId));
+    const snap = await getDocs(q);
+    return snap.docs
+      .map((d) => docToDeal(d as unknown as { id: string; data: () => Record<string, unknown> }))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  } catch (error) {
+    console.error("Error fetching user submitted deals:", error);
+    return [];
+  }
+}
+
+/** Update a deal (only by the original submitter) */
+export async function updateDeal(
+  dealId: string,
+  userId: string,
+  updates: Partial<Pick<Deal, "title" | "description" | "code" | "dealUrl" | "savingsAmount" | "conditions">>
+): Promise<void> {
+  if (!db) throw new Error("Firebase not initialized");
+  if (!dealId || !userId) throw new Error("Deal ID and User ID required");
+
+  const dealRef = doc(db, "deals", dealId);
+  const snap = await getDoc(dealRef);
+  if (!snap.exists()) throw new Error("Deal not found");
+
+  const data = snap.data();
+  if ((data.submittedBy as any)?.id !== userId) {
+    throw new Error("You can only edit your own deals");
+  }
+
+  const allowedFields: Record<string, unknown> = {};
+  if (updates.title !== undefined) allowedFields.title = updates.title;
+  if (updates.description !== undefined) allowedFields.description = updates.description;
+  if (updates.code !== undefined) allowedFields.code = updates.code || null;
+  if (updates.dealUrl !== undefined) allowedFields.dealUrl = updates.dealUrl;
+  if (updates.savingsAmount !== undefined) allowedFields.savingsAmount = updates.savingsAmount;
+  if (updates.conditions !== undefined) allowedFields.conditions = updates.conditions || null;
+
+  allowedFields.updatedAt = Timestamp.now();
+
+  await updateDoc(dealRef, allowedFields);
+}
+
+/** Delete a deal (only by the original submitter) */
+export async function deleteUserDeal(dealId: string, userId: string): Promise<void> {
+  if (!db) throw new Error("Firebase not initialized");
+  if (!dealId || !userId) throw new Error("Deal ID and User ID required");
+
+  const dealRef = doc(db, "deals", dealId);
+  const snap = await getDoc(dealRef);
+  if (!snap.exists()) throw new Error("Deal not found");
+
+  const data = snap.data();
+  if ((data.submittedBy as any)?.id !== userId) {
+    throw new Error("You can only delete your own deals");
+  }
+
+  const storeId = (data.store as any)?.id;
+
+  await deleteDoc(dealRef);
+
+  // Decrement store activeDeals count
+  if (storeId) {
+    try {
+      const storeRef = doc(db, "stores", storeId);
+      await updateDoc(storeRef, { activeDeals: increment(-1) });
+    } catch {
+      // Non-critical — store counter decrement can fail silently
+    }
+  }
+}
+
 /** Rebuild leaderboard snapshot from users collection */
 export async function rebuildLeaderboardSnapshot(period: LeaderboardPeriod = "alltime"): Promise<LeaderboardEntry[]> {
   if (!db) return [];

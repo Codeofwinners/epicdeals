@@ -11,6 +11,8 @@ import {
   editComment,
   getSavedDeals,
   unsaveDeal,
+  getUserSubmittedDeals,
+  deleteUserDeal,
 } from "@/lib/firestore";
 import type { Deal, Comment } from "@/types/deals";
 import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
@@ -19,7 +21,7 @@ import { useUserXP } from "@/hooks/useGamification";
 import { RankBadge } from "@/components/leaderboard/RankBadge";
 import { XPProgressBar } from "@/components/leaderboard/XPProgressBar";
 
-type Tab = "upvotes" | "comments" | "saved";
+type Tab = "upvotes" | "comments" | "saved" | "my-deals";
 
 export default function DashboardPage() {
   const { user, loading: authLoading } = useAuth();
@@ -30,10 +32,24 @@ export default function DashboardPage() {
   const [userDeals, setUserDeals] = useState<Deal[]>([]);
   const [userComments, setUserComments] = useState<Comment[]>([]);
   const [savedDeals, setSavedDeals] = useState<Deal[]>([]);
+  const [submittedDeals, setSubmittedDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
   const [commentsError, setCommentsError] = useState<string | null>(null);
+
+  // Edit deal modal state
+  const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    code: "",
+    dealUrl: "",
+    savingsAmount: "",
+    conditions: "",
+  });
+  const [editSaving, setEditSaving] = useState(false);
+  const [editResult, setEditResult] = useState<{ status: string; message: string } | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -61,6 +77,10 @@ export default function DashboardPage() {
         // Fetch saved deals
         const saved = await getSavedDeals(user.uid);
         setSavedDeals(saved);
+
+        // Fetch user's submitted deals
+        const submitted = await getUserSubmittedDeals(user.uid);
+        setSubmittedDeals(submitted);
 
         // Fetch user's comments with real-time listener
         const commentsRef = collection(db, "comments");
@@ -152,6 +172,108 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDeleteDeal = async (dealId: string) => {
+    if (!user) return;
+    if (!window.confirm("Are you sure you want to delete this deal? This cannot be undone.")) return;
+    try {
+      await deleteUserDeal(dealId, user.uid);
+      setSubmittedDeals((prev) => prev.filter((d) => d.id !== dealId));
+    } catch (error) {
+      console.error("Error deleting deal:", error);
+      alert("Failed to delete deal. Please try again.");
+    }
+  };
+
+  const openEditModal = (deal: Deal) => {
+    setEditingDeal(deal);
+    setEditForm({
+      title: deal.title,
+      description: deal.description,
+      code: deal.code || "",
+      dealUrl: deal.dealUrl,
+      savingsAmount: deal.savingsAmount || "",
+      conditions: deal.conditions || "",
+    });
+    setEditResult(null);
+    setEditSaving(false);
+  };
+
+  const handleEditDeal = async () => {
+    if (!editingDeal || !user) return;
+    if (!editForm.title.trim() || !editForm.description.trim() || !editForm.dealUrl.trim()) {
+      setEditResult({ status: "error", message: "Title, description, and deal URL are required." });
+      return;
+    }
+
+    setEditSaving(true);
+    setEditResult(null);
+
+    try {
+      const res = await fetch("/api/edit-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dealId: editingDeal.id,
+          userId: user.uid,
+          title: editForm.title,
+          description: editForm.description,
+          code: editForm.code,
+          dealUrl: editForm.dealUrl,
+          savingsAmount: editForm.savingsAmount,
+          savingsType: editingDeal.savingsType,
+          conditions: editForm.conditions,
+          storeName: editingDeal.store.name,
+          storeDomain: editingDeal.store.domain,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setEditResult({ status: "error", message: data.error || "Failed to save changes." });
+        setEditSaving(false);
+        return;
+      }
+
+      const newStatus = data.status as string;
+      const message = newStatus === "newly_added"
+        ? "Deal updated and published!"
+        : "Deal updated and sent for review.";
+
+      setEditResult({ status: newStatus, message });
+
+      // Update local state
+      setSubmittedDeals((prev) =>
+        prev.map((d) =>
+          d.id === editingDeal.id
+            ? {
+                ...d,
+                title: editForm.title,
+                description: editForm.description,
+                code: editForm.code || undefined,
+                dealUrl: editForm.dealUrl,
+                savingsAmount: editForm.savingsAmount,
+                conditions: editForm.conditions || undefined,
+                status: newStatus as Deal["status"],
+                aiReview: data.aiReview,
+              }
+            : d
+        )
+      );
+
+      // Auto-close after short delay
+      setTimeout(() => {
+        setEditingDeal(null);
+        setEditResult(null);
+      }, 1500);
+    } catch (error) {
+      console.error("Error editing deal:", error);
+      setEditResult({ status: "error", message: "Network error. Please try again." });
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
   const formatTimeAgo = (dateStr: string) => {
     const now = Date.now();
     const then = new Date(dateStr).getTime();
@@ -190,6 +312,7 @@ export default function DashboardPage() {
     { key: "upvotes", label: "Upvotes", icon: "thumb_up", count: userDeals.length },
     { key: "comments", label: "Comments", icon: "chat_bubble", count: userComments.length },
     { key: "saved", label: "Saved", icon: "bookmark", count: savedDeals.length },
+    { key: "my-deals", label: "My Deals", icon: "storefront", count: submittedDeals.length },
   ];
 
   return (
@@ -274,7 +397,7 @@ export default function DashboardPage() {
         )}
 
         {/* Tab navigation */}
-        <div style={{ display: "flex", gap: 6, background: "#fff", borderRadius: 14, padding: 4, boxShadow: "0 1px 4px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9", marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 4, background: "#fff", borderRadius: 14, padding: 4, boxShadow: "0 1px 4px rgba(0,0,0,0.04)", border: "1px solid #f1f5f9", marginBottom: 24 }}>
           {tabs.map((tab) => {
             const isActive = activeTab === tab.key;
             return (
@@ -286,12 +409,12 @@ export default function DashboardPage() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 6,
-                  padding: "10px 12px",
+                  gap: 4,
+                  padding: "10px 8px",
                   borderRadius: 10,
                   border: "none",
                   cursor: "pointer",
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: 700,
                   fontFamily: "Manrope, sans-serif",
                   transition: "all 0.2s",
@@ -300,16 +423,16 @@ export default function DashboardPage() {
                   boxShadow: isActive ? "0 2px 8px rgba(8,145,178,0.25)" : "none",
                 }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{tab.icon}</span>
-                {tab.label}
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{tab.icon}</span>
+                <span style={{ display: "inline" }}>{tab.label}</span>
                 <span style={{
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: 800,
                   background: isActive ? "rgba(255,255,255,0.25)" : "#f1f5f9",
                   color: isActive ? "#fff" : "#94a3b8",
-                  padding: "2px 7px",
+                  padding: "1px 6px",
                   borderRadius: 20,
-                  minWidth: 22,
+                  minWidth: 18,
                   textAlign: "center",
                 }}>
                   {tab.count}
@@ -473,8 +596,224 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+
+          {/* ─── My Deals Tab ─── */}
+          {activeTab === "my-deals" && (
+            <div>
+              {submittedDeals.length === 0 ? (
+                <EmptyState icon="storefront" message="No submitted deals yet" subtext="Deals you submit will appear here" />
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {submittedDeals.map((deal) => (
+                    <MyDealCard
+                      key={deal.id}
+                      deal={deal}
+                      onEdit={() => openEditModal(deal)}
+                      onDelete={() => handleDeleteDeal(deal.id)}
+                      formatTimeAgo={formatTimeAgo}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ─── Edit Deal Modal ─── */}
+      {editingDeal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 16,
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !editSaving) {
+              setEditingDeal(null);
+              setEditResult(null);
+            }
+          }}
+        >
+          <div style={{
+            background: "#fff",
+            borderRadius: 20,
+            width: "100%",
+            maxWidth: 520,
+            maxHeight: "90vh",
+            overflow: "auto",
+            boxShadow: "0 25px 50px rgba(0,0,0,0.2)",
+          }}>
+            {/* Modal header */}
+            <div style={{
+              padding: "20px 24px 0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "#0f172a", margin: 0, fontFamily: "Manrope, sans-serif" }}>
+                Edit Deal
+              </h2>
+              <button
+                onClick={() => { if (!editSaving) { setEditingDeal(null); setEditResult(null); } }}
+                style={{
+                  width: 36, height: 36, borderRadius: 10, border: "none",
+                  background: "#f1f5f9", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 20, color: "#64748b" }}>close</span>
+              </button>
+            </div>
+
+            {/* Store info (read-only) */}
+            <div style={{ padding: "12px 24px 0" }}>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "10px 14px",
+                background: "#f8fafc",
+                borderRadius: 10,
+                border: "1px solid #f1f5f9",
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#94a3b8" }}>store</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#64748b", fontFamily: "Manrope, sans-serif" }}>
+                  {editingDeal.store.name}
+                </span>
+                <span style={{ fontSize: 11, color: "#cbd5e1" }}>|</span>
+                <span style={{ fontSize: 12, color: "#94a3b8", fontFamily: "Manrope, sans-serif" }}>
+                  {editingDeal.category?.name || "Uncategorized"}
+                </span>
+              </div>
+            </div>
+
+            {/* Form fields */}
+            <div style={{ padding: "16px 24px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+              <EditField
+                label="Title"
+                value={editForm.title}
+                onChange={(v) => setEditForm((f) => ({ ...f, title: v }))}
+                disabled={editSaving}
+              />
+              <EditField
+                label="Description"
+                value={editForm.description}
+                onChange={(v) => setEditForm((f) => ({ ...f, description: v }))}
+                multiline
+                disabled={editSaving}
+              />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <EditField
+                  label="Promo Code"
+                  value={editForm.code}
+                  onChange={(v) => setEditForm((f) => ({ ...f, code: v }))}
+                  placeholder="Optional"
+                  disabled={editSaving}
+                />
+                <EditField
+                  label="Savings"
+                  value={editForm.savingsAmount}
+                  onChange={(v) => setEditForm((f) => ({ ...f, savingsAmount: v }))}
+                  placeholder="e.g. 20% off"
+                  disabled={editSaving}
+                />
+              </div>
+              <EditField
+                label="Deal URL"
+                value={editForm.dealUrl}
+                onChange={(v) => setEditForm((f) => ({ ...f, dealUrl: v }))}
+                disabled={editSaving}
+              />
+              <EditField
+                label="Conditions"
+                value={editForm.conditions}
+                onChange={(v) => setEditForm((f) => ({ ...f, conditions: v }))}
+                placeholder="Optional restrictions or conditions"
+                multiline
+                disabled={editSaving}
+              />
+
+              {/* Result message */}
+              {editResult && (
+                <div style={{
+                  padding: "12px 16px",
+                  borderRadius: 12,
+                  background: editResult.status === "error" ? "#fef2f2" : editResult.status === "newly_added" ? "#f0fdf4" : "#fffbeb",
+                  border: `1px solid ${editResult.status === "error" ? "#fecaca" : editResult.status === "newly_added" ? "#bbf7d0" : "#fde68a"}`,
+                }}>
+                  <p style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    margin: 0,
+                    fontFamily: "Manrope, sans-serif",
+                    color: editResult.status === "error" ? "#dc2626" : editResult.status === "newly_added" ? "#16a34a" : "#d97706",
+                  }}>
+                    {editResult.message}
+                  </p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 4 }}>
+                <button
+                  onClick={() => { if (!editSaving) { setEditingDeal(null); setEditResult(null); } }}
+                  disabled={editSaving}
+                  style={{
+                    padding: "10px 20px",
+                    borderRadius: 10,
+                    border: "none",
+                    background: "#f1f5f9",
+                    color: "#475569",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: editSaving ? "not-allowed" : "pointer",
+                    fontFamily: "Manrope, sans-serif",
+                    opacity: editSaving ? 0.5 : 1,
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleEditDeal}
+                  disabled={editSaving}
+                  style={{
+                    padding: "10px 24px",
+                    borderRadius: 10,
+                    border: "none",
+                    background: editSaving ? "#94a3b8" : "linear-gradient(135deg, #06b6d4, #0891b2)",
+                    color: "#fff",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: editSaving ? "not-allowed" : "pointer",
+                    fontFamily: "Manrope, sans-serif",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}
+                >
+                  {editSaving && (
+                    <div style={{
+                      width: 16, height: 16,
+                      border: "2px solid rgba(255,255,255,0.3)",
+                      borderTopColor: "#fff",
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite",
+                    }} />
+                  )}
+                  {editSaving ? "AI reviewing..." : "Save Changes"}
+                </button>
+              </div>
+            </div>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -482,6 +821,217 @@ export default function DashboardPage() {
 /* ═══════════════════════════════════════════════════════════════
    Sub-components
    ═══════════════════════════════════════════════════════════════ */
+
+function EditField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  multiline,
+  disabled,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  multiline?: boolean;
+  disabled?: boolean;
+}) {
+  const baseStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "10px 14px",
+    borderRadius: 10,
+    border: "2px solid #e2e8f0",
+    fontSize: 14,
+    fontFamily: "Manrope, sans-serif",
+    outline: "none",
+    boxSizing: "border-box",
+    background: disabled ? "#f8fafc" : "#fff",
+    color: "#0f172a",
+    transition: "border-color 0.15s",
+  };
+
+  return (
+    <div>
+      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#475569", marginBottom: 6, fontFamily: "Manrope, sans-serif" }}>
+        {label}
+      </label>
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          style={{ ...baseStyle, minHeight: 80, resize: "vertical" }}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "#06b6d4"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "#e2e8f0"; }}
+        />
+      ) : (
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          style={baseStyle}
+          onFocus={(e) => { e.currentTarget.style.borderColor = "#06b6d4"; }}
+          onBlur={(e) => { e.currentTarget.style.borderColor = "#e2e8f0"; }}
+        />
+      )}
+    </div>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  let label: string;
+  let bg: string;
+  let color: string;
+
+  switch (status) {
+    case "newly_added":
+    case "verified":
+      label = "Published";
+      bg = "#f0fdf4";
+      color = "#16a34a";
+      break;
+    case "pending_review":
+      label = "In Review";
+      bg = "#fffbeb";
+      color = "#d97706";
+      break;
+    case "expired":
+      label = "Expired";
+      bg = "#f8fafc";
+      color = "#94a3b8";
+      break;
+    default:
+      label = status;
+      bg = "#f8fafc";
+      color = "#64748b";
+  }
+
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      fontSize: 11,
+      fontWeight: 700,
+      padding: "2px 10px",
+      borderRadius: 20,
+      background: bg,
+      color,
+      fontFamily: "Manrope, sans-serif",
+      letterSpacing: "0.01em",
+    }}>
+      {label}
+    </span>
+  );
+}
+
+function MyDealCard({
+  deal,
+  onEdit,
+  onDelete,
+  formatTimeAgo,
+}: {
+  deal: Deal;
+  onEdit: () => void;
+  onDelete: () => void;
+  formatTimeAgo: (d: string) => string;
+}) {
+  return (
+    <div style={{
+      background: "#fff",
+      borderRadius: 14,
+      padding: "14px 16px",
+      border: "1px solid #f1f5f9",
+      boxShadow: "0 1px 4px rgba(0,0,0,0.03)",
+      display: "flex",
+      gap: 12,
+      alignItems: "center",
+      transition: "all 0.2s ease",
+      opacity: deal.status === "expired" ? 0.6 : 1,
+    }}>
+      {/* Thumbnail */}
+      <div style={{
+        width: 56, height: 56, flexShrink: 0,
+        borderRadius: 12, overflow: "hidden",
+        background: "#f8fafc",
+      }}>
+        {deal.imageUrl ? (
+          <img src={deal.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 24, color: "#cbd5e1" }}>local_offer</span>
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <h3 style={{
+          fontSize: 14, fontWeight: 700, color: "#0f172a", margin: 0,
+          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          letterSpacing: "-0.01em",
+        }}>
+          {deal.title}
+        </h3>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 5, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B" }}>
+            {deal.store.name}
+          </span>
+          {deal.savingsAmount && (
+            <>
+              <span style={{ fontSize: 10, color: "#CBD5E1" }}>·</span>
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#059669", letterSpacing: "-0.01em" }}>
+                {deal.savingsAmount}
+              </span>
+            </>
+          )}
+          <span style={{ fontSize: 10, color: "#CBD5E1" }}>·</span>
+          <StatusBadge status={deal.status} />
+          <span style={{ fontSize: 10, color: "#CBD5E1" }}>·</span>
+          <span style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>
+            {formatTimeAgo(deal.createdAt)}
+          </span>
+        </div>
+      </div>
+
+      {/* Edit + Delete actions */}
+      <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
+        <button
+          onClick={onEdit}
+          title="Edit"
+          style={{
+            width: 36, height: 36, borderRadius: 10, border: "none",
+            background: "transparent", color: "#94A3B8", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "color 0.15s ease",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#0891b2"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "#94A3B8"; }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>edit</span>
+        </button>
+        <button
+          onClick={onDelete}
+          title="Delete"
+          style={{
+            width: 36, height: 36, borderRadius: 10, border: "none",
+            background: "transparent", color: "#CBD5E1", cursor: "pointer",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            transition: "color 0.15s ease",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#EF4444"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "#CBD5E1"; }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>delete</span>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function EmptyState({ icon, message, subtext }: { icon: string; message: string; subtext: string }) {
   return (
