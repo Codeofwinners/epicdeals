@@ -1,4 +1,4 @@
-export type DealStatus = 'verified' | 'expiring_soon' | 'newly_added' | 'user_submitted' | 'expired';
+export type DealStatus = 'verified' | 'expiring_soon' | 'newly_added' | 'user_submitted' | 'expired' | 'pending_review';
 export type DealSource = 'ai_discovered' | 'user_submitted';
 export type DealType = 'percent_off' | 'dollar_off' | 'bogo' | 'free_shipping' | 'free_trial' | 'cashback';
 export type DiscountType = 'code' | 'deal' | 'sale';
@@ -73,4 +73,12 @@ export interface Deal {
   imageUrl?: string;
   submittedBy?: User;
   tags: string[];
+  aiReview?: {
+    verdict: string;
+    confidence: number;
+    legitimacyScore: number;
+    spamScore: number;
+    reasons: string[];
+    summary: string;
+  };
 }

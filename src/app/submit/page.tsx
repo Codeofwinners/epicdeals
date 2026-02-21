@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,11 +12,17 @@ import {
   Search,
   ChevronDown,
   LogIn,
+  Plus,
+  AlertTriangle,
+  Loader2,
+  Sparkles,
+  ShieldCheck,
+  Clock,
+  XCircle,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { signInWithGoogle } from "@/lib/auth";
 import { useAllStores, useAllCategories } from "@/hooks/useFirestore";
-import { submitDeal } from "@/lib/firestore";
 import type { DealType, DiscountType } from "@/types/deals";
 
 const savingsTypes: { value: DealType; label: string }[] = [
@@ -28,6 +34,9 @@ const savingsTypes: { value: DealType; label: string }[] = [
   { value: "cashback", label: "Cashback" },
 ];
 
+type SubmitPhase = "idle" | "checking_duplicates" | "analyzing" | "creating";
+type ResultStatus = "approved" | "needs_review" | "duplicate" | null;
+
 interface FormErrors {
   store?: string;
   dealUrl?: string;
@@ -36,6 +45,13 @@ interface FormErrors {
   title?: string;
   description?: string;
   category?: string;
+  storeDomain?: string;
+}
+
+interface DuplicateMatch {
+  id: string;
+  title: string;
+  reason: string;
 }
 
 export default function SubmitDealPage() {
@@ -47,6 +63,8 @@ export default function SubmitDealPage() {
   const [storeId, setStoreId] = useState("");
   const [storeSearch, setStoreSearch] = useState("");
   const [storeDropdownOpen, setStoreDropdownOpen] = useState(false);
+  const [isNewStore, setIsNewStore] = useState(false);
+  const [newStoreDomain, setNewStoreDomain] = useState("");
   const [dealUrl, setDealUrl] = useState("");
   const [promoCode, setPromoCode] = useState("");
   const [savingsType, setSavingsType] = useState<DealType | "">("");
@@ -59,8 +77,15 @@ export default function SubmitDealPage() {
 
   // UI state
   const [errors, setErrors] = useState<FormErrors>({});
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitPhase, setSubmitPhase] = useState<SubmitPhase>("idle");
+  const [resultStatus, setResultStatus] = useState<ResultStatus>(null);
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
+  const [aiConfidence, setAiConfidence] = useState<number | null>(null);
+  const [storeCreated, setStoreCreated] = useState(false);
+
+  // Real-time duplicate warnings
+  const [liveDuplicates, setLiveDuplicates] = useState<DuplicateMatch[]>([]);
+  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
 
   const storesList = stores ?? [];
   const categoriesList = categories ?? [];
@@ -80,14 +105,57 @@ export default function SubmitDealPage() {
     [storeId, storesList]
   );
 
+  // ── Real-time duplicate checking with debounce
+  const checkDuplicates = useCallback(async () => {
+    const currentStoreId = storeId;
+    if (!currentStoreId || (!title && !promoCode && !dealUrl)) {
+      setLiveDuplicates([]);
+      return;
+    }
+
+    setCheckingDuplicates(true);
+    try {
+      const res = await fetch("/api/check-duplicate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeId: currentStoreId,
+          title: title || undefined,
+          code: promoCode || undefined,
+          dealUrl: dealUrl || undefined,
+        }),
+      });
+      const data = await res.json();
+      setLiveDuplicates(data.matches || []);
+    } catch {
+      setLiveDuplicates([]);
+    }
+    setCheckingDuplicates(false);
+  }, [storeId, title, promoCode, dealUrl]);
+
+  useEffect(() => {
+    if (!storeId) {
+      setLiveDuplicates([]);
+      return;
+    }
+    const timer = setTimeout(checkDuplicates, 800);
+    return () => clearTimeout(timer);
+  }, [storeId, title, promoCode, dealUrl, checkDuplicates]);
+
   function validate(): boolean {
     const newErrors: FormErrors = {};
 
-    if (!storeId) newErrors.store = "Please select a store.";
+    if (!storeId && !isNewStore) newErrors.store = "Please select a store.";
+    if (isNewStore && !storeSearch.trim()) newErrors.store = "Please enter the store name.";
+    if (isNewStore && !newStoreDomain.trim()) newErrors.storeDomain = "Please enter the store domain.";
     if (!dealUrl.trim()) {
       newErrors.dealUrl = "Deal URL is required.";
     } else {
-      try { new URL(dealUrl); } catch { newErrors.dealUrl = "Please enter a valid URL (e.g., https://example.com)."; }
+      try {
+        new URL(dealUrl);
+      } catch {
+        newErrors.dealUrl = "Please enter a valid URL (e.g., https://example.com).";
+      }
     }
     if (!savingsType) newErrors.savingsType = "Please select a savings type.";
     if (!savingsAmount.trim()) newErrors.savingsAmount = "Savings amount is required.";
@@ -110,20 +178,19 @@ export default function SubmitDealPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
-    if (!selectedStore) return;
 
     const selectedCategory = categoriesList.find((c) => c.id === categoryId);
     if (!selectedCategory) return;
 
-    setSubmitting(true);
-    try {
-      const discountType: DiscountType = promoCode ? "code" : "deal";
+    setSubmitPhase("checking_duplicates");
 
-      await submitDeal({
+    try {
+      // Build payload
+      const discountType: DiscountType = promoCode ? "code" : "deal";
+      const payload: Record<string, unknown> = {
         title,
         description,
         code: promoCode || undefined,
-        store: selectedStore,
         category: selectedCategory,
         savingsType: savingsType as DealType,
         savingsAmount,
@@ -141,13 +208,81 @@ export default function SubmitDealPage() {
               dealsSubmitted: 0,
             }
           : undefined,
-        tags: [selectedCategory.slug, selectedStore.slug],
+        tags: [selectedCategory.slug],
+      };
+
+      if (isNewStore) {
+        payload.storeName = storeSearch.trim();
+        payload.storeDomain = newStoreDomain.trim();
+      } else {
+        payload.storeId = storeId;
+        if (selectedStore) {
+          payload.tags = [selectedCategory.slug, selectedStore.slug];
+        }
+      }
+
+      // Phase 2: AI analyzing
+      setSubmitPhase("analyzing");
+
+      const res = await fetch("/api/submit-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
-      setSubmitted(true);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Submission failed");
+      }
+
+      if (data.status === "duplicate") {
+        setDuplicateMatches(data.matches || []);
+        setResultStatus("duplicate");
+        setSubmitPhase("idle");
+        return;
+      }
+
+      // Phase 3: Creating
+      setSubmitPhase("creating");
+      await new Promise((r) => setTimeout(r, 600)); // brief visual pause
+
+      setAiConfidence(data.aiReview?.confidence ?? null);
+      setStoreCreated(data.storeCreated || false);
+
+      if (data.status === "approved") {
+        setResultStatus("approved");
+      } else {
+        setResultStatus("needs_review");
+      }
     } catch (err) {
       console.error("Submit failed:", err);
+      setErrors({ title: err instanceof Error ? err.message : "Submission failed. Please try again." });
     }
-    setSubmitting(false);
+    setSubmitPhase("idle");
+  }
+
+  function resetForm() {
+    setStoreId("");
+    setStoreSearch("");
+    setIsNewStore(false);
+    setNewStoreDomain("");
+    setDealUrl("");
+    setPromoCode("");
+    setSavingsType("");
+    setSavingsAmount("");
+    setTitle("");
+    setDescription("");
+    setCategoryId("");
+    setConditions("");
+    setExpirationDate("");
+    setErrors({});
+    setResultStatus(null);
+    setDuplicateMatches([]);
+    setAiConfidence(null);
+    setStoreCreated(false);
+    setLiveDuplicates([]);
+    setSubmitPhase("idle");
   }
 
   // Confetti particles for success animation
@@ -155,27 +290,34 @@ export default function SubmitDealPage() {
     "#10B981", "#3B82F6", "#F59E0B", "#EC4899", "#8B5CF6", "#EF4444", "#06B6D4", "#84CC16",
   ];
 
-  // Auth gate: require sign-in
+  const NavBar = () => (
+    <nav className="fixed top-0 w-full h-14 border-b border-gray-100 bg-white z-50">
+      <div className="max-w-7xl mx-auto h-full px-4 flex items-center">
+        <Link href="/" className="flex items-baseline leading-none">
+          <span className="font-black text-xl text-slate-900 tracking-tighter">Legit</span>
+          <span className="font-black text-xl text-emerald-500 tracking-tighter">.</span>
+          <span className="font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent tracking-tighter">Discount</span>
+        </Link>
+      </div>
+    </nav>
+  );
+
+  // ── Auth gate
   if (!authLoading && !user) {
     return (
-      <main className="min-h-screen bg-gray-50">
-        <nav className="fixed top-0 w-full h-14 border-b border-gray-100 bg-white z-50">
-          <div className="max-w-7xl mx-auto h-full px-4 flex items-center">
-            <Link href="/" className="flex items-baseline leading-none">
-              <span className="font-black text-xl text-slate-900 tracking-tighter">Legit</span>
-              <span className="font-black text-xl text-emerald-500 tracking-tighter">.</span>
-              <span className="font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent tracking-tighter">Discount</span>
-            </Link>
-          </div>
-        </nav>
+      <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
+        <NavBar />
         <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center max-w-md"
           >
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <LogIn className="w-8 h-8 text-emerald-600" />
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+              style={{ backgroundColor: "#d1fae5" }}
+            >
+              <LogIn className="w-8 h-8" style={{ color: "#059669" }} />
             </div>
             <h1 className="text-2xl font-black text-gray-900 mb-3">Sign in to submit deals</h1>
             <p className="text-gray-500 mb-8">
@@ -183,7 +325,8 @@ export default function SubmitDealPage() {
             </p>
             <button
               onClick={() => signInWithGoogle()}
-              className="inline-flex items-center gap-2 px-8 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+              style={{ backgroundColor: "#111827", color: "#fff" }}
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
             >
               <LogIn className="w-4 h-4" />
               Sign in with Google
@@ -194,18 +337,11 @@ export default function SubmitDealPage() {
     );
   }
 
-  if (submitted) {
+  // ── Result: Approved
+  if (resultStatus === "approved") {
     return (
-      <main className="min-h-screen bg-gray-50">
-        <nav className="fixed top-0 w-full h-14 border-b border-gray-100 bg-white z-50">
-          <div className="max-w-7xl mx-auto h-full px-4 flex items-center">
-            <Link href="/" className="flex items-baseline leading-none">
-              <span className="font-black text-xl text-slate-900 tracking-tighter">Legit</span>
-              <span className="font-black text-xl text-emerald-500 tracking-tighter">.</span>
-              <span className="font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent tracking-tighter">Discount</span>
-            </Link>
-          </div>
-        </nav>
+      <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
+        <NavBar />
         <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
           <div className="relative">
             {confettiColors.map((color, i) =>
@@ -235,26 +371,46 @@ export default function SubmitDealPage() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", bounce: 0.5 }}
-                className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"
+                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+                style={{ backgroundColor: "#d1fae5" }}
               >
-                <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+                <CheckCircle2 className="w-10 h-10" style={{ color: "#10b981" }} />
               </motion.div>
-              <h1 className="text-2xl font-black text-gray-900 mb-3">Deal Submitted!</h1>
-              <p className="text-gray-500 max-w-md mx-auto mb-8 leading-relaxed">
-                Your deal has been submitted! Our AI will review and publish it within minutes.
+              <h1 className="text-2xl font-black text-gray-900 mb-3">Deal Published!</h1>
+              {aiConfidence !== null && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-4"
+                  style={{ backgroundColor: "#ecfdf5", border: "1px solid #a7f3d0" }}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" style={{ color: "#059669" }} />
+                  <span className="text-xs font-semibold" style={{ color: "#059669" }}>
+                    AI Confidence: {aiConfidence}%
+                  </span>
+                </motion.div>
+              )}
+              <p className="text-gray-500 max-w-md mx-auto mb-2 leading-relaxed">
+                Your deal has been verified by our AI and is now live on the platform!
               </p>
-              <div className="flex items-center justify-center gap-3">
-                <Link href="/" className="px-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors">
+              {storeCreated && (
+                <p className="text-sm mb-6" style={{ color: "#059669" }}>
+                  A new store was also created for this deal.
+                </p>
+              )}
+              <div className="flex items-center justify-center gap-3 mt-6">
+                <Link
+                  href="/"
+                  style={{ backgroundColor: "#111827", color: "#fff" }}
+                  className="px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+                >
                   Back to Deals
                 </Link>
                 <button
-                  onClick={() => {
-                    setSubmitted(false);
-                    setStoreId(""); setStoreSearch(""); setDealUrl(""); setPromoCode("");
-                    setSavingsType(""); setSavingsAmount(""); setTitle(""); setDescription("");
-                    setCategoryId(""); setConditions(""); setExpirationDate(""); setErrors({});
-                  }}
-                  className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
+                  onClick={resetForm}
+                  style={{ backgroundColor: "#059669", color: "#fff" }}
+                  className="px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
                 >
                   Submit Another
                 </button>
@@ -266,17 +422,140 @@ export default function SubmitDealPage() {
     );
   }
 
-  return (
-    <main className="min-h-screen bg-gray-50">
-      <nav className="fixed top-0 w-full h-14 border-b border-gray-100 bg-white z-50">
-        <div className="max-w-7xl mx-auto h-full px-4 flex items-center">
-          <Link href="/" className="flex items-baseline leading-none">
-            <span className="font-black text-xl text-slate-900 tracking-tighter">Legit</span>
-            <span className="font-black text-xl text-emerald-500 tracking-tighter">.</span>
-            <span className="font-black text-xl bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent tracking-tighter">Discount</span>
-          </Link>
+  // ── Result: Needs Review
+  if (resultStatus === "needs_review") {
+    return (
+      <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
+        <NavBar />
+        <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, type: "spring", bounce: 0.3 }}
+            className="text-center max-w-md"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", bounce: 0.5 }}
+              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+              style={{ backgroundColor: "#fef3c7" }}
+            >
+              <Clock className="w-10 h-10" style={{ color: "#d97706" }} />
+            </motion.div>
+            <h1 className="text-2xl font-black text-gray-900 mb-3">Submitted for Review</h1>
+            <div
+              className="rounded-xl p-4 mb-6 text-left"
+              style={{ backgroundColor: "#fffbeb", border: "1px solid #fde68a" }}
+            >
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "#d97706" }} />
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: "#92400e" }}>
+                    AI flagged this for a quick manual check
+                  </p>
+                  <p className="text-sm mt-1" style={{ color: "#a16207" }}>
+                    This usually happens for newer stores or unusually high discounts. Your deal should be live within 24 hours.
+                  </p>
+                </div>
+              </div>
+            </div>
+            {storeCreated && (
+              <p className="text-sm mb-4" style={{ color: "#059669" }}>
+                A new store was also created for this deal.
+              </p>
+            )}
+            <div className="flex items-center justify-center gap-3">
+              <Link
+                href="/"
+                style={{ backgroundColor: "#111827", color: "#fff" }}
+                className="px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              >
+                Back to Deals
+              </Link>
+              <button
+                onClick={resetForm}
+                style={{ backgroundColor: "#d97706", color: "#fff" }}
+                className="px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              >
+                Submit Another
+              </button>
+            </div>
+          </motion.div>
         </div>
-      </nav>
+      </main>
+    );
+  }
+
+  // ── Result: Duplicate
+  if (resultStatus === "duplicate") {
+    return (
+      <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
+        <NavBar />
+        <div className="pt-14 flex items-center justify-center min-h-[calc(100vh-56px)] px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, type: "spring", bounce: 0.3 }}
+            className="text-center max-w-md w-full"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", bounce: 0.5 }}
+              className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
+              style={{ backgroundColor: "#fee2e2" }}
+            >
+              <XCircle className="w-10 h-10" style={{ color: "#ef4444" }} />
+            </motion.div>
+            <h1 className="text-2xl font-black text-gray-900 mb-3">This Deal Already Exists</h1>
+            <p className="text-gray-500 mb-6">
+              We found matching deals that are already on the platform.
+            </p>
+            <div className="space-y-2 mb-6 text-left">
+              {duplicateMatches.map((match, i) => (
+                <motion.div
+                  key={match.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                  className="rounded-xl p-3 flex items-center gap-3"
+                  style={{ backgroundColor: "#fef2f2", border: "1px solid #fecaca" }}
+                >
+                  <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: "#ef4444" }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">{match.title}</p>
+                    <p className="text-xs" style={{ color: "#dc2626" }}>{match.reason}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            <div className="flex items-center justify-center gap-3">
+              <Link
+                href="/"
+                style={{ backgroundColor: "#111827", color: "#fff" }}
+                className="px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              >
+                Back to Deals
+              </Link>
+              <button
+                onClick={resetForm}
+                style={{ backgroundColor: "#ef4444", color: "#fff" }}
+                className="px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              >
+                Try Different Deal
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Main form
+  return (
+    <main style={{ minHeight: "100vh", backgroundColor: "#f9fafb" }}>
+      <NavBar />
 
       <div className="pt-14">
         <div className="max-w-2xl mx-auto px-4 py-4">
@@ -287,7 +566,7 @@ export default function SubmitDealPage() {
           </nav>
         </div>
 
-        <div className="max-w-2xl mx-auto px-4 py-4 pb-16">
+        <div className="max-w-2xl mx-auto px-4 py-4 pb-24">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-8">
             <h1 className="text-3xl font-black text-gray-900 mb-2">Submit a Deal</h1>
             <p className="text-gray-500">Found a deal we&apos;re missing? Share it with the community.</p>
@@ -297,87 +576,192 @@ export default function SubmitDealPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.05 }}
-            className="mb-8 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-100 p-4 flex items-start gap-3"
+            className="mb-8 rounded-2xl p-4 flex items-start gap-3"
+            style={{ background: "linear-gradient(to right, #ecfdf5, #f0fdfa)", border: "1px solid #a7f3d0" }}
           >
-            <div className="w-10 h-10 rounded-xl bg-white border border-emerald-100 flex items-center justify-center shrink-0">
-              <Bot className="w-5 h-5 text-emerald-500" />
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ backgroundColor: "#fff", border: "1px solid #a7f3d0" }}
+            >
+              <Bot className="w-5 h-5" style={{ color: "#10b981" }} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-emerald-800 mb-0.5">AI-Powered Review</p>
-              <p className="text-sm text-emerald-600/80 leading-relaxed">
-                Our AI will automatically verify your deal, format it for the platform, and publish it if it checks out.
+              <p className="text-sm font-semibold" style={{ color: "#065f46" }}>AI-Powered Review</p>
+              <p className="text-sm leading-relaxed" style={{ color: "rgba(5,150,105,0.8)" }}>
+                Our AI automatically checks for duplicates, evaluates deal quality, and can even create new stores. High-quality deals are published instantly.
               </p>
             </div>
           </motion.div>
 
+          {/* Live duplicate warning */}
+          <AnimatePresence>
+            {liveDuplicates.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-6 overflow-hidden"
+              >
+                <div
+                  className="rounded-2xl p-4"
+                  style={{ backgroundColor: "#fffbeb", border: "1px solid #fde68a" }}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="w-4 h-4" style={{ color: "#d97706" }} />
+                    <span className="text-sm font-semibold" style={{ color: "#92400e" }}>
+                      Possible duplicates found
+                    </span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {liveDuplicates.map((m) => (
+                      <div key={m.id} className="flex items-center gap-2 text-sm" style={{ color: "#a16207" }}>
+                        <span className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: "#d97706" }} />
+                        <span className="truncate">{m.title}</span>
+                        <span className="text-xs shrink-0" style={{ color: "#ca8a04" }}>({m.reason})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Store */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Store <span className="text-red-400">*</span></label>
-              <div className="relative">
-                <div
-                  className={`w-full flex items-center gap-2 rounded-xl border px-4 py-3 cursor-pointer transition-all ${
-                    storeDropdownOpen ? "border-emerald-500 ring-1 ring-emerald-500" : errors.store ? "border-red-300" : "border-gray-200"
-                  }`}
-                  onClick={() => setStoreDropdownOpen(!storeDropdownOpen)}
-                >
-                  <Search className="w-4 h-4 text-gray-400 shrink-0" />
-                  {storeDropdownOpen ? (
-                    <input
-                      type="text" value={storeSearch} onChange={(e) => setStoreSearch(e.target.value)}
-                      onClick={(e) => e.stopPropagation()} placeholder="Search stores..."
-                      className="flex-1 outline-none text-sm bg-transparent" autoFocus
-                    />
-                  ) : (
-                    <span className={`flex-1 text-sm ${selectedStore ? "text-gray-900" : "text-gray-400"}`}>
-                      {selectedStore ? selectedStore.name : "Select a store"}
-                    </span>
-                  )}
-                  <ChevronDown className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${storeDropdownOpen ? "rotate-180" : ""}`} />
-                </div>
-                <AnimatePresence>
-                  {storeDropdownOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl z-30 max-h-52 overflow-y-auto"
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Store <span style={{ color: "#f87171" }}>*</span></label>
+
+              {isNewStore ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="flex-1 flex items-center gap-2 rounded-xl px-4 py-3"
+                      style={{ border: "1px solid #a7f3d0", backgroundColor: "#ecfdf5" }}
                     >
-                      {filteredStores.length > 0 ? (
-                        filteredStores.map((s) => (
-                          <button
-                            key={s.id} type="button"
-                            onClick={() => {
-                              setStoreId(s.id); setStoreSearch(""); setStoreDropdownOpen(false);
-                              if (errors.store) setErrors((prev) => { const next = { ...prev }; delete next.store; return next; });
-                            }}
-                            className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center justify-between ${
-                              s.id === storeId ? "bg-emerald-50 text-emerald-700 font-medium" : "text-gray-700"
-                            }`}
-                          >
-                            <span>{s.name}</span>
-                            <span className="text-xs text-gray-400">{s.domain}</span>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-4 py-3 text-sm text-gray-400">No stores found</div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              {errors.store && <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{errors.store}</p>}
+                      <Plus className="w-4 h-4" style={{ color: "#059669" }} />
+                      <span className="text-sm font-medium" style={{ color: "#065f46" }}>
+                        New store: {storeSearch}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsNewStore(false);
+                        setNewStoreDomain("");
+                        setStoreSearch("");
+                      }}
+                      className="text-sm px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1.5">Store Domain</label>
+                    <input
+                      type="text"
+                      value={newStoreDomain}
+                      onChange={(e) => {
+                        setNewStoreDomain(e.target.value);
+                        if (errors.storeDomain) setErrors((prev) => { const next = { ...prev }; delete next.storeDomain; return next; });
+                      }}
+                      placeholder="e.g., example.com"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                    />
+                    {errors.storeDomain && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.storeDomain}</p>}
+                  </div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <div
+                    className="w-full flex items-center gap-2 rounded-xl border px-4 py-3 cursor-pointer transition-all"
+                    style={{
+                      borderColor: storeDropdownOpen ? "#10b981" : errors.store ? "#fca5a5" : "#e5e7eb",
+                      boxShadow: storeDropdownOpen ? "0 0 0 1px #10b981" : "none",
+                    }}
+                    onClick={() => setStoreDropdownOpen(!storeDropdownOpen)}
+                  >
+                    <Search className="w-4 h-4 text-gray-400 shrink-0" />
+                    {storeDropdownOpen ? (
+                      <input
+                        type="text" value={storeSearch} onChange={(e) => setStoreSearch(e.target.value)}
+                        onClick={(e) => e.stopPropagation()} placeholder="Search stores..."
+                        className="flex-1 outline-none text-sm bg-transparent" autoFocus
+                      />
+                    ) : (
+                      <span className={`flex-1 text-sm ${selectedStore ? "text-gray-900" : "text-gray-400"}`}>
+                        {selectedStore ? selectedStore.name : "Select a store"}
+                      </span>
+                    )}
+                    <ChevronDown
+                      className="w-4 h-4 text-gray-400 shrink-0 transition-transform"
+                      style={{ transform: storeDropdownOpen ? "rotate(180deg)" : "none" }}
+                    />
+                  </div>
+                  <AnimatePresence>
+                    {storeDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-gray-200 rounded-xl shadow-xl z-30 max-h-52 overflow-y-auto"
+                      >
+                        {filteredStores.length > 0 ? (
+                          filteredStores.map((s) => (
+                            <button
+                              key={s.id} type="button"
+                              onClick={() => {
+                                setStoreId(s.id); setStoreSearch(""); setStoreDropdownOpen(false);
+                                if (errors.store) setErrors((prev) => { const next = { ...prev }; delete next.store; return next; });
+                              }}
+                              className="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center justify-between"
+                              style={{
+                                backgroundColor: s.id === storeId ? "#ecfdf5" : undefined,
+                                color: s.id === storeId ? "#047857" : "#374151",
+                                fontWeight: s.id === storeId ? 500 : undefined,
+                              }}
+                            >
+                              <span>{s.name}</span>
+                              <span className="text-xs text-gray-400">{s.domain}</span>
+                            </button>
+                          ))
+                        ) : storeSearch.trim() ? (
+                          <div className="p-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsNewStore(true);
+                                setStoreDropdownOpen(false);
+                                setStoreId("");
+                                if (errors.store) setErrors((prev) => { const next = { ...prev }; delete next.store; return next; });
+                              }}
+                              className="w-full text-left px-3 py-2.5 text-sm rounded-lg flex items-center gap-2 transition-colors"
+                              style={{ backgroundColor: "#ecfdf5", color: "#059669" }}
+                            >
+                              <Plus className="w-4 h-4" />
+                              <span className="font-medium">Add &quot;{storeSearch}&quot; as a new store</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="px-4 py-3 text-sm text-gray-400">No stores found</div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
+              {errors.store && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.store}</p>}
             </motion.div>
 
             {/* Deal URL */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Deal URL <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Deal URL <span style={{ color: "#f87171" }}>*</span></label>
               <input
                 type="text" value={dealUrl}
                 onChange={(e) => { setDealUrl(e.target.value); if (errors.dealUrl) setErrors((prev) => { const next = { ...prev }; delete next.dealUrl; return next; }); }}
                 placeholder="https://example.com/deal"
-                className={`w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all ${errors.dealUrl ? "border-red-300" : "border-gray-200"}`}
+                className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                style={{ borderColor: errors.dealUrl ? "#fca5a5" : "#e5e7eb" }}
               />
-              {errors.dealUrl && <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{errors.dealUrl}</p>}
+              {errors.dealUrl && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.dealUrl}</p>}
             </motion.div>
 
             {/* Promo Code */}
@@ -394,72 +778,83 @@ export default function SubmitDealPage() {
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.25 }} className="bg-white rounded-2xl border border-gray-100 p-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Savings Type <span className="text-red-400">*</span></label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Savings Type <span style={{ color: "#f87171" }}>*</span></label>
                   <select
                     value={savingsType}
                     onChange={(e) => { setSavingsType(e.target.value as DealType | ""); if (errors.savingsType) setErrors((prev) => { const next = { ...prev }; delete next.savingsType; return next; }); }}
-                    className={`w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all appearance-none bg-white ${errors.savingsType ? "border-red-300" : "border-gray-200"} ${!savingsType ? "text-gray-400" : "text-gray-900"}`}
+                    className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all appearance-none bg-white"
+                    style={{
+                      borderColor: errors.savingsType ? "#fca5a5" : "#e5e7eb",
+                      color: !savingsType ? "#9ca3af" : "#111827",
+                    }}
                   >
                     <option value="">Select type</option>
                     {savingsTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                   </select>
-                  {errors.savingsType && <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{errors.savingsType}</p>}
+                  {errors.savingsType && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.savingsType}</p>}
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Savings Amount <span className="text-red-400">*</span></label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Savings Amount <span style={{ color: "#f87171" }}>*</span></label>
                   <input
                     type="text" value={savingsAmount}
                     onChange={(e) => { setSavingsAmount(e.target.value); if (errors.savingsAmount) setErrors((prev) => { const next = { ...prev }; delete next.savingsAmount; return next; }); }}
                     placeholder='e.g., "50% OFF", "$30 OFF"'
-                    className={`w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all ${errors.savingsAmount ? "border-red-300" : "border-gray-200"}`}
+                    className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                    style={{ borderColor: errors.savingsAmount ? "#fca5a5" : "#e5e7eb" }}
                   />
-                  {errors.savingsAmount && <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{errors.savingsAmount}</p>}
+                  {errors.savingsAmount && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.savingsAmount}</p>}
                 </div>
               </div>
             </motion.div>
 
             {/* Title */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.3 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Deal Title <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Deal Title <span style={{ color: "#f87171" }}>*</span></label>
               <input
                 type="text" value={title}
                 onChange={(e) => { if (e.target.value.length <= 100) setTitle(e.target.value); if (errors.title) setErrors((prev) => { const next = { ...prev }; delete next.title; return next; }); }}
                 placeholder="e.g., 40% Off Select Electronics"
-                className={`w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all ${errors.title ? "border-red-300" : "border-gray-200"}`}
+                className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all"
+                style={{ borderColor: errors.title ? "#fca5a5" : "#e5e7eb" }}
               />
               <div className="flex items-center justify-between mt-1.5">
-                {errors.title ? <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{errors.title}</p> : <span />}
-                <span className={`text-xs ${title.length > 90 ? "text-orange-500" : "text-gray-400"}`}>{title.length}/100</span>
+                {errors.title ? <p className="text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.title}</p> : <span />}
+                <span className="text-xs" style={{ color: title.length > 90 ? "#f97316" : "#9ca3af" }}>{title.length}/100</span>
               </div>
             </motion.div>
 
             {/* Description */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.35 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Description <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Description <span style={{ color: "#f87171" }}>*</span></label>
               <textarea
                 value={description}
                 onChange={(e) => { if (e.target.value.length <= 500) setDescription(e.target.value); if (errors.description) setErrors((prev) => { const next = { ...prev }; delete next.description; return next; }); }}
                 rows={3} placeholder="Describe the deal, what's included, any tips..."
-                className={`w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all resize-none ${errors.description ? "border-red-300" : "border-gray-200"}`}
+                className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all resize-none"
+                style={{ borderColor: errors.description ? "#fca5a5" : "#e5e7eb" }}
               />
               <div className="flex items-center justify-between mt-1.5">
-                {errors.description ? <p className="text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{errors.description}</p> : <span />}
-                <span className={`text-xs ${description.length > 450 ? "text-orange-500" : "text-gray-400"}`}>{description.length}/500</span>
+                {errors.description ? <p className="text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.description}</p> : <span />}
+                <span className="text-xs" style={{ color: description.length > 450 ? "#f97316" : "#9ca3af" }}>{description.length}/500</span>
               </div>
             </motion.div>
 
             {/* Category */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.4 }} className="bg-white rounded-2xl border border-gray-100 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Category <span className="text-red-400">*</span></label>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Category <span style={{ color: "#f87171" }}>*</span></label>
               <select
                 value={categoryId}
                 onChange={(e) => { setCategoryId(e.target.value); if (errors.category) setErrors((prev) => { const next = { ...prev }; delete next.category; return next; }); }}
-                className={`w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all appearance-none bg-white ${errors.category ? "border-red-300" : "border-gray-200"} ${!categoryId ? "text-gray-400" : "text-gray-900"}`}
+                className="w-full rounded-xl border px-4 py-3 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all appearance-none bg-white"
+                style={{
+                  borderColor: errors.category ? "#fca5a5" : "#e5e7eb",
+                  color: !categoryId ? "#9ca3af" : "#111827",
+                }}
               >
                 <option value="">Select a category</option>
                 {categoriesList.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.name}</option>)}
               </select>
-              {errors.category && <p className="mt-1.5 text-sm text-red-500 flex items-center gap-1"><AlertCircle className="w-3.5 h-3.5" />{errors.category}</p>}
+              {errors.category && <p className="mt-1.5 text-sm flex items-center gap-1" style={{ color: "#ef4444" }}><AlertCircle className="w-3.5 h-3.5" />{errors.category}</p>}
             </motion.div>
 
             {/* Conditions */}
@@ -482,22 +877,94 @@ export default function SubmitDealPage() {
               />
             </motion.div>
 
-            {/* Submit */}
+            {/* Submit Button - Multi-phase */}
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.55 }}>
               <button
                 type="submit"
-                disabled={submitting}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl py-3 font-semibold text-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                disabled={submitPhase !== "idle"}
+                className="w-full rounded-xl py-3.5 font-semibold text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                style={{
+                  backgroundColor: submitPhase !== "idle" ? "#6ee7b7" : "#059669",
+                  color: "#fff",
+                }}
               >
-                <Send className="w-5 h-5" />
-                {submitting ? "Submitting..." : "Submit Deal"}
+                <AnimatePresence mode="wait">
+                  {submitPhase === "idle" && (
+                    <motion.span
+                      key="idle"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Send className="w-5 h-5" />
+                      Submit Deal
+                    </motion.span>
+                  )}
+                  {submitPhase === "checking_duplicates" && (
+                    <motion.span
+                      key="checking"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Checking for duplicates...
+                    </motion.span>
+                  )}
+                  {submitPhase === "analyzing" && (
+                    <motion.span
+                      key="analyzing"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Sparkles className="w-5 h-5 animate-pulse" />
+                      AI analyzing...
+                    </motion.span>
+                  )}
+                  {submitPhase === "creating" && (
+                    <motion.span
+                      key="creating"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center gap-2"
+                    >
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Publishing deal...
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </button>
               <p className="text-center text-xs text-gray-400 mt-3">
-                By submitting, you agree to our community guidelines. Deals are reviewed before publishing.
+                By submitting, you agree to our community guidelines. Deals are reviewed by AI before publishing.
               </p>
             </motion.div>
           </form>
         </div>
+      </div>
+
+      {/* AI Watcher Badge - floating pill */}
+      <div
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-3 py-2 rounded-full shadow-lg"
+        style={{ backgroundColor: "#fff", border: "1px solid #e5e7eb" }}
+      >
+        <span className="relative flex h-2.5 w-2.5">
+          <span
+            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+            style={{ backgroundColor: "#10b981" }}
+          />
+          <span
+            className="relative inline-flex rounded-full h-2.5 w-2.5"
+            style={{ backgroundColor: "#10b981" }}
+          />
+        </span>
+        <span className="text-xs font-medium text-gray-500">
+          {checkingDuplicates ? "Checking..." : "AI monitoring"}
+        </span>
       </div>
     </main>
   );

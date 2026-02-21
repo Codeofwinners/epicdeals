@@ -82,7 +82,7 @@ export async function getHotDeals(limit = 6): Promise<Deal[]> {
   const snap = await getDocs(q);
   return snap.docs
     .map((d) => docToDeal(d as unknown as { id: string; data: () => Record<string, unknown> }))
-    .filter((d) => d.status !== "expired")
+    .filter((d) => d.status !== "expired" && d.status !== "pending_review")
     .slice(0, limit);
 }
 
@@ -96,7 +96,7 @@ export async function getPopularDeals(limit = 12): Promise<Deal[]> {
   const snap = await getDocs(q);
   return snap.docs
     .map((d) => docToDeal(d as unknown as { id: string; data: () => Record<string, unknown> }))
-    .filter((d) => d.status !== "expired")
+    .filter((d) => d.status !== "expired" && d.status !== "pending_review")
     .slice(0, limit);
 }
 
@@ -108,7 +108,9 @@ export async function getNewDeals(limit = 10): Promise<Deal[]> {
     firestoreLimit(limit)
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => docToDeal(d as unknown as { id: string; data: () => Record<string, unknown> }));
+  return snap.docs
+    .map((d) => docToDeal(d as unknown as { id: string; data: () => Record<string, unknown> }))
+    .filter((d) => d.status !== "pending_review");
 }
 
 /** Expiring Soon: has expiresAt within 72 hours, sorted by soonest */
@@ -143,7 +145,7 @@ export async function getDealsByCategory(
   const snap = await getDocs(q);
   return snap.docs
     .map((d) => docToDeal(d as unknown as { id: string; data: () => Record<string, unknown> }))
-    .filter((d) => d.status !== "expired")
+    .filter((d) => d.status !== "expired" && d.status !== "pending_review")
     .slice(0, limit);
 }
 
@@ -191,7 +193,7 @@ export async function getFilteredDeals(options: {
     const snap = await getDocs(q);
     return snap.docs
       .map((d) => docToDeal(d as any))
-      .filter((d) => d.status !== "expired");
+      .filter((d) => d.status !== "expired" && d.status !== "pending_review");
   } catch (error: any) {
     console.warn("Firestore index missing or query failed, falling back to in-memory filter:", error.message);
 
@@ -223,7 +225,7 @@ export async function getFilteredDeals(options: {
       const field = sortFields[sortBy];
       deals.sort((a: any, b: any) => (b[field] || 0) - (a[field] || 0));
 
-      return deals.filter(d => d.status !== "expired").slice(0, options.limit || 20);
+      return deals.filter(d => d.status !== "expired" && d.status !== "pending_review").slice(0, options.limit || 20);
     } catch (fallbackError) {
       console.error("Critical error fetching deals:", fallbackError);
       return [];
@@ -1001,4 +1003,35 @@ export function getTimeRemaining(expiresAt: string | undefined): number | null {
   if (diffMs <= 0) return 0;
 
   return Math.ceil(diffMs / (1000 * 60 * 60)); // Convert to hours
+}
+
+// ─── Admin Review Queue ─────────────────────────────────────────
+
+/** Get all deals pending review, newest first */
+export async function getPendingReviewDeals(): Promise<Deal[]> {
+  if (!dealsCol) return [];
+  const q = query(
+    dealsCol,
+    where("status", "==", "pending_review"),
+    orderBy("createdAt", "desc")
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) =>
+    docToDeal(d as unknown as { id: string; data: () => Record<string, unknown> })
+  );
+}
+
+/** Approve a pending deal (moves to newly_added) */
+export async function approveDeal(dealId: string): Promise<void> {
+  if (!db) throw new Error("Firebase not initialized");
+  await updateDoc(doc(db, "deals", dealId), {
+    status: "newly_added",
+    reviewedAt: Timestamp.now(),
+  });
+}
+
+/** Reject a pending deal (deletes it) */
+export async function rejectDeal(dealId: string): Promise<void> {
+  if (!db) throw new Error("Firebase not initialized");
+  await deleteDoc(doc(db, "deals", dealId));
 }
