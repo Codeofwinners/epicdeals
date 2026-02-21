@@ -1010,15 +1010,19 @@ export function getTimeRemaining(expiresAt: string | undefined): number | null {
 /** Get all deals pending review, newest first */
 export async function getPendingReviewDeals(): Promise<Deal[]> {
   if (!dealsCol) return [];
-  const q = query(
-    dealsCol,
-    where("status", "==", "pending_review"),
-    orderBy("createdAt", "desc")
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map((d) =>
-    docToDeal(d as unknown as { id: string; data: () => Record<string, unknown> })
-  );
+  try {
+    const q = query(
+      dealsCol,
+      where("status", "==", "pending_review")
+    );
+    const snap = await getDocs(q);
+    return snap.docs
+      .map((d) => docToDeal(d as unknown as { id: string; data: () => Record<string, unknown> }))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  } catch (err) {
+    console.error("Error fetching pending review deals:", err);
+    return [];
+  }
 }
 
 /** Approve a pending deal (moves to newly_added) */
