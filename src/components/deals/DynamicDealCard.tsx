@@ -203,26 +203,12 @@ export function ExpiryBadge({ expiresAt, dark = false }: { expiresAt?: string; d
 // ─── Verified ─────────────────────────────────────────────────────────────────
 
 export function VerifiedShield({ size = 14 }: { size?: number; color?: string }) {
-  const uid = `vs_${size}`;
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, display: "inline-block", verticalAlign: "middle", filter: "drop-shadow(0 1px 3px rgba(14,165,233,0.35))" }}>
-      <defs>
-        <linearGradient id={`${uid}_bg`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#0EA5E9" />
-          <stop offset="50%" stopColor="#06B6D4" />
-          <stop offset="100%" stopColor="#22D3EE" />
-        </linearGradient>
-        <linearGradient id={`${uid}_shine`} x1="0%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.4)" />
-          <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-        </linearGradient>
-      </defs>
-      {/* Shield body */}
-      <path d="M12 2L3 6.5V11.5C3 16.74 6.84 21.64 12 23C17.16 21.64 21 16.74 21 11.5V6.5L12 2Z" fill={`url(#${uid}_bg)`} />
-      {/* Highlight / shine layer */}
-      <path d="M12 2L3 6.5V11.5C3 16.74 6.84 21.64 12 23C17.16 21.64 21 16.74 21 11.5V6.5L12 2Z" fill={`url(#${uid}_shine)`} />
-      {/* Checkmark */}
-      <path d="M10 15.5L6.5 12L7.91 10.59L10 12.67L16.09 6.59L17.5 8L10 15.5Z" fill="#fff" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, display: "inline-block", verticalAlign: "middle" }}>
+      {/* Outer starburst / badge shape */}
+      <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82 1.89 3.2L12 21.04l3.4 1.46 1.89-3.2 3.61-.82-.34-3.69L23 12z" fill="#0EA5E9" />
+      {/* White checkmark */}
+      <path d="M10 17l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" fill="#fff" />
     </svg>
   );
 }

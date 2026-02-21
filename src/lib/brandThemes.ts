@@ -86,16 +86,16 @@ export function getCardUITheme(themeType: "bright" | "dark" | "default"): CardUI
 // ─── Brand Color Database (80+ brands) ─────────────────────────────────────────
 
 const BRAND_DATABASE: Record<string, BrandColors> = {
-  // ── Existing hardcoded brands (must match current visuals exactly) ──
+  // ── Existing hardcoded brands ──
   "nike":            { primary: "#111111", isDark: true, glowColor: "rgba(168,85,247,0.3)" },
   "spotify":         { primary: "#1DB954", isDark: true },
   "uber-eats":       { primary: "#0A0A0A", isDark: true },
 
   // ── Retail / Department ──
-  "amazon":          { primary: "#FF9900", secondary: "#232F3E", isDark: true },
+  "amazon":          { primary: "#FF9900", isDark: true },
   "target":          { primary: "#CC0000", isDark: true },
   "walmart":         { primary: "#0071CE", isDark: true },
-  "costco":          { primary: "#E31837", secondary: "#005DAA", isDark: true },
+  "costco":          { primary: "#E31837", isDark: true },
   "macys":           { primary: "#E21A2C", isDark: true },
   "nordstrom":       { primary: "#1B1B1B", isDark: true },
   "kohls":           { primary: "#8B0000", isDark: true },
@@ -103,13 +103,13 @@ const BRAND_DATABASE: Record<string, BrandColors> = {
   "marshalls":       { primary: "#2E3192", isDark: true },
 
   // ── Tech / Electronics ──
-  "apple":           { primary: "#1D1D1F", secondary: "#555555", isDark: true },
+  "apple":           { primary: "#1D1D1F", isDark: true },
   "samsung":         { primary: "#1428A0", isDark: true },
-  "best-buy":        { primary: "#0046BE", secondary: "#FFE000", isDark: true },
-  "newegg":          { primary: "#F7A300", secondary: "#2D2D2D", isDark: true },
-  "microsoft":       { primary: "#737373", secondary: "#00A4EF", isDark: true },
-  "google":          { primary: "#4285F4", secondary: "#34A853", isDark: true },
-  "adobe":           { primary: "#FF0000", secondary: "#330000", isDark: true },
+  "best-buy":        { primary: "#0046BE", isDark: true },
+  "newegg":          { primary: "#F7A300", isDark: true },
+  "microsoft":       { primary: "#00A4EF", isDark: true },
+  "google":          { primary: "#4285F4", isDark: true },
+  "adobe":           { primary: "#FF0000", isDark: true },
 
   // ── Fashion / Apparel ──
   "adidas":          { primary: "#1A1A1A", isDark: true },
@@ -122,8 +122,8 @@ const BRAND_DATABASE: Record<string, BrandColors> = {
   "hm":              { primary: "#E50010", isDark: true },
   "h-m":             { primary: "#E50010", isDark: true },
   "zara":            { primary: "#1A1A1A", isDark: true },
-  "forever-21":      { primary: "#FFD700", secondary: "#1A1A1A", isDark: false },
-  "foot-locker":     { primary: "#1A1A1A", secondary: "#CF0A2C", isDark: true },
+  "forever-21":      { primary: "#1A1A1A", isDark: true },
+  "foot-locker":     { primary: "#1A1A1A", isDark: true },
   "dicks-sporting-goods": { primary: "#00703C", isDark: true },
   "patagonia":       { primary: "#1A2B49", isDark: true },
   "the-north-face":  { primary: "#1A1A1A", isDark: true },
@@ -131,7 +131,7 @@ const BRAND_DATABASE: Record<string, BrandColors> = {
   "rei":             { primary: "#1A5632", isDark: true },
 
   // ── Beauty / Personal Care ──
-  "sephora":         { primary: "#1A1A1A", secondary: "#E0004D", isDark: true },
+  "sephora":         { primary: "#1A1A1A", isDark: true },
   "ulta":            { primary: "#F26522", isDark: true },
   "bath-body-works": { primary: "#1A3E6F", isDark: true },
   "victorias-secret": { primary: "#D4006A", isDark: true },
@@ -139,13 +139,13 @@ const BRAND_DATABASE: Record<string, BrandColors> = {
   // ── Home / Furniture ──
   "home-depot":      { primary: "#F96302", isDark: true },
   "lowes":           { primary: "#004990", isDark: true },
-  "ikea":            { primary: "#0058A3", secondary: "#FFDA1A", isDark: true },
+  "ikea":            { primary: "#0058A3", isDark: true },
   "wayfair":         { primary: "#7B189F", isDark: true },
 
   // ── Food / Delivery ──
   "starbucks":       { primary: "#00704A", isDark: true },
-  "mcdonalds":       { primary: "#DA291C", secondary: "#FFC72C", isDark: true },
-  "dominos":         { primary: "#006491", secondary: "#E31837", isDark: true },
+  "mcdonalds":       { primary: "#DA291C", isDark: true },
+  "dominos":         { primary: "#006491", isDark: true },
   "pizza-hut":       { primary: "#EE3A23", isDark: true },
   "papa-johns":      { primary: "#1A6F30", isDark: true },
   "grubhub":         { primary: "#F63440", isDark: true },
@@ -153,21 +153,21 @@ const BRAND_DATABASE: Record<string, BrandColors> = {
   "instacart":       { primary: "#43B02A", isDark: true },
 
   // ── Streaming / Entertainment ──
-  "netflix":         { primary: "#E50914", secondary: "#1A1A1A", isDark: true },
+  "netflix":         { primary: "#E50914", isDark: true },
   "disney-plus":     { primary: "#113CCF", isDark: true },
   "disney":          { primary: "#113CCF", isDark: true },
   "hulu":            { primary: "#1CE783", isDark: true },
   "hbo-max":         { primary: "#5822B4", isDark: true },
   "paramount-plus":  { primary: "#0064FF", isDark: true },
-  "peacock":         { primary: "#1A1A1A", secondary: "#F4C542", isDark: true },
-  "youtube":         { primary: "#FF0000", secondary: "#282828", isDark: true },
+  "peacock":         { primary: "#1A1A1A", isDark: true },
+  "youtube":         { primary: "#FF0000", isDark: true },
 
   // ── Gaming ──
-  "gamestop":        { primary: "#1A1A1A", secondary: "#FF0000", isDark: true },
+  "gamestop":        { primary: "#1A1A1A", isDark: true },
   "playstation":     { primary: "#003087", isDark: true },
   "xbox":            { primary: "#107C10", isDark: true },
   "nintendo":        { primary: "#E60012", isDark: true },
-  "steam":           { primary: "#1B2838", secondary: "#2A475E", isDark: true },
+  "steam":           { primary: "#1B2838", isDark: true },
   "epic-games":      { primary: "#1A1A1A", isDark: true },
 
   // ── Telecom ──
@@ -181,28 +181,28 @@ const BRAND_DATABASE: Record<string, BrandColors> = {
   "walgreens":       { primary: "#E31837", isDark: true },
 
   // ── Marketplace / E-commerce ──
-  "ebay":            { primary: "#E53238", secondary: "#0064D2", isDark: true },
+  "ebay":            { primary: "#E53238", isDark: true },
   "etsy":            { primary: "#F56400", isDark: true },
   "chewy":           { primary: "#1C49C2", isDark: true },
   "wish":            { primary: "#2FB7EC", isDark: true },
   "aliexpress":      { primary: "#E62E04", isDark: true },
-  "shopify":         { primary: "#96BF48", secondary: "#2D3538", isDark: true },
+  "shopify":         { primary: "#96BF48", isDark: true },
 
   // ── Travel ──
   "airbnb":          { primary: "#FF5A5F", isDark: true },
   "booking":         { primary: "#003580", isDark: true },
-  "expedia":         { primary: "#00355F", secondary: "#FBCE08", isDark: true },
+  "expedia":         { primary: "#00355F", isDark: true },
   "hotels-com":      { primary: "#D32F2F", isDark: true },
-  "southwest":       { primary: "#304CB2", secondary: "#FFBF27", isDark: true },
-  "delta":           { primary: "#003A70", secondary: "#C8102E", isDark: true },
-  "united":          { primary: "#002244", secondary: "#0066B2", isDark: true },
+  "southwest":       { primary: "#304CB2", isDark: true },
+  "delta":           { primary: "#003A70", isDark: true },
+  "united":          { primary: "#002244", isDark: true },
 
   // ── Auto / Rideshare ──
   "uber":            { primary: "#1A1A1A", isDark: true },
   "lyft":            { primary: "#FF00BF", isDark: true },
 
   // ── Finance / Services ──
-  "paypal":          { primary: "#003087", secondary: "#009CDE", isDark: true },
+  "paypal":          { primary: "#003087", isDark: true },
   "venmo":           { primary: "#3D95CE", isDark: true },
   "cash-app":        { primary: "#00D632", isDark: true },
 
@@ -215,18 +215,18 @@ const BRAND_DATABASE: Record<string, BrandColors> = {
 // ─── Fallback Palette (12 curated colors) ──────────────────────────────────────
 
 const FALLBACK_PALETTES: BrandColors[] = [
-  { primary: "#1E3A5F", secondary: "#2C5282", isDark: true },  // Deep blue
-  { primary: "#0D6B6E", secondary: "#14919B", isDark: true },  // Teal
-  { primary: "#C04A3A", secondary: "#E8725B", isDark: true },  // Coral
-  { primary: "#1B5E3B", secondary: "#2D8659", isDark: true },  // Forest green
-  { primary: "#5B2D8E", secondary: "#7C4DBC", isDark: true },  // Royal purple
-  { primary: "#A0522D", secondary: "#CD853F", isDark: true },  // Warm amber
-  { primary: "#3B4252", secondary: "#4C566A", isDark: true },  // Slate
-  { primary: "#9B2948", secondary: "#C04B6E", isDark: true },  // Rose
-  { primary: "#2E3192", secondary: "#4A4DE7", isDark: true },  // Indigo
-  { primary: "#0E6251", secondary: "#148F77", isDark: true },  // Emerald
-  { primary: "#8B1A1A", secondary: "#B22222", isDark: true },  // Crimson
-  { primary: "#1A5276", secondary: "#2E86C1", isDark: true },  // Ocean
+  { primary: "#1E3A5F", isDark: true },  // Deep blue
+  { primary: "#0D6B6E", isDark: true },  // Teal
+  { primary: "#C04A3A", isDark: true },  // Coral
+  { primary: "#1B5E3B", isDark: true },  // Forest green
+  { primary: "#5B2D8E", isDark: true },  // Royal purple
+  { primary: "#A0522D", isDark: true },  // Warm amber
+  { primary: "#3B4252", isDark: true },  // Slate
+  { primary: "#9B2948", isDark: true },  // Rose
+  { primary: "#2E3192", isDark: true },  // Indigo
+  { primary: "#0E6251", isDark: true },  // Emerald
+  { primary: "#8B1A1A", isDark: true },  // Crimson
+  { primary: "#1A5276", isDark: true },  // Ocean
 ];
 
 // ─── Deterministic hash ────────────────────────────────────────────────────────
@@ -273,17 +273,10 @@ export function getStoreBrandTheme(storeId: string, storeName: string): BrandThe
     brand = FALLBACK_PALETTES[idx];
   }
 
-  const secondary = brand.secondary || brand.primary;
   const isVivid = isVividColor(brand.primary);
 
-  // Build gradient
-  let bgGradient: string;
-  if (brand.secondary) {
-    bgGradient = `linear-gradient(135deg, ${brand.primary} 0%, ${brand.secondary} 100%)`;
-  } else {
-    // Lighten primary slightly for gradient endpoint
-    bgGradient = `linear-gradient(135deg, ${brand.primary} 0%, ${lighten(brand.primary, 15)} 100%)`;
-  }
+  // Solid color background (no gradient)
+  const bgGradient = brand.primary;
 
   // Determine theme type
   let themeType: "bright" | "dark" | "default";
