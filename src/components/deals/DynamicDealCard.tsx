@@ -6,6 +6,7 @@ import { upvoteDeal, downvoteDeal, getVoteStatus, getCommentCount } from "@/lib/
 import { db } from "@/lib/firebase";
 import { CommentsSection } from "@/components/deals/CommentsSection";
 import { useBestComment } from "@/hooks/useFirestore";
+import Link from "next/link";
 import type { Deal } from "@/types/deals";
 import { getStoreBrandTheme, getCardUITheme, THEME_DEFAULT, type CardUITheme } from "@/lib/brandThemes";
 
@@ -283,16 +284,28 @@ export function ColorCard({ deal, isOpen, toggleComments, liveCommentCount, onCo
           <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: storeColor }}>{deal.store.name}</span>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <ExpiryBadge expiresAt={deal.expiresAt} dark />
-            <a href={deal.dealUrl || "#"} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: "10px", fontWeight: 600, color: theme.learnMore, textDecoration: "none", letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
-              Learn more
-            </a>
           </div>
         </div>
 
-        {hero}
+        <Link href={`/deals/${deal.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", cursor: "pointer" }}>
+          {hero}
+        </Link>
 
-        <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark={isDark} theme={theme} />
+        <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
+          <div style={{ flex: 1 }}>
+            <DealCTA code={deal.code} dealUrl={deal.dealUrl} dark={isDark} theme={theme} />
+          </div>
+          <Link href={`/deals/${deal.slug}`}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
+              padding: "9px 14px", borderRadius: "8px", textDecoration: "none", whiteSpace: "nowrap",
+              backgroundColor: isDark ? "rgba(255,255,255,0.08)" : "#F5F5F5",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.15)" : "#E0E0E0"}`,
+            }}>
+            <span style={{ fontSize: "11px", fontWeight: 800, color: isDark ? "rgba(255,255,255,0.7)" : "#555", letterSpacing: "0.04em" }}>Details</span>
+            <span className="material-symbols-outlined" style={{ fontSize: "12px", color: isDark ? "rgba(255,255,255,0.4)" : "#999", lineHeight: 1 }}>arrow_forward</span>
+          </Link>
+        </div>
 
         <div className="mt-auto">
           {useTopComment
@@ -437,19 +450,29 @@ export default function DynamicDealCard({ deal, isOpen, toggleComments }: { deal
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <ExpiryBadge expiresAt={deal.expiresAt} />
-            <a href={deal.dealUrl || "#"} target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: "10px", fontWeight: 600, color: "#AAAAAA", textDecoration: "none", letterSpacing: "0.02em", whiteSpace: "nowrap" }}>
-              Learn more
-            </a>
-          </div>
+          <ExpiryBadge expiresAt={deal.expiresAt} />
         </div>
 
-        <h3 style={{ fontWeight: 800, fontSize: "13px", lineHeight: 1.3, color: "#0A0A0A", marginBottom: "5px" }}>{deal.title}</h3>
-        <p style={{ fontSize: "11px", color: "#888888", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
+        <Link href={`/deals/${deal.slug}`} style={{ textDecoration: "none", color: "inherit", display: "block", cursor: "pointer" }}>
+          <h3 style={{ fontWeight: 800, fontSize: "13px", lineHeight: 1.3, color: "#0A0A0A", marginBottom: "5px" }}>{deal.title}</h3>
+          <p style={{ fontSize: "11px", color: "#888888", lineHeight: 1.4, marginBottom: "10px" }}>{deal.description}</p>
+        </Link>
 
-        <DealCTA code={deal.code} dealUrl={deal.dealUrl} />
+        <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
+          <div style={{ flex: 1 }}>
+            <DealCTA code={deal.code} dealUrl={deal.dealUrl} />
+          </div>
+          <Link href={`/deals/${deal.slug}`}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: "3px",
+              padding: "9px 14px", borderRadius: "8px", textDecoration: "none", whiteSpace: "nowrap",
+              backgroundColor: "#F5F5F5",
+              border: "1px solid #E0E0E0",
+            }}>
+            <span style={{ fontSize: "11px", fontWeight: 800, color: "#555", letterSpacing: "0.04em" }}>Details</span>
+            <span className="material-symbols-outlined" style={{ fontSize: "12px", color: "#999", lineHeight: 1 }}>arrow_forward</span>
+          </Link>
+        </div>
 
         <div className="mt-auto">
           <TopComment dealId={deal.id} />
