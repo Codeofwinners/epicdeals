@@ -540,9 +540,11 @@ export default function Home() {
             repeating-linear-gradient(-45deg, transparent, transparent 18px, rgba(0,0,0,0.03) 18px, rgba(0,0,0,0.03) 19px);
         }
         .masonry-grid { column-count: 2; column-gap: 12px; }
-        @media (min-width: 768px) { .masonry-grid { column-count: 4; column-gap: 20px; } }
         .masonry-item { break-inside: avoid; margin-bottom: 12px; }
-        @media (min-width: 768px) { .masonry-item { margin-bottom: 20px; } }
+        @media (min-width: 768px) {
+          .masonry-grid { column-count: unset; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: start; }
+          .masonry-item { margin-bottom: 0; }
+        }
         .deal-card { transition: transform 0.2s; }
         .deal-card:hover { transform: translateY(-1px); }
         @keyframes shimmer { 0%{background-position:200% center} 100%{background-position:-200% center} }
