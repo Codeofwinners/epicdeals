@@ -51,8 +51,8 @@ export const THEME_DEFAULT: CardUITheme = {
   divider: "#EFEFEF", icon: "#C0C0C0", countText: "#888", upvoteInactive: "#CCCCCC",
   upvoteActive: gradientText,
   learnMore: "#AAAAAA",
-  verifiedIcon: { ...gradientText, fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
-  verifiedText: { ...gradientText, fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
+  verifiedIcon: { color: "#9CA3AF", fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
+  verifiedText: { color: "#9CA3AF", fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
   ringColor: "#16a34a",
   floatStyle: gradientText,
 };
@@ -61,8 +61,8 @@ export const THEME_DARK: CardUITheme = {
   divider: "rgba(255,255,255,0.08)", icon: "rgba(255,255,255,0.3)", countText: "rgba(255,255,255,0.4)", upvoteInactive: "rgba(255,255,255,0.35)",
   upvoteActive: gradientText,
   learnMore: "rgba(255,255,255,0.4)",
-  verifiedIcon: { ...gradientText, fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
-  verifiedText: { ...gradientText, fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
+  verifiedIcon: { color: "rgba(255,255,255,0.4)", fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
+  verifiedText: { color: "rgba(255,255,255,0.4)", fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
   ringColor: "#16a34a",
   floatStyle: gradientText,
 };
@@ -71,8 +71,8 @@ export const THEME_BRIGHT: CardUITheme = {
   divider: "rgba(255,255,255,0.2)", icon: "rgba(255,255,255,0.85)", countText: "rgba(255,255,255,0.7)", upvoteInactive: "rgba(255,255,255,0.7)",
   upvoteActive: { color: "#fff" },
   learnMore: "rgba(255,255,255,0.8)",
-  verifiedIcon: { color: "#fff", fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
-  verifiedText: { color: "#fff", fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
+  verifiedIcon: { color: "rgba(255,255,255,0.5)", fontSize: "14px", fontVariationSettings: "'FILL' 1", lineHeight: 1, flexShrink: 0, display: "inline-block" },
+  verifiedText: { color: "rgba(255,255,255,0.5)", fontSize: "10px", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, lineHeight: 1.2 },
   ringColor: "#fff",
   floatStyle: { color: "#fff" },
 };
