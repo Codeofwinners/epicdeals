@@ -402,56 +402,48 @@ export default function DashboardPage() {
                         </div>
                       ) : (
                         /* ── Display mode ── */
-                        <div style={{ padding: 16 }}>
-                          {/* Comment header */}
+                        <div style={{ padding: "14px 16px" }}>
+                          {/* Comment header + actions row */}
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                              <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#94a3b8" }}>chat_bubble</span>
-                              <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
-                                {formatTimeAgo(comment.createdAt)}
-                              </span>
+                            <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
+                              {formatTimeAgo(comment.createdAt)}
+                            </span>
+                            <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+                              <button
+                                onClick={() => { setEditingCommentId(comment.id); setEditingCommentText(comment.content); }}
+                                title="Edit"
+                                style={{
+                                  width: 34, height: 34, borderRadius: 10, border: "none",
+                                  background: "transparent", color: "#CBD5E1", cursor: "pointer",
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  transition: "color 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.color = "#0f172a"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.color = "#CBD5E1"; }}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: 19 }}>edit</span>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                title="Delete"
+                                style={{
+                                  width: 34, height: 34, borderRadius: 10, border: "none",
+                                  background: "transparent", color: "#CBD5E1", cursor: "pointer",
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  transition: "color 0.15s ease",
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.color = "#EF4444"; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.color = "#CBD5E1"; }}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: 19 }}>delete</span>
+                              </button>
                             </div>
                           </div>
 
-                          {/* Comment text with left accent border */}
-                          <div style={{
-                            borderLeft: "3px solid #06b6d4",
-                            paddingLeft: 12,
-                            marginBottom: 14,
-                            marginLeft: 2,
-                          }}>
-                            <p style={{ fontSize: 14, color: "#334155", lineHeight: 1.6, margin: 0, wordBreak: "break-word" }}>
-                              {comment.content}
-                            </p>
-                          </div>
-
-                          {/* Actions */}
-                          <div style={{ display: "flex", gap: 8 }}>
-                            <button
-                              onClick={() => { setEditingCommentId(comment.id); setEditingCommentText(comment.content); }}
-                              style={{
-                                display: "inline-flex", alignItems: "center", gap: 5,
-                                padding: "7px 14px", borderRadius: 8, border: "none",
-                                background: "#f0f9ff", color: "#0891b2", fontSize: 12, fontWeight: 700,
-                                cursor: "pointer", fontFamily: "Manrope, sans-serif",
-                              }}
-                            >
-                              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>edit</span>
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteComment(comment.id)}
-                              style={{
-                                display: "inline-flex", alignItems: "center", gap: 5,
-                                padding: "7px 14px", borderRadius: 8, border: "none",
-                                background: "#fef2f2", color: "#dc2626", fontSize: 12, fontWeight: 700,
-                                cursor: "pointer", fontFamily: "Manrope, sans-serif",
-                              }}
-                            >
-                              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>delete</span>
-                              Delete
-                            </button>
-                          </div>
+                          {/* Comment text */}
+                          <p style={{ fontSize: 14, color: "#334155", lineHeight: 1.6, margin: 0, wordBreak: "break-word" }}>
+                            {comment.content}
+                          </p>
                         </div>
                       )}
                     </div>
