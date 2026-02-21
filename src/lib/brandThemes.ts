@@ -203,6 +203,7 @@ const BRAND_DATABASE: Record<string, BrandColors> = {
 
   // ── Productivity / AI ──
   "wispr":           { primary: "#1A3A2A", isDark: true },
+  "wispr-flow":      { primary: "#1A3A2A", isDark: true },
 
   // ── Finance / Services ──
   "paypal":          { primary: "#003087", isDark: true },
