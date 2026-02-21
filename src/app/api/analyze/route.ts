@@ -3,6 +3,18 @@ import { geminiChat, geminiMultiTurn } from "@/lib/gemini";
 
 export const runtime = "nodejs";
 
+/** Strip markdown fences and trailing text from Gemini JSON output */
+function cleanJsonResponse(raw: string): string {
+  let s = raw.trim();
+  s = s.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) {
+    s = s.slice(start, end + 1);
+  }
+  return s;
+}
+
 type DealItem = {
   id?: string;
   title: string;
@@ -88,7 +100,7 @@ Return JSON only in this format:
       maxTokens: 600,
     });
 
-    aiResult = JSON.parse(text);
+    aiResult = JSON.parse(cleanJsonResponse(text));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     aiResult = { keyReason: `Fallback estimate used. (${message})` };

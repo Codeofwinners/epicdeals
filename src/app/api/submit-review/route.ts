@@ -5,6 +5,18 @@ import { geminiChat } from "@/lib/gemini";
 
 export const runtime = "nodejs";
 
+/** Strip markdown fences and trailing text from Gemini JSON output */
+function cleanJsonResponse(raw: string): string {
+  let s = raw.trim();
+  s = s.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) {
+    s = s.slice(start, end + 1);
+  }
+  return s;
+}
+
 // ─── Helpers ────────────────────────────────────────────────────
 
 function slugify(text: string): string {
@@ -222,7 +234,7 @@ Guidelines:
         maxTokens: 500,
       });
 
-      const parsed = JSON.parse(text);
+      const parsed = JSON.parse(cleanJsonResponse(text));
       aiReview = {
         verdict: parsed.verdict || "needs_review",
         confidence: parsed.confidence ?? 50,

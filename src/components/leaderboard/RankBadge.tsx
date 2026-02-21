@@ -13,8 +13,8 @@ export function RankBadge({ xp, size = "sm", rank: rankOverride }: RankBadgeProp
 
   const sizes = {
     sm: { fontSize: 9, iconSize: 11, padding: "2px 6px", gap: 3, borderRadius: 6 },
-    md: { fontSize: 11, iconSize: 14, padding: "3px 8px", gap: 4, borderRadius: 8 },
-    lg: { fontSize: 13, iconSize: 18, padding: "4px 12px", gap: 5, borderRadius: 10 },
+    md: { fontSize: 11, iconSize: 14, padding: "4px 10px", gap: 5, borderRadius: 8 },
+    lg: { fontSize: 13, iconSize: 18, padding: "5px 14px", gap: 6, borderRadius: 10 },
   };
 
   const s = sizes[size];
@@ -22,6 +22,7 @@ export function RankBadge({ xp, size = "sm", rank: rankOverride }: RankBadgeProp
 
   return (
     <span
+      className={isMythic ? "animate-mythic-shimmer" : ""}
       style={{
         display: "inline-flex",
         alignItems: "center",
@@ -36,6 +37,7 @@ export function RankBadge({ xp, size = "sm", rank: rankOverride }: RankBadgeProp
           ? "linear-gradient(135deg, #1a1a1a, #000)"
           : `${rank.color}15`,
         border: `1px solid ${isMythic ? "#F59E0B33" : rank.color + "25"}`,
+        boxShadow: isMythic ? "0 2px 8px rgba(245,158,11,0.2)" : "0 1px 3px rgba(0,0,0,0.04)",
         whiteSpace: "nowrap",
         lineHeight: 1,
       }}

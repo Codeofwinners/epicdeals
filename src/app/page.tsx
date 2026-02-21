@@ -8,6 +8,36 @@ import DynamicDealCard from "@/components/deals/DynamicDealCard";
 import { FilterBar } from "@/components/deals/FilterBar";
 import type { Deal } from "@/types/deals";
 
+function getCategoryEmoji(deal: Deal): string {
+  const name = (deal.store?.name || "").toLowerCase();
+  // Store-specific emojis
+  if (name.includes("amazon")) return "📦";
+  if (name.includes("nike")) return "👟";
+  if (name.includes("adidas")) return "👟";
+  if (name.includes("apple")) return "🍎";
+  if (name.includes("best buy")) return "🖥️";
+  if (name.includes("walmart")) return "🛒";
+  if (name.includes("target")) return "🎯";
+  if (name.includes("costco")) return "🏪";
+  if (name.includes("starbucks")) return "☕";
+  if (name.includes("uber") || name.includes("doordash") || name.includes("grubhub")) return "🍔";
+  if (name.includes("airbnb") || name.includes("booking") || name.includes("expedia")) return "✈️";
+  if (name.includes("sephora") || name.includes("ulta")) return "💄";
+  if (name.includes("home depot") || name.includes("lowe")) return "🔨";
+  // Category-based fallback
+  const cat = (typeof deal.category === "string" ? deal.category : deal.category?.slug || "").toLowerCase();
+  if (cat.includes("electronics") || cat.includes("software")) return "💻";
+  if (cat.includes("fashion")) return "👗";
+  if (cat.includes("food")) return "🍔";
+  if (cat.includes("travel")) return "✈️";
+  if (cat.includes("health") || cat.includes("beauty")) return "💄";
+  if (cat.includes("home")) return "🏠";
+  if (cat.includes("entertainment")) return "🎬";
+  if (cat.includes("sports")) return "⚽";
+  if (cat.includes("automotive")) return "🚗";
+  return "🏷️";
+}
+
 export default function Home() {
   const [openComments, setOpenComments] = useState<Set<string>>(new Set());
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -106,31 +136,48 @@ export default function Home() {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      minWidth: "220px",
-                      maxWidth: "260px",
-                      padding: "14px 16px",
+                      minWidth: "240px",
+                      maxWidth: "280px",
+                      padding: "16px 18px",
                       backgroundColor: "#fff",
                       border: "1px solid #E4E4E4",
+                      borderLeft: "3px solid #0EA5E9",
                       borderRadius: "14px",
                       textDecoration: "none",
                       color: "inherit",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "6px",
-                      transition: "transform 0.15s",
+                      gap: "8px",
+                      transition: "transform 0.15s, box-shadow 0.15s",
                     }}
-                    className="hover:scale-[1.02]"
+                    className="hover:scale-[1.02] hover:shadow-md"
                   >
-                    <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
-                    <span style={{ fontSize: "13px", fontWeight: 800, color: "#0A0A0A", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{deal.title}</span>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span style={{ fontSize: "16px", lineHeight: 1 }}>{getCategoryEmoji(deal)}</span>
+                        <span style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#64748B" }}>{deal.store.name}</span>
+                      </div>
+                      <span style={{
+                        fontSize: "8px",
+                        fontWeight: 900,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        color: "#0EA5E9",
+                        backgroundColor: "#F0F9FF",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        border: "1px solid #BAE6FD",
+                      }}>NEW</span>
+                    </div>
+                    <span style={{ fontSize: "14px", fontWeight: 800, color: "#0A0A0A", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{deal.title}</span>
                     {(deal.discount || deal.savingsAmount) && (
                       <span style={{
                         display: "inline-flex",
                         alignSelf: "flex-start",
-                        padding: "3px 8px",
+                        padding: "4px 10px",
                         borderRadius: "6px",
-                        fontSize: "10px",
-                        fontWeight: 800,
+                        fontSize: "11px",
+                        fontWeight: 900,
                         letterSpacing: "0.02em",
                         backgroundColor: "#ecfdf5",
                         color: "#059669",
@@ -144,54 +191,6 @@ export default function Home() {
               </div>
             </div>
           )}
-
-          {/* Leaderboard CTA Banner — Desktop */}
-          <Link
-            href="/leaderboard"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "16px 24px",
-              marginBottom: "20px",
-              borderRadius: "14px",
-              background: "linear-gradient(135deg, #111111 0%, #1a1a2e 100%)",
-              border: "1px solid rgba(245,158,11,0.2)",
-              textDecoration: "none",
-              color: "inherit",
-              transition: "all 0.2s ease",
-              overflow: "hidden",
-              position: "relative",
-            }}
-            className="hover:border-amber-400/40 hover:shadow-lg group"
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "14px", zIndex: 1 }}>
-              <div style={{
-                width: "42px",
-                height: "42px",
-                borderRadius: "12px",
-                background: "linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "22px", color: "#fff" }}>emoji_events</span>
-              </div>
-              <div>
-                <div style={{ fontSize: "15px", fontWeight: 900, color: "#fff", letterSpacing: "-0.02em" }}>
-                  Leaderboard &amp; Ranks
-                </div>
-                <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginTop: "2px" }}>
-                  Earn XP by submitting deals, getting upvotes &amp; helping the community
-                </div>
-              </div>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px", zIndex: 1 }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "#F59E0B" }}>View Rankings</span>
-              <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#F59E0B" }}>arrow_forward</span>
-            </div>
-          </Link>
 
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
           {loading ? (
@@ -229,29 +228,46 @@ export default function Home() {
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
-                      minWidth: "180px",
-                      maxWidth: "220px",
-                      padding: "12px 14px",
+                      minWidth: "200px",
+                      maxWidth: "240px",
+                      padding: "14px 14px",
                       backgroundColor: "#fff",
                       border: "1px solid #E4E4E4",
+                      borderLeft: "3px solid #0EA5E9",
                       borderRadius: "12px",
                       textDecoration: "none",
                       color: "inherit",
                       display: "flex",
                       flexDirection: "column",
-                      gap: "5px",
+                      gap: "6px",
                     }}
                   >
-                    <span style={{ fontSize: "8px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <span style={{ fontSize: "14px", lineHeight: 1 }}>{getCategoryEmoji(deal)}</span>
+                        <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#64748B" }}>{deal.store.name}</span>
+                      </div>
+                      <span style={{
+                        fontSize: "7px",
+                        fontWeight: 900,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        color: "#0EA5E9",
+                        backgroundColor: "#F0F9FF",
+                        padding: "2px 5px",
+                        borderRadius: "3px",
+                        border: "1px solid #BAE6FD",
+                      }}>NEW</span>
+                    </div>
                     <span style={{ fontSize: "12px", fontWeight: 800, color: "#0A0A0A", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{deal.title}</span>
                     {(deal.discount || deal.savingsAmount) && (
                       <span style={{
                         display: "inline-flex",
                         alignSelf: "flex-start",
-                        padding: "2px 6px",
+                        padding: "3px 8px",
                         borderRadius: "5px",
-                        fontSize: "9px",
-                        fontWeight: 800,
+                        fontSize: "10px",
+                        fontWeight: 900,
                         backgroundColor: "#ecfdf5",
                         color: "#059669",
                         border: "1px solid #a7f3d0",
@@ -264,45 +280,6 @@ export default function Home() {
               </div>
             </div>
           )}
-
-          {/* Leaderboard CTA Banner — Mobile */}
-          <Link
-            href="/leaderboard"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "12px 14px",
-              marginBottom: "12px",
-              borderRadius: "12px",
-              background: "linear-gradient(135deg, #111111 0%, #1a1a2e 100%)",
-              border: "1px solid rgba(245,158,11,0.2)",
-              textDecoration: "none",
-              color: "inherit",
-            }}
-          >
-            <div style={{
-              width: "36px",
-              height: "36px",
-              borderRadius: "10px",
-              background: "linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-            }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "18px", color: "#fff" }}>emoji_events</span>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: "13px", fontWeight: 900, color: "#fff", letterSpacing: "-0.02em" }}>
-                Leaderboard &amp; Ranks
-              </div>
-              <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.5)", marginTop: "1px" }}>
-                Earn XP by submitting deals &amp; helping the community
-              </div>
-            </div>
-            <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#F59E0B", flexShrink: 0 }}>arrow_forward</span>
-          </Link>
 
           <FilterBar timeRange={timeRange} setTimeRange={setTimeRange} sortBy={sortBy} setSortBy={setSortBy} />
           <h2 className="text-base font-black tracking-tight mb-3 text-[#1A1A1A]">

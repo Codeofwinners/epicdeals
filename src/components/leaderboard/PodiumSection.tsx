@@ -8,60 +8,69 @@ interface PodiumSectionProps {
   entries: LeaderboardEntry[];
 }
 
+const PODIUM_CONFIG: Record<number, {
+  borderColor: string;
+  icon: string;
+  iconLabel: string;
+  avatarSize: number;
+  xpSize: number;
+  paddingTop: number;
+}> = {
+  1: { borderColor: "#F59E0B", icon: "👑", iconLabel: "1st", avatarSize: 80, xpSize: 28, paddingTop: 0 },
+  2: { borderColor: "#A8A9AD", icon: "🥈", iconLabel: "2nd", avatarSize: 64, xpSize: 22, paddingTop: 40 },
+  3: { borderColor: "#CD7F32", icon: "🥉", iconLabel: "3rd", avatarSize: 64, xpSize: 22, paddingTop: 60 },
+};
+
 function PodiumCard({ entry, place }: { entry: LeaderboardEntry; place: 1 | 2 | 3 }) {
   const rank = getUserRank(entry.xp);
+  const config = PODIUM_CONFIG[place];
   const isFirst = place === 1;
-
-  const medals: Record<number, { icon: string; color: string; bg: string; label: string }> = {
-    1: { icon: "emoji_events", color: "#F59E0B", bg: "linear-gradient(135deg, #78350f, #92400e, #b45309)", label: "1st" },
-    2: { icon: "emoji_events", color: "#A8A9AD", bg: "linear-gradient(135deg, #374151, #4b5563, #6b7280)", label: "2nd" },
-    3: { icon: "emoji_events", color: "#CD7F32", bg: "linear-gradient(135deg, #7c2d12, #9a3412, #b45309)", label: "3rd" },
-  };
-
-  const medal = medals[place];
 
   return (
     <div
-      className={isFirst ? "animate-podium-glow" : ""}
+      className="animate-podium-rise"
       style={{
-        background: medal.bg,
+        backgroundColor: "#FFFFFF",
         borderRadius: 18,
         padding: isFirst ? "28px 20px 24px" : "20px 16px 18px",
+        paddingTop: isFirst ? 28 : 20,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         position: "relative",
-        border: `1px solid ${medal.color}25`,
+        border: `2px solid ${config.borderColor}`,
+        boxShadow: isFirst
+          ? `0 8px 32px ${config.borderColor}20, 0 0 0 1px ${config.borderColor}10`
+          : `0 4px 16px rgba(0,0,0,0.06)`,
         flex: isFirst ? "1.2" : "1",
         maxWidth: isFirst ? 240 : 200,
-        order: place === 2 ? 0 : place === 1 ? 1 : 2,
+        animationDelay: place === 1 ? "0.1s" : place === 2 ? "0s" : "0.2s",
       }}
     >
-      {/* Medal icon */}
+      {/* Medal/Crown icon */}
       <div
         className={isFirst ? "animate-crown-float" : ""}
         style={{
           position: "absolute",
-          top: -14,
-          width: 28,
-          height: 28,
-          borderRadius: "50%",
-          background: "#111",
-          border: `2px solid ${medal.color}`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: `0 0 16px ${medal.color}40`,
+          top: -16,
+          fontSize: isFirst ? 28 : 22,
+          lineHeight: 1,
         }}
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 16, color: medal.color }}>
-          {medal.icon}
-        </span>
+        {config.icon}
       </div>
 
       {/* Position label */}
-      <span style={{ fontSize: 10, fontWeight: 900, color: medal.color, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 12, marginTop: 4 }}>
-        {medal.label} PLACE
+      <span style={{
+        fontSize: 10,
+        fontWeight: 900,
+        color: config.borderColor,
+        letterSpacing: "0.08em",
+        textTransform: "uppercase",
+        marginBottom: 14,
+        marginTop: 8,
+      }}>
+        {config.iconLabel} PLACE
       </span>
 
       {/* Avatar */}
@@ -72,37 +81,37 @@ function PodiumCard({ entry, place }: { entry: LeaderboardEntry; place: 1 | 2 | 
             alt=""
             referrerPolicy="no-referrer"
             style={{
-              width: isFirst ? 64 : 52,
-              height: isFirst ? 64 : 52,
+              width: config.avatarSize,
+              height: config.avatarSize,
               borderRadius: "50%",
               objectFit: "cover",
-              border: `3px solid ${medal.color}`,
-              boxShadow: `0 0 20px ${medal.color}30`,
+              border: `3px solid ${config.borderColor}`,
+              boxShadow: isFirst ? `0 0 24px ${config.borderColor}30` : `0 0 12px ${config.borderColor}20`,
             }}
           />
         ) : (
           <div
             style={{
-              width: isFirst ? 64 : 52,
-              height: isFirst ? 64 : 52,
+              width: config.avatarSize,
+              height: config.avatarSize,
               borderRadius: "50%",
               background: `linear-gradient(135deg, ${rank.color}, ${rank.color}80)`,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              border: `3px solid ${medal.color}`,
+              border: `3px solid ${config.borderColor}`,
             }}
           >
-            <span className="material-symbols-outlined" style={{ fontSize: isFirst ? 28 : 24, color: "#fff" }}>person</span>
+            <span className="material-symbols-outlined" style={{ fontSize: isFirst ? 36 : 28, color: "#fff" }}>person</span>
           </div>
         )}
       </div>
 
       {/* Name */}
       <span style={{
-        fontSize: isFirst ? 14 : 12,
+        fontSize: isFirst ? 15 : 13,
         fontWeight: 800,
-        color: "#fff",
+        color: "#0A0A0A",
         marginBottom: 6,
         textAlign: "center",
         maxWidth: "100%",
@@ -119,25 +128,36 @@ function PodiumCard({ entry, place }: { entry: LeaderboardEntry; place: 1 | 2 | 
       </div>
 
       {/* XP */}
-      <span
-        className="animate-xp-pulse"
-        style={{ fontSize: isFirst ? 22 : 18, fontWeight: 900, color: medal.color, letterSpacing: "-0.02em" }}
-      >
+      <span style={{
+        fontSize: config.xpSize,
+        fontWeight: 900,
+        color: config.borderColor,
+        letterSpacing: "-0.02em",
+        lineHeight: 1,
+      }}>
         {entry.xp.toLocaleString()}
       </span>
-      <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+      <span style={{
+        fontSize: 9,
+        fontWeight: 700,
+        color: "#94A3B8",
+        textTransform: "uppercase",
+        letterSpacing: "0.08em",
+        marginBottom: 10,
+        marginTop: 2,
+      }}>
         XP
       </span>
 
       {/* Mini stats */}
-      <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
+      <div style={{ display: "flex", gap: 14, marginTop: 4 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>local_offer</span>
-          <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>{entry.dealsSubmitted}</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 13, color: "#CBD5E1" }}>local_offer</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B" }}>{entry.dealsSubmitted}</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>arrow_upward</span>
-          <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.5)" }}>{entry.totalUpvotes}</span>
+          <span className="material-symbols-outlined" style={{ fontSize: 13, color: "#CBD5E1" }}>arrow_upward</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B" }}>{entry.totalUpvotes}</span>
         </div>
       </div>
     </div>
@@ -158,11 +178,28 @@ export function PodiumSection({ entries }: PodiumSectionProps) {
 
   return (
     <div style={{ marginBottom: 40 }}>
-      {/* Desktop: side-by-side podium */}
-      <div className="hidden md:flex" style={{ justifyContent: "center", alignItems: "flex-end", gap: 16, paddingTop: 20 }}>
-        {top3[1] && <PodiumCard entry={top3[1]} place={2} />}
-        {top3[0] && <PodiumCard entry={top3[0]} place={1} />}
-        {top3[2] && <PodiumCard entry={top3[2]} place={3} />}
+      {/* Desktop: true podium heights with flex-end alignment */}
+      <div className="hidden md:flex" style={{
+        justifyContent: "center",
+        alignItems: "flex-end",
+        gap: 16,
+        paddingTop: 20,
+      }}>
+        {top3[1] && (
+          <div style={{ paddingTop: PODIUM_CONFIG[2].paddingTop }}>
+            <PodiumCard entry={top3[1]} place={2} />
+          </div>
+        )}
+        {top3[0] && (
+          <div style={{ paddingTop: PODIUM_CONFIG[1].paddingTop }}>
+            <PodiumCard entry={top3[0]} place={1} />
+          </div>
+        )}
+        {top3[2] && (
+          <div style={{ paddingTop: PODIUM_CONFIG[3].paddingTop }}>
+            <PodiumCard entry={top3[2]} place={3} />
+          </div>
+        )}
       </div>
 
       {/* Mobile: #1 full-width, #2/#3 side-by-side */}

@@ -3,6 +3,20 @@ import { geminiImageAnalysis } from "@/lib/gemini";
 
 export const runtime = "nodejs";
 
+/** Strip markdown fences and trailing text from Gemini JSON output */
+function cleanJsonResponse(raw: string): string {
+  let s = raw.trim();
+  // Remove ```json ... ``` or ``` ... ``` wrappers
+  s = s.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  // Find first { and last } to extract the JSON object
+  const start = s.indexOf("{");
+  const end = s.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) {
+    s = s.slice(start, end + 1);
+  }
+  return s;
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -39,7 +53,7 @@ If you cannot determine a field, set it to null. Always try your best to extract
       maxTokens: 800,
     });
 
-    const extracted = JSON.parse(text);
+    const extracted = JSON.parse(cleanJsonResponse(text));
 
     return NextResponse.json({ success: true, extracted });
   } catch (error) {

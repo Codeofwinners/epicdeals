@@ -16,22 +16,27 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
   const weekKey = `weekly-${now.getFullYear()}-W${String(weekNum).padStart(2, "0")}` as LeaderboardPeriod;
 
   const periods: { key: LeaderboardPeriod; label: string }[] = [
-    { key: "alltime", label: "All-Time" },
-    { key: monthKey, label: "This Month" },
-    { key: weekKey, label: "This Week" },
+    { key: "alltime", label: "ALL-TIME" },
+    { key: monthKey, label: "THIS MONTH" },
+    { key: weekKey, label: "THIS WEEK" },
   ];
 
   const categories: { key: LeaderboardCategory; label: string; icon: string }[] = [
     { key: "overall", label: "Overall", icon: "leaderboard" },
     { key: "top-dealers", label: "Top Dealers", icon: "local_offer" },
-    { key: "top-commenters", label: "Top Commenters", icon: "chat" },
-    { key: "most-verified", label: "Most Verified", icon: "verified" },
+    { key: "top-commenters", label: "Commenters", icon: "chat" },
+    { key: "most-verified", label: "Verified", icon: "verified" },
   ];
 
   return (
     <div style={{ marginBottom: 28 }}>
-      {/* Period pills */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
+      {/* Period: underline tab bar */}
+      <div style={{
+        display: "flex",
+        gap: 0,
+        marginBottom: 16,
+        borderBottom: "2px solid #F1F5F9",
+      }}>
         {periods.map((p) => {
           const active = period === p.key;
           return (
@@ -39,16 +44,18 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
               key={p.key}
               onClick={() => onPeriodChange(p.key)}
               style={{
-                padding: "8px 16px",
-                borderRadius: 10,
+                padding: "10px 20px",
                 border: "none",
-                fontSize: 12,
-                fontWeight: 700,
+                borderBottom: active ? "2px solid #0EA5E9" : "2px solid transparent",
+                marginBottom: -2,
+                fontSize: 11,
+                fontWeight: 800,
                 fontFamily: "Manrope, sans-serif",
                 cursor: "pointer",
-                background: active ? "linear-gradient(135deg, #0EA5E9, #06B6D4)" : "#f1f5f9",
-                color: active ? "#fff" : "#64748b",
-                boxShadow: active ? "0 2px 10px rgba(14,165,233,0.3)" : "none",
+                background: "transparent",
+                color: active ? "#0EA5E9" : "#94A3B8",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
                 transition: "all 0.2s ease",
               }}
             >
@@ -58,8 +65,8 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
         })}
       </div>
 
-      {/* Category pills */}
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+      {/* Category: chip buttons */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {categories.map((c) => {
           const active = category === c.key;
           return (
@@ -69,20 +76,21 @@ export function LeaderboardFilterBar({ period, category, onPeriodChange, onCateg
               style={{
                 display: "inline-flex",
                 alignItems: "center",
-                gap: 4,
-                padding: "7px 12px",
-                borderRadius: 8,
-                border: active ? "1px solid rgba(14,165,233,0.3)" : "1px solid #e2e8f0",
-                fontSize: 11,
+                gap: 5,
+                padding: "8px 14px",
+                borderRadius: 10,
+                border: active ? "1.5px solid #0EA5E9" : "1px solid #E2E8F0",
+                fontSize: 12,
                 fontWeight: 700,
                 fontFamily: "Manrope, sans-serif",
                 cursor: "pointer",
-                background: active ? "rgba(14,165,233,0.08)" : "#fff",
-                color: active ? "#0891b2" : "#94a3b8",
+                backgroundColor: active ? "#F0F9FF" : "#FFFFFF",
+                color: active ? "#0891b2" : "#64748B",
                 transition: "all 0.2s ease",
+                boxShadow: active ? "0 2px 8px rgba(14,165,233,0.15)" : "none",
               }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 14 }}>{c.icon}</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 15, color: active ? "#0891b2" : "#94A3B8" }}>{c.icon}</span>
               {c.label}
             </button>
           );

@@ -8,7 +8,7 @@ interface XPProgressBarProps {
   height?: number;
 }
 
-export function XPProgressBar({ xp, showLabel = true, height = 8 }: XPProgressBarProps) {
+export function XPProgressBar({ xp, showLabel = true, height = 12 }: XPProgressBarProps) {
   const rank = getUserRank(xp);
   const nextRank = getNextRank(xp);
   const progress = getProgressToNextRank(xp);
@@ -21,21 +21,38 @@ export function XPProgressBar({ xp, showLabel = true, height = 8 }: XPProgressBa
           width: "100%",
           height,
           borderRadius: height,
-          background: "rgba(255,255,255,0.1)",
+          backgroundColor: "#F1F5F9",
           overflow: "hidden",
           position: "relative",
         }}
       >
         <div
+          className="animate-progress-fill"
           style={{
             height: "100%",
             width: `${progress.percent}%`,
             borderRadius: height,
             background: `linear-gradient(90deg, ${rank.color}, ${nextRank?.color || rank.color})`,
-            transition: "width 1s cubic-bezier(0.34, 1.56, 0.64, 1)",
-            boxShadow: `0 0 12px ${rank.color}40`,
+            boxShadow: `0 0 14px ${rank.color}50`,
+            position: "relative",
+            overflow: "hidden",
+            // @ts-expect-error CSS custom property
+            "--progress-width": `${progress.percent}%`,
           }}
-        />
+        >
+          {/* Shimmer sweep */}
+          <div
+            className="animate-gold-shimmer"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "50%",
+              height: "100%",
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)",
+            }}
+          />
+        </div>
       </div>
 
       {/* Label */}
@@ -50,7 +67,7 @@ export function XPProgressBar({ xp, showLabel = true, height = 8 }: XPProgressBa
             fontWeight: 600,
           }}
         >
-          <span style={{ color: "rgba(255,255,255,0.5)" }}>
+          <span style={{ color: "#64748B" }}>
             {progress.needed} XP to {nextRank.name}
           </span>
           <span style={{ color: rank.color, fontWeight: 800 }}>
