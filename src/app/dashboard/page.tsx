@@ -20,11 +20,12 @@ import { db } from "@/lib/firebase";
 import { useUserXP } from "@/hooks/useGamification";
 import { RankBadge } from "@/components/leaderboard/RankBadge";
 import { XPProgressBar } from "@/components/leaderboard/XPProgressBar";
+import { HandleSetupModal } from "@/components/auth/HandleSetupModal";
 
 type Tab = "upvotes" | "comments" | "saved" | "my-deals";
 
 export default function DashboardPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, userProfile, refreshProfile } = useAuth();
   const router = useRouter();
   const { data: xpData } = useUserXP(user?.uid);
 
@@ -37,6 +38,9 @@ export default function DashboardPage() {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingCommentText, setEditingCommentText] = useState("");
   const [commentsError, setCommentsError] = useState<string | null>(null);
+
+  // Edit handle modal
+  const [showHandleEdit, setShowHandleEdit] = useState(false);
 
   // Edit deal modal state
   const [editingDeal, setEditingDeal] = useState<Deal | null>(null);
@@ -348,9 +352,24 @@ export default function DashboardPage() {
             <div style={{ position: "absolute", bottom: 1, right: 1, width: 14, height: 14, background: "#22c55e", borderRadius: "50%", border: "2.5px solid #fff" }} />
           </div>
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>
-              {user.displayName || "Your Dashboard"}
-            </h1>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>
+                @{userProfile?.handle || "user"}
+              </h1>
+              <button
+                onClick={() => setShowHandleEdit(true)}
+                title="Edit username"
+                style={{
+                  width: 28, height: 28, borderRadius: 8, border: "none",
+                  background: "#f1f5f9", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "background 0.15s",
+                  flexShrink: 0,
+                }}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16, color: "#64748b" }}>edit</span>
+              </button>
+            </div>
             <p style={{ fontSize: 14, color: "#94a3b8", fontWeight: 500, margin: "2px 0 0" }}>
               Your Activity
             </p>
@@ -624,6 +643,17 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* ─── Edit Handle Modal ─── */}
+      {showHandleEdit && (
+        <HandleSetupModal
+          mode="edit"
+          onClose={() => {
+            setShowHandleEdit(false);
+            refreshProfile();
+          }}
+        />
+      )}
 
       {/* ─── Edit Deal Modal ─── */}
       {editingDeal && (

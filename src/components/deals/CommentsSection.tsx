@@ -15,7 +15,7 @@ interface CommentsSectionProps {
 }
 
 export function CommentsSection({ dealId, darkBg = false, isOpen = false, onToggle, onCountChange }: CommentsSectionProps) {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -54,7 +54,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
         content: commentText,
         user: {
           id: user.uid,
-          username: user.displayName || "Anonymous",
+          username: userProfile?.handle || "Anonymous",
           avatar: user.photoURL || "",
           badges: [],
         },
@@ -124,7 +124,7 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
             {user.photoURL && (
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <img src={user.photoURL} alt={user.displayName || "User"} style={{ width: "22px", height: "22px", borderRadius: "50%", flexShrink: 0 }} />
-                <span style={{ fontSize: "11px", fontWeight: 700, color: textColor }}>{user.displayName || "You"}</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: textColor }}>@{userProfile?.handle || "You"}</span>
               </div>
             )}
             <textarea

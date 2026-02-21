@@ -78,7 +78,7 @@ function SkeletonCard() {
 
 /* ── Main component ──────────────────────────────────────────────────────── */
 export function UserRankCard({ period }: UserRankCardProps) {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { data: xpData, loading: xpLoading } = useUserXP(user?.uid);
   const { data: rankData, loading: rankLoading } = useUserRank(user?.uid, period);
 
@@ -163,7 +163,7 @@ export function UserRankCard({ period }: UserRankCardProps) {
                 whiteSpace: "nowrap",
               }}
             >
-              {user.displayName || "You"}
+              @{userProfile?.handle || "user"}
             </span>
             <RankBadge xp={xp} size="sm" />
           </div>

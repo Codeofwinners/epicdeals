@@ -62,7 +62,7 @@ interface DuplicateMatch {
 }
 
 export default function SubmitDealPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, userProfile } = useAuth();
   const { data: stores } = useAllStores();
   const { data: categories } = useAllCategories();
 
@@ -383,7 +383,7 @@ export default function SubmitDealPage() {
         submittedBy: user
           ? {
               id: user.uid,
-              username: user.displayName || user.email?.split("@")[0] || "User",
+              username: userProfile?.handle || "User",
               reputation: 0,
               badges: [],
               dealsSubmitted: 0,

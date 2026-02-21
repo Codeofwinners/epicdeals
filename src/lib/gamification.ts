@@ -400,6 +400,7 @@ export function getDaysLeftInWeek(): number {
 
 export interface LeaderboardEntry {
   userId: string;
+  handle: string;
   displayName: string;
   photoURL: string | null;
   xp: number;

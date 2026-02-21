@@ -126,7 +126,7 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap",
                   }}>
-                    {entry.displayName}
+                    @{entry.handle || entry.displayName}
                   </span>
                   {isCurrentUser && (
                     <span style={{

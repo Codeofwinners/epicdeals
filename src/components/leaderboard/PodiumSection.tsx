@@ -112,7 +112,7 @@ function PodiumCard({
         {entry.photoURL ? (
           <img
             src={entry.photoURL}
-            alt={entry.displayName}
+            alt={entry.handle || entry.displayName}
             referrerPolicy="no-referrer"
             style={{
               width: config.avatarSize,
@@ -165,7 +165,7 @@ function PodiumCard({
           whiteSpace: "nowrap" as const,
         }}
       >
-        {entry.displayName}
+        @{entry.handle || entry.displayName}
       </span>
 
       {/* Rank badge */}

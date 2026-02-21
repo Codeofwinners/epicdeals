@@ -592,6 +592,7 @@ export async function editComment(commentId: string, newContent: string): Promis
 // ─── User Profile Management ────────────────────────────────────
 export interface UserProfile {
   id: string;
+  handle: string;
   displayName: string;
   email: string;
   photoURL?: string;
@@ -601,6 +602,17 @@ export interface UserProfile {
   badges: string[];
   createdAt: string;
   role: "user" | "moderator" | "admin";
+  needsHandleSetup?: boolean;
+}
+
+/** Generate a random alphanumeric handle like user_a8f3k2 */
+function generateRandomHandle(): string {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let suffix = "";
+  for (let i = 0; i < 6; i++) {
+    suffix += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return `user_${suffix}`;
 }
 
 /** Create or get user profile on signup */
@@ -614,7 +626,10 @@ export async function ensureUserProfile(userId: string, userData: {
   const snap = await getDoc(userRef);
 
   if (!snap.exists()) {
+    const handle = generateRandomHandle();
     await setDoc(userRef, {
+      handle,
+      needsHandleSetup: true,
       displayName: userData.displayName || "User",
       email: userData.email || "",
       photoURL: userData.photoURL || null,
@@ -637,6 +652,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
   const data = snap.data();
   return {
     id: snap.id,
+    handle: (data.handle as string) || generateRandomHandle(),
     displayName: data.displayName || "User",
     email: data.email || "",
     photoURL: data.photoURL || undefined,
@@ -646,7 +662,55 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     badges: data.badges || [],
     createdAt: tsToISO(data.createdAt),
     role: data.role || "user",
+    needsHandleSetup: data.needsHandleSetup ?? false,
   };
+}
+
+/** Validate and update a user's handle */
+export async function updateUserHandle(userId: string, newHandle: string): Promise<{ success: boolean; error?: string }> {
+  if (!db) return { success: false, error: "Database not initialized" };
+
+  // Validate format: 3-20 chars, lowercase alphanumeric + underscores
+  const handle = newHandle.toLowerCase().trim();
+  if (!/^[a-z0-9_]{3,20}$/.test(handle)) {
+    return { success: false, error: "Handle must be 3-20 characters, lowercase letters, numbers, and underscores only" };
+  }
+
+  // Check uniqueness
+  const usersCol = collection(db, "users");
+  const q = query(usersCol, where("handle", "==", handle), firestoreLimit(1));
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    const existingUser = snap.docs[0];
+    if (existingUser.id !== userId) {
+      return { success: false, error: "This username is already taken" };
+    }
+  }
+
+  // Update handle
+  const userRef = doc(db, "users", userId);
+  await updateDoc(userRef, {
+    handle,
+    needsHandleSetup: false,
+  });
+
+  return { success: true };
+}
+
+/** Check if a handle is available */
+export async function checkHandleAvailability(handle: string, currentUserId?: string): Promise<boolean> {
+  if (!db) return false;
+  const h = handle.toLowerCase().trim();
+  if (!/^[a-z0-9_]{3,20}$/.test(h)) return false;
+
+  const usersCol = collection(db, "users");
+  const q = query(usersCol, where("handle", "==", h), firestoreLimit(1));
+  const snap = await getDocs(q);
+
+  if (snap.empty) return true;
+  if (currentUserId && snap.docs[0].id === currentUserId) return true;
+  return false;
 }
 
 // ─── Voting System ──────────────────────────────────────────────
@@ -1351,6 +1415,7 @@ export async function rebuildLeaderboardSnapshot(period: LeaderboardPeriod = "al
         const rank = getUserRank(xp);
         return {
           userId: d.id,
+          handle: (data.handle as string) || (data.displayName as string) || "User",
           displayName: (data.displayName as string) || "User",
           photoURL: (data.photoURL as string) || null,
           xp,
