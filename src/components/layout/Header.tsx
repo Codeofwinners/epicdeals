@@ -124,21 +124,18 @@ export function Header() {
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "6px",
-                  padding: "8px 14px",
-                  borderRadius: "10px",
-                  background: "linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(239,68,68,0.12) 100%)",
-                  color: "#F59E0B",
+                  gap: "5px",
+                  padding: "6px 2px",
+                  color: "rgba(255,255,255,0.7)",
                   fontSize: "13px",
                   fontWeight: 700,
                   textDecoration: "none",
                   whiteSpace: "nowrap",
-                  border: "1px solid rgba(245,158,11,0.25)",
-                  transition: "all 0.2s ease",
+                  transition: "color 0.2s ease",
                 }}
-                className="hover:brightness-125 hover:border-amber-400/40"
+                className="hover:!text-white"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "16px", color: "#F59E0B" }}>emoji_events</span>
+                <span style={{ fontSize: "16px", lineHeight: 1 }}>🏆</span>
                 Ranks
               </Link>
               <AddDealButton />
@@ -166,18 +163,16 @@ export function Header() {
                   display: "inline-flex",
                   alignItems: "center",
                   gap: "4px",
-                  padding: "6px 10px",
-                  borderRadius: "8px",
-                  background: "linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(239,68,68,0.12) 100%)",
-                  color: "#F59E0B",
+                  padding: "4px 2px",
+                  color: "rgba(255,255,255,0.7)",
                   fontSize: "11px",
                   fontWeight: 700,
                   textDecoration: "none",
                   whiteSpace: "nowrap",
-                  border: "1px solid rgba(245,158,11,0.25)",
+                  transition: "color 0.2s ease",
                 }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: "14px", color: "#F59E0B" }}>emoji_events</span>
+                <span style={{ fontSize: "14px", lineHeight: 1 }}>🏆</span>
                 Ranks
               </Link>
               <AddDealButtonMobile />
