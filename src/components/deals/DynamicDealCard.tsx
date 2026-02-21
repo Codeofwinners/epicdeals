@@ -8,7 +8,6 @@ import { CommentsSection } from "@/components/deals/CommentsSection";
 import { useBestComment } from "@/hooks/useFirestore";
 import type { Deal } from "@/types/deals";
 import { getStoreBrandTheme, getCardUITheme, THEME_DEFAULT, type CardUITheme } from "@/lib/brandThemes";
-import { RankBadge } from "@/components/leaderboard/RankBadge";
 
 // ─── Shared helpers ───────────────────────────────────────────────────────────
 
@@ -447,9 +446,6 @@ export default function DynamicDealCard({ deal, isOpen, toggleComments }: { deal
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "4px", marginBottom: "6px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontSize: "9px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#BBBBBB" }}>{deal.store.name}</span>
-            {deal.submittedBy && (
-              <RankBadge xp={(deal.submittedBy as any).reputation || 0} size="sm" />
-            )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <ExpiryBadge expiresAt={deal.expiresAt} />

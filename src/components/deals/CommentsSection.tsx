@@ -5,7 +5,6 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { addComment, onDealComments, deleteComment, editComment, upvoteComment, getCommentVoteStatus } from "@/lib/firestore";
 import { signInWithGoogle } from "@/lib/auth";
 import type { Comment } from "@/types/deals";
-import { RankBadge } from "@/components/leaderboard/RankBadge";
 
 interface CommentsSectionProps {
   dealId: string;
@@ -209,7 +208,6 @@ export function CommentsSection({ dealId, darkBg = false, isOpen = false, onTogg
                       <div>
                         <span style={{ fontSize: "11px", fontWeight: 700, color: textColor, display: "inline-flex", alignItems: "center", gap: 4 }}>
                           {comment.user.username}
-                          <RankBadge xp={(comment.user as any).reputation || 0} size="sm" />
                           {user?.uid === comment.user.id && <span style={{ fontSize: "9px", color: "#0EA5E9", padding: "1px 5px", borderRadius: "8px", backgroundColor: "rgba(14,165,233,0.1)" }}>You</span>}
                         </span>
                         <div style={{ fontSize: "10px", color: secondaryTextColor }}>{new Date(comment.createdAt).toLocaleDateString()}</div>
